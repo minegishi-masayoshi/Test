@@ -36,7 +36,6 @@
       padding: 0 20px;
     }
 
-    /* Login box */
     #loginBox {
       max-width: 420px;
       margin: 48px auto 0;
@@ -75,7 +74,6 @@
       white-space: pre-line;
     }
 
-    /* App area */
     #appArea {
       display: none;
     }
@@ -159,7 +157,6 @@
     }
   </style>
 </head>
-
 <body>
 
 <header>
@@ -169,27 +166,25 @@
 
 <div class="container">
 
-  <!-- Login box -->
   <div id="loginBox">
     <h2>Login</h2>
-    <p>Enter your registered email address. A Magic Link will be sent.</p>
+    <p>Enter your email and password.</p>
 
-    <input id="email" type="email" placeholder="Email address" />
-    <button id="loginBtn">Send Magic Link</button>
+    <input id="email" type="email" placeholder="Email" />
+    <input id="password" type="password" placeholder="Password" />
+
+    <button id="loginBtn">Login</button>
 
     <div id="loginMsg"></div>
   </div>
 
-  <!-- App area (after login) -->
   <div id="appArea">
-
     <div class="topbar">
       <div class="status" id="userStatus">Logged in</div>
       <button class="logout-btn" id="logoutBtn">Logout</button>
     </div>
 
     <div class="cards">
-
       <div class="card">
         <h2>1. LANMAP</h2>
         <p>View forest compartments, FMUs, land use, and logging data on the map.</p>
@@ -207,13 +202,11 @@
         <p>Update GIS datasets and attribute information in the cloud.</p>
         <a href="fips.html">Open</a>
       </div>
-
     </div>
 
     <div class="note">
       This prototype is intended for restricted users only.
     </div>
-
   </div>
 
 </div>
@@ -221,7 +214,6 @@
 <script type="module">
   import { createClient } from 'https://esm.sh/@supabase/supabase-js'
 
-  /* Supabase connection settings */
   const supabaseUrl = 'https://pncvddqeuxlkplwgvxgk.supabase.co'
   const supabaseKey = 'sb_publishable_bOTwr6mBCgp_jUS2FAF-DQ_WXlMvdrT'
 
@@ -231,6 +223,8 @@
   const appArea = document.getElementById('appArea')
   const loginBtn = document.getElementById('loginBtn')
   const loginMsg = document.getElementById('loginMsg')
+  const emailInput = document.getElementById('email')
+  const passInput = document.getElementById('password')
   const userStatus = document.getElementById('userStatus')
   const logoutBtn = document.getElementById('logoutBtn')
 
@@ -247,24 +241,15 @@
   }
 
   loginBtn.addEventListener('click', async () => {
-    const email = document.getElementById('email').value.trim()
+    loginMsg.textContent = ''
 
-    if (!email) {
-      loginMsg.textContent = 'Please enter your email address.'
-      return
-    }
-
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: window.location.href
-      }
+    const { error } = await supabase.auth.signInWithPassword({
+      email: emailInput.value,
+      password: passInput.value
     })
 
     if (error) {
       loginMsg.textContent = `Error: ${error.message}`
-    } else {
-      loginMsg.textContent = 'Magic Link sent. Please check your email.'
     }
   })
 
@@ -275,18 +260,12 @@
 
   const { data: { session } } = await supabase.auth.getSession()
 
-  if (session) {
-    showApp(session)
-  } else {
-    showLogin()
-  }
+  if (session) showApp(session)
+  else showLogin()
 
   supabase.auth.onAuthStateChange((_event, session) => {
-    if (session) {
-      showApp(session)
-    } else {
-      showLogin()
-    }
+    if (session) showApp(session)
+    else showLogin()
   })
 </script>
 
