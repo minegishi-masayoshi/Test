@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FIPS</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f5f7fa;
+      color: #1f2937;
+      display: none;
+    }
+
+    .topbar {
+      background: #1f4b99;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+    }
+
+    .topbar a,
+    .topbar button {
+      color: white;
+      text-decoration: none;
+      background: rgba(255,255,255,0.12);
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-left: 8px;
+    }
+
+    .topbar a:hover,
+    .topbar button:hover {
+      background: rgba(255,255,255,0.2);
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 32px auto;
+      padding: 0 20px;
+    }
+
+    .panel {
+      background: white;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+    }
+
+    h1 {
+      margin-top: 0;
+    }
+
+    p {
+      line-height: 1.7;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div>
+      <strong>FIPS</strong>
+      <span id="userInfo"></span>
+    </div>
+
+    <div>
+      <a href="index.html">Back to Home</a>
+      <button id="logoutBtn">Logout</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="panel">
+      <h1>Forest Information Processing System</h1>
+      <p>This page is under preparation.</p>
+      <p>
+        This page will be used for GIS data upload, editing, and management
+        in future development phases.
+      </p>
+    </div>
+  </div>
+
+  <script type="module">
+    import { createClient } from 'https://esm.sh/@supabase/supabase-js'
+
+    /* Supabase connection settings */
+    const supabaseUrl = 'PUT YOUR PROJECT URL HERE'
+    const supabaseKey = 'PUT YOUR PUBLISHABLE KEY HERE'
+
+    const supabase = createClient(supabaseUrl, supabaseKey)
+
+    /* Check user session before showing the page */
+    const { data: { session } } = await supabase.auth.getSession()
+
+    if (!session) {
+      window.location.href = 'index.html'
+      throw new Error('Not authenticated')
+    } else {
+      document.body.style.display = 'block'
+      document.getElementById('userInfo').textContent = session.user?.email ?? ''
+    }
+
+    /* Logout handler */
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+      await supabase.auth.signOut()
+      window.location.href = 'index.html'
+    })
+  </script>
+
+</body>
+</html>
