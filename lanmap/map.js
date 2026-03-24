@@ -1,8 +1,16 @@
 // =====================
+// Supabase
+// =====================
+const SUPABASE_URL = "https://pncvddqeuxlkplwgvxgk.supabase.co";
+const SUPABASE_KEY = "sb_publishable_bOTwr6mBCgp_jUS2FAF-DQ_WXlMvdrT";
+
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// =====================
 // Map initialization
 // =====================
 var map = L.map('map', {
-  center: [-6, 145],
+  center: [-6.5, 145],
   zoom: 6,
   zoomControl: false
 });
@@ -20,32 +28,20 @@ L.control.scale({
 // =====================
 // Base Layers
 // =====================
-var forestLayer = L.tileLayer('tiles/forest/{z}/{x}/{y}.jpg', {
-  maxNativeZoom: 10,
-  maxZoom: 14,
-  attribution: 'Forest BaseMap'
-}).addTo(map);
-
 var osmLayer = L.tileLayer(
   'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
   {
     maxZoom: 19,
     attribution: '© OpenStreetMap'
   }
-);
+).addTo(map);
+
+// 後でForest BaseMapをSupabase/private bucket対応に差し替え
+var forestLayer = L.layerGroup();
 
 // =====================
 // Pane settings
 // =====================
-map.createPane('riverPane');
-map.getPane('riverPane').style.zIndex = 410;
-
-map.createPane('roadPane');
-map.getPane('roadPane').style.zIndex = 420;
-
-map.createPane('provincePane');
-map.getPane('provincePane').style.zIndex = 430;
-
 map.createPane('concessionPane');
 map.getPane('concessionPane').style.zIndex = 450;
 
@@ -56,13 +52,6 @@ map.getPane('drawPane').style.zIndex = 500;
 // Layer variables
 // =====================
 var concessionLayer = null;
-var riverLayer = null;
-var roadLayer = null;
-var provinceLayer = null;
-
-var loadedCount = 0;
-var totalLayers = 4;
-
 var layerControl = null;
 var drawControl = null;
 var customSearchControl = null;
@@ -140,15 +129,12 @@ function createLayerControl() {
   }
 
   var baseMaps = {
-    "Forest BaseMap": forestLayer,
-    "OpenStreetMap": osmLayer
+    "OpenStreetMap": osmLayer,
+    "Forest BaseMap": forestLayer
   };
 
   var overlayMaps = {};
   if (concessionLayer) overlayMaps["Concession"] = concessionLayer;
-  if (riverLayer) overlayMaps["River"] = riverLayer;
-  if (roadLayer) overlayMaps["Road"] = roadLayer;
-  if (provinceLayer) overlayMaps["Province"] = provinceLayer;
   overlayMaps["Measurements"] = drawnItems;
 
   layerControl = L.control.layers(baseMaps, overlayMaps, {
@@ -211,59 +197,13 @@ function createDrawControl() {
   map.addControl(drawControl);
 }
 
-function checkAllLoaded() {
-  loadedCount++;
-
-  if (loadedCount >= totalLayers) {
-    if (concessionLayer && concessionLayer.getBounds && concessionLayer.getBounds().isValid()) {
-      map.fitBounds(concessionLayer.getBounds());
-    } else if (provinceLayer && provinceLayer.getBounds && provinceLayer.getBounds().isValid()) {
-      map.fitBounds(provinceLayer.getBounds());
-    }
-
-    createCustomSearchControl();
-    createPrintControl();
-    createZoomControl();
-    createDrawControl();
-    createMapTitleControl();
-    createLayerControl();
-  }
-}
-
-function loadGeoJSON(url, options, callback) {
-  fetch(url)
-    .then(function (res) {
-      if (!res.ok) {
-        throw new Error('HTTP ' + res.status + ': ' + url);
-      }
-      return res.json();
-    })
-    .then(function (data) {
-      var layer = L.geoJSON(data, options).addTo(map);
-      callback(layer, data);
-    })
-    .catch(function (err) {
-      console.error('GeoJSON load error:', url, err);
-    })
-    .finally(function () {
-      checkAllLoaded();
-    });
-}
-
-function getProperty(feature, keys, defaultValue) {
-  if (!feature || !feature.properties) return defaultValue;
-
-  for (var i = 0; i < keys.length; i++) {
-    var key = keys[i];
-    if (
-      feature.properties[key] !== undefined &&
-      feature.properties[key] !== null &&
-      feature.properties[key] !== ''
-    ) {
-      return feature.properties[key];
-    }
-  }
-  return defaultValue;
+function initializeControls() {
+  createCustomSearchControl();
+  createPrintControl();
+  createZoomControl();
+  createDrawControl();
+  createMapTitleControl();
+  createLayerControl();
 }
 
 function escapeHtml(value) {
@@ -274,60 +214,6 @@ function escapeHtml(value) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
-}
-
-function buildConcessionPopup(feature) {
-  var props = feature.properties || {};
-  var rows = [];
-
-  function addRow(label, value) {
-    if (value !== null && value !== undefined && value !== '') {
-      rows.push(
-        '<tr><th style="text-align:left;padding-right:8px;vertical-align:top;">' +
-        escapeHtml(label) +
-        '</th><td>' +
-        escapeHtml(value) +
-        '</td></tr>'
-      );
-    }
-  }
-
-  addRow('Name', getProperty(feature, ['NAME', 'Name', 'name', 'CONCESSION', 'Concession', 'concession', 'search_name'], ''));
-  addRow('Plan ID', getProperty(feature, ['PLAN_ID', 'Plan_ID', 'plan_id'], ''));
-  addRow('Object ID', getProperty(feature, ['OBJECTID', 'ObjectID', 'objectid'], ''));
-  addRow('Purchase', getProperty(feature, ['PURCHASE', 'Purchase', 'purchase'], ''));
-  addRow('Expiry', getProperty(feature, ['EXP', 'Exp', 'exp'], ''));
-
-  for (var key in props) {
-    if (
-      [
-        'NAME', 'Name', 'name',
-        'CONCESSION', 'Concession', 'concession',
-        'search_name',
-        'PLAN_ID', 'Plan_ID', 'plan_id',
-        'OBJECTID', 'ObjectID', 'objectid',
-        'PURCHASE', 'Purchase', 'purchase',
-        'EXP', 'Exp', 'exp'
-      ].indexOf(key) === -1 &&
-      props[key] !== null &&
-      props[key] !== ''
-    ) {
-      addRow(key, props[key]);
-    }
-  }
-
-  if (rows.length === 0) {
-    return '<b>Concession</b><br>No attribute data';
-  }
-
-  return (
-    '<div style="min-width:220px;">' +
-      '<b>Concession</b>' +
-      '<table style="margin-top:6px;border-collapse:collapse;">' +
-        rows.join('') +
-      '</table>' +
-    '</div>'
-  );
 }
 
 function formatDistance(meters) {
@@ -385,17 +271,44 @@ function bindMeasurementPopup(layer) {
   if (content) layer.bindPopup(content);
 }
 
+function buildConcessionPopup(props) {
+  var rows = [];
+
+  function addRow(label, value) {
+    if (value !== null && value !== undefined && value !== '') {
+      rows.push(
+        '<tr><th style="text-align:left;padding-right:8px;vertical-align:top;">' +
+        escapeHtml(label) +
+        '</th><td>' +
+        escapeHtml(value) +
+        '</td></tr>'
+      );
+    }
+  }
+
+  addRow('Name', props.name);
+  addRow('Province', props.province);
+  addRow('Area (ha)', props.area_ha);
+
+  return (
+    '<div style="min-width:220px;">' +
+      '<b>Concession</b>' +
+      '<table style="margin-top:6px;border-collapse:collapse;">' +
+        rows.join('') +
+      '</table>' +
+    '</div>'
+  );
+}
+
 // =====================
-// Custom search with suggestions
+// Search helpers
 // =====================
 function resetHighlight() {
   if (highlightedLayer && highlightedLayer.setStyle) {
     highlightedLayer.setStyle({
-      color: '#ff00ff',
-      weight: 3,
-      dashArray: '6',
-      fillColor: '#ff00ff',
-      fillOpacity: 0.01
+      color: '#008000',
+      weight: 1,
+      fillOpacity: 0.3
     });
   }
   highlightedLayer = null;
@@ -410,8 +323,7 @@ function zoomToConcession(layer) {
   if (layer.setStyle) {
     layer.setStyle({
       color: '#ffff00',
-      weight: 5,
-      dashArray: '',
+      weight: 4,
       fillColor: '#ffff00',
       fillOpacity: 0.15
     });
@@ -433,16 +345,16 @@ function buildConcessionSearchIndex() {
 
   concessionLayer.eachLayer(function (layer) {
     var props = layer.feature && layer.feature.properties ? layer.feature.properties : {};
-    var name = (props.search_name || '').toString().trim();
-    var planId = (getProperty(layer.feature, ['PLAN_ID', 'Plan_ID', 'plan_id'], '') || '').toString().trim();
-    var objectId = (getProperty(layer.feature, ['OBJECTID', 'ObjectID', 'objectid'], '') || '').toString().trim();
+    var name = (props.name || '').toString().trim();
+    var id = props.id ? props.id.toString() : '';
+    var province = props.province ? props.province.toString() : '';
 
     if (name) {
       concessionSearchIndex.push({
         name: name,
         nameLower: name.toLowerCase(),
-        planId: planId,
-        objectId: objectId,
+        id: id,
+        province: province,
         layer: layer
       });
     }
@@ -525,8 +437,8 @@ function renderSuggestionList(items) {
     row.className = 'search-suggestion-item';
 
     var metaParts = [];
-    if (item.planId) metaParts.push('Plan ID: ' + item.planId);
-    if (item.objectId) metaParts.push('Object ID: ' + item.objectId);
+    if (item.id) metaParts.push('ID: ' + item.id);
+    if (item.province) metaParts.push('Province: ' + item.province);
 
     row.innerHTML =
       '<div class="search-suggestion-name">' + escapeHtml(item.name) + '</div>' +
@@ -566,7 +478,7 @@ function searchConcession(keyword) {
 }
 
 function createCustomSearchControl() {
-  if (customSearchControl || !concessionLayer) return;
+  if (customSearchControl) return;
 
   customSearchControl = L.control({ position: 'topleft' });
 
@@ -689,102 +601,61 @@ map.on(L.Draw.Event.EDITED, function (e) {
 });
 
 // =====================
-// Concession
+// Load concessions from Supabase
 // =====================
-loadGeoJSON(
-  'data/concession.geojson',
-  {
+async function loadConcessionsFromSupabase() {
+  const { data, error } = await supabaseClient
+    .from('concessions_geojson')
+    .select('*');
+
+  if (error) {
+    console.error('Supabase error:', error);
+    alert('Failed to load concessions from Supabase.');
+    return;
+  }
+
+  const features = data.map(function (row) {
+    return {
+      type: 'Feature',
+      properties: {
+        id: row.id,
+        name: row.name,
+        province: row.province,
+        area_ha: row.area_ha
+      },
+      geometry: row.geometry
+    };
+  });
+
+  const geojson = {
+    type: 'FeatureCollection',
+    features: features
+  };
+
+  concessionLayer = L.geoJSON(geojson, {
     pane: 'concessionPane',
     style: function () {
       return {
-        color: '#ff00ff',
-        weight: 3,
-        dashArray: '6',
-        fillColor: '#ff00ff',
-        fillOpacity: 0.01
+        color: '#008000',
+        weight: 1,
+        fillOpacity: 0.3
       };
     },
     onEachFeature: function (feature, layer) {
-      if (!feature.properties) feature.properties = {};
-
-      feature.properties.search_name = getProperty(
-        feature,
-        ['NAME', 'Name', 'name', 'CONCESSION', 'Concession', 'concession'],
-        ''
-      );
-
-      layer.bindPopup(buildConcessionPopup(feature));
+      layer.bindPopup(buildConcessionPopup(feature.properties));
     }
-  },
-  function (layer, data) {
-    concessionLayer = layer;
-    console.log('Concession properties sample:', data.features && data.features[0] ? data.features[0].properties : null);
-    buildConcessionSearchIndex();
+  }).addTo(map);
+
+  buildConcessionSearchIndex();
+  createLayerControl();
+
+  if (concessionLayer.getBounds && concessionLayer.getBounds().isValid()) {
+    map.fitBounds(concessionLayer.getBounds());
   }
-);
+}
 
 // =====================
-// River
+// Initialize
 // =====================
-loadGeoJSON(
-  'data/river.geojson',
-  {
-    pane: 'riverPane',
-    style: function () {
-      return {
-        color: '#00bfff',
-        weight: 2
-      };
-    }
-  },
-  function (layer) {
-    riverLayer = layer;
-  }
-);
-
-// =====================
-// Road
-// =====================
-loadGeoJSON(
-  'data/road.geojson',
-  {
-    pane: 'roadPane',
-    style: function () {
-      return {
-        color: '#ff0000',
-        weight: 2
-      };
-    }
-  },
-  function (layer) {
-    roadLayer = layer;
-  }
-);
-
-// =====================
-// Province
-// =====================
-loadGeoJSON(
-  'data/province.geojson',
-  {
-    pane: 'provincePane',
-    style: function () {
-      return {
-        color: '#ff00ff',
-        weight: 4,
-        fill: false
-      };
-    },
-    onEachFeature: function (feature, layer) {
-      var name = getProperty(
-        feature,
-        ['PROVNAME', 'Province', 'NAME', 'Name', 'name'],
-        'Province'
-      );
-      layer.bindPopup('<b>Province</b><br>' + escapeHtml(name));
-    }
-  },
-  function (layer) {
-    provinceLayer = layer;
-  }
-);
+initializeControls();
+loadConcessionsFromSupabase();
