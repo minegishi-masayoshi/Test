@@ -36,7 +36,7 @@ var osmLayer = L.tileLayer(
   }
 ).addTo(map);
 
-// 後でForest BaseMapをSupabase/private bucket対応に差し替え
+// 後で非公開 Forest BaseMap に差し替え
 var forestLayer = L.layerGroup();
 
 // =====================
@@ -134,7 +134,10 @@ function createLayerControl() {
   };
 
   var overlayMaps = {};
-  if (concessionLayer) overlayMaps["Concession"] = concessionLayer;
+
+  if (concessionLayer) {
+    overlayMaps["Concession"] = concessionLayer;
+  }
 
   layerControl = L.control.layers(baseMaps, overlayMaps, {
     collapsed: false,
@@ -271,32 +274,24 @@ function bindMeasurementPopup(layer) {
 }
 
 function buildConcessionPopup(props) {
-  var rows = [];
+  let html = '<b>Concession</b><table>';
 
-  function addRow(label, value) {
-    if (value !== null && value !== undefined && value !== '') {
-      rows.push(
-        '<tr><th style="text-align:left;padding-right:8px;vertical-align:top;">' +
-        escapeHtml(label) +
-        '</th><td>' +
-        escapeHtml(value) +
-        '</td></tr>'
-      );
-    }
+  for (const key in props) {
+    if (key === 'geometry') continue;
+
+    const value = props[key];
+    if (value === null || value === undefined || value === '') continue;
+
+    html +=
+      "<tr><td style='padding-right:10px; vertical-align:top;'><b>" +
+      escapeHtml(key) +
+      "</b></td><td>" +
+      escapeHtml(value) +
+      "</td></tr>";
   }
 
-  addRow('Name', props.name);
-  addRow('Province', props.province);
-  addRow('Area (ha)', props.area_ha);
-
-  return (
-    '<div style="min-width:220px;">' +
-      '<b>Concession</b>' +
-      '<table style="margin-top:6px;border-collapse:collapse;">' +
-        rows.join('') +
-      '</table>' +
-    '</div>'
-  );
+  html += '</table>';
+  return html;
 }
 
 // =====================
@@ -345,14 +340,14 @@ function buildConcessionSearchIndex() {
   concessionLayer.eachLayer(function (layer) {
     var props = layer.feature && layer.feature.properties ? layer.feature.properties : {};
     var name = (props.name || '').toString().trim();
-    var id = props.id ? props.id.toString() : '';
+    var objectid = props.objectid ? props.objectid.toString() : '';
     var province = props.province ? props.province.toString() : '';
 
     if (name) {
       concessionSearchIndex.push({
         name: name,
         nameLower: name.toLowerCase(),
-        id: id,
+        objectid: objectid,
         province: province,
         layer: layer
       });
@@ -436,7 +431,7 @@ function renderSuggestionList(items) {
     row.className = 'search-suggestion-item';
 
     var metaParts = [];
-    if (item.id) metaParts.push('ID: ' + item.id);
+    if (item.objectid) metaParts.push('OBJECTID: ' + item.objectid);
     if (item.province) metaParts.push('Province: ' + item.province);
 
     row.innerHTML =
@@ -617,10 +612,30 @@ async function loadConcessionsFromSupabase() {
     return {
       type: 'Feature',
       properties: {
-        id: row.id,
+        fid: row.fid,
+        objectid: row.objectid,
+        plan_id: row.plan_id,
         name: row.name,
+        purchase: row.purchase,
+        exp: row.exp,
+        constype: row.constype,
         province: row.province,
-        area_ha: row.area_ha
+        remarks: row.remarks,
+        remarks2: row.remarks2,
+        shape_leng: row.shape_leng,
+        shape_area: row.shape_area,
+        area_ha: row.area_ha,
+        status_21: row.status_21,
+        status_23: row.status_23,
+        status_24: row.status_24,
+        prov: row.prov,
+        tp_n0: row.tp_n0,
+        startdate: row.startdate,
+        expdate: row.expdate,
+        term: row.term,
+        permit_num: row.permit_num,
+        prmt_hldr: row.prmt_hldr,
+        remarks24: row.remarks24
       },
       geometry: row.geometry
     };
