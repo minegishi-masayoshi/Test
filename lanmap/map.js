@@ -135,7 +135,6 @@ function createLayerControl() {
 
   var overlayMaps = {};
   if (concessionLayer) overlayMaps["Concession"] = concessionLayer;
-  overlayMaps["Measurements"] = drawnItems;
 
   layerControl = L.control.layers(baseMaps, overlayMaps, {
     collapsed: false,
