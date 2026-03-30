@@ -1,77 +1,65 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Import Kobo Data</title>
-<link rel="stylesheet" href="./style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Import Kobo Data</title>
+  <link rel="stylesheet" href="./style.css" />
 </head>
-
 <body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-title">FIPS</div>
+      <div class="brand-subtitle">Import Kobo Data</div>
+    </div>
+  </header>
 
-<header class="topbar">
-<div class="brand">
-<div class="brand-title">FIPS</div>
-<div class="brand-subtitle">Import Kobo Data</div>
-</div>
-</header>
+  <main class="main-content">
+    <section class="welcome-panel">
+      <h1>Import Kobo Field Data</h1>
+      <p>Upload Kobo export data and prepare records for validation.</p>
+    </section>
 
-<main class="main-content">
+    <section class="menu-panel">
+      <form>
+        <div class="form-row">
+          <label for="survey">Select Survey</label>
+          <select id="survey">
+            <option>12001 - Sample Survey A</option>
+            <option>12002 - Sample Survey B</option>
+            <option>12003 - Sample Survey C</option>
+          </select>
+        </div>
 
-<section class="welcome-panel">
-<h1>Import Kobo Field Data</h1>
-<p>Upload Kobo export data and prepare records for validation.</p>
-</section>
+        <div class="form-row">
+          <label for="mode">Import Mode</label>
+          <select id="mode">
+            <option>Kobo CSV Export</option>
+            <option>Kobo Excel Export</option>
+            <option>Legacy Excel Import</option>
+          </select>
+        </div>
 
-<section class="menu-panel">
+        <div class="form-row">
+          <label for="file">Upload File</label>
+          <input id="file" type="file" />
+        </div>
 
-<form>
+        <div class="form-row">
+          <label>Record Summary</label>
+          <p>Total Records: -</p>
+          <p>Mapped Fields: -</p>
+        </div>
 
-<div class="form-row">
-<label>Select Survey</label>
-<select>
-<option>12001 - Sample Survey A</option>
-<option>12002 - Sample Survey B</option>
-<option>12003 - Sample Survey C</option>
-</select>
-</div>
-
-<div class="form-row">
-<label>Import Mode</label>
-<select>
-<option>Kobo CSV Export</option>
-<option>Kobo Excel Export</option>
-<option>Legacy Excel Import</option>
-</select>
-</div>
-
-<div class="form-row">
-<label>Upload File</label>
-<input type="file">
-</div>
-
-<br>
-
-<div class="form-row">
-<label>Record Summary</label>
-<p>Total Records : -</p>
-<p>Mapped Fields : -</p>
-</div>
-
-<br>
-
-<button type="button">Validate Data</button>
-
-<button type="button">Import to FIPS</button>
-
-<a href="./index.html">
-<button type="button">Back</button>
-</a>
-
-</form>
-
-</section>
-
-</main>
-
+        <div style="margin-top: 16px;">
+          <button type="button">Validate Data</button>
+          <button type="button">Import to FIPS</button>
+          <a href="./index.html" style="text-decoration:none;">
+            <button type="button">Back</button>
+          </a>
+        </div>
+      </form>
+    </section>
+  </main>
 </body>
 </html>
