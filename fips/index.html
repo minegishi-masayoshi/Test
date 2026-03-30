@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FIPS</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-title">FIPS</div>
+        <div class="brand-subtitle">Forest Inventory Processing System</div>
+      </div>
+      <div class="user-box">
+        <span>User: Demo</span>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <section class="welcome-panel">
+        <h1>Welcome to New FIPS</h1>
+        <p>
+          This system is used to manage survey information, import field data
+          collected through Kobo, validate records, run processing, and review results.
+        </p>
+      </section>
+
+      <section class="menu-panel">
+        <h2>Main Menu</h2>
+        <div class="menu-grid">
+          <a class="menu-card" href="./new-survey.html">
+            <div class="menu-card-title">Create New Survey</div>
+            <div class="menu-card-text">Register a new survey and basic survey information.</div>
+          </a>
+
+          <a class="menu-card" href="./kobo-import.html">
+            <div class="menu-card-title">Import Kobo Data</div>
+            <div class="menu-card-text">Upload Kobo export data and prepare records for validation.</div>
+          </a>
+
+          <a class="menu-card" href="./validation.html">
+            <div class="menu-card-title">Review Validation</div>
+            <div class="menu-card-text">Check errors and warnings before import and processing.</div>
+          </a>
+
+          <a class="menu-card" href="./status.html">
+            <div class="menu-card-title">Processing / Results</div>
+            <div class="menu-card-text">Run processing and review survey results.</div>
+          </a>
+
+          <a class="menu-card" href="./reference.html">
+            <div class="menu-card-title">Reference Codes</div>
+            <div class="menu-card-text">Check plot type, forest type, and species codes.</div>
+          </a>
+        </div>
+      </section>
+
+      <section class="recent-panel">
+        <h2>Recent Surveys</h2>
+        <table class="survey-table">
+          <thead>
+            <tr>
+              <th>Survey No.</th>
+              <th>Survey Name</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>12001</td>
+              <td>Sample Survey A</td>
+              <td>Draft</td>
+            </tr>
+            <tr>
+              <td>12002</td>
+              <td>Sample Survey B</td>
+              <td>Validated</td>
+            </tr>
+            <tr>
+              <td>12003</td>
+              <td>Sample Survey C</td>
+              <td>Processed</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
