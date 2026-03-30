@@ -621,3 +621,13 @@ if (runProcessingBtn) {
     alert("Processing completed successfully.");
   });
 }
+
+/* =========================
+   VIEW RESULT NAVIGATION
+   ========================= */
+
+if (viewResultBtn) {
+  viewResultBtn.addEventListener("click", () => {
+    window.location.href = "./result.html";
+  });
+}
