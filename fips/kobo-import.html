@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Import Kobo Data</title>
+<link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+
+<header class="topbar">
+<div class="brand">
+<div class="brand-title">FIPS</div>
+<div class="brand-subtitle">Import Kobo Data</div>
+</div>
+</header>
+
+<main class="main-content">
+
+<section class="welcome-panel">
+<h1>Import Kobo Field Data</h1>
+<p>Upload Kobo export data and prepare records for validation.</p>
+</section>
+
+<section class="menu-panel">
+
+<form>
+
+<div class="form-row">
+<label>Select Survey</label>
+<select>
+<option>12001 - Sample Survey A</option>
+<option>12002 - Sample Survey B</option>
+<option>12003 - Sample Survey C</option>
+</select>
+</div>
+
+<div class="form-row">
+<label>Import Mode</label>
+<select>
+<option>Kobo CSV Export</option>
+<option>Kobo Excel Export</option>
+<option>Legacy Excel Import</option>
+</select>
+</div>
+
+<div class="form-row">
+<label>Upload File</label>
+<input type="file">
+</div>
+
+<br>
+
+<div class="form-row">
+<label>Record Summary</label>
+<p>Total Records : -</p>
+<p>Mapped Fields : -</p>
+</div>
+
+<br>
+
+<button type="button">Validate Data</button>
+
+<button type="button">Import to FIPS</button>
+
+<a href="./index.html">
+<button type="button">Back</button>
+</a>
+
+</form>
+
+</section>
+
+</main>
+
+</body>
+</html>
