@@ -5,6 +5,23 @@ const SUPABASE_URL = "https://pncvddqeuxlkplwgvxgk.supabase.co";
 const SUPABASE_KEY = "sb_publishable_bOTwr6mBCgp_jUS2FAF-DQ_WXlMvdrT";
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+async function checkLogin() {
+  const { data, error } = await supabaseClient.auth.getSession();
+
+  if (error) {
+    console.error('Session check error:', error);
+    window.location.href = "../index.html";
+    return false;
+  }
+
+  if (!data.session) {
+    window.location.href = "../index.html";
+    return false;
+  }
+
+  return true;
+}
+
 
 // =====================
 // Map initialization
@@ -671,5 +688,13 @@ async function loadConcessionsFromSupabase() {
 // =====================
 // Initialize
 // =====================
-initializeControls();
-loadConcessionsFromSupabase();
+async function initApp() {
+  const ok = await checkLogin();
+  if (!ok) return;
+
+  initializeControls();
+  await loadConcessionsFromSupabase();
+}
+
+initApp();
+
