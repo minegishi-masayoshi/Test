@@ -473,3 +473,151 @@ if (importFromValidationBtn) {
     window.location.href = "./status.html";
   });
 }
+
+/* =========================
+   PROCESSING ENGINE
+   ========================= */
+
+function calculateBasalArea(dbhCm) {
+  return Math.PI * Math.pow(dbhCm / 200, 2);
+}
+
+function calculateVolume(dbhCm, heightM) {
+  const basalArea = calculateBasalArea(dbhCm);
+  const formFactor = 0.45;
+  return basalArea * heightM * formFactor;
+}
+
+const surveyNameDisplay = document.getElementById("surveyNameDisplay");
+const processingMessage = document.getElementById("processingMessage");
+const processingStatusCell = document.getElementById("processingStatusCell");
+const resultStatusCell = document.getElementById("resultStatusCell");
+const runProcessingBtn = document.getElementById("runProcessingBtn");
+const viewResultBtn = document.getElementById("viewResultBtn");
+
+if (surveyNameDisplay) {
+  surveyNameDisplay.textContent = localStorage.getItem("currentSurveyName") || "-";
+}
+
+if (runProcessingBtn) {
+  runProcessingBtn.addEventListener("click", async () => {
+    const surveyName = localStorage.getItem("currentSurveyName");
+
+    if (!surveyName) {
+      alert("No survey found.");
+      return;
+    }
+
+    if (processingMessage) processingMessage.textContent = "Fetching survey...";
+    if (processingStatusCell) processingStatusCell.textContent = "Running";
+
+    const { data: surveyData, error: surveyError } = await supabase
+      .from("fips_surveys")
+      .select("id, survey_name")
+      .eq("survey_name", surveyName)
+      .order("id", { ascending: false })
+      .limit(1);
+
+    if (surveyError || !surveyData || surveyData.length === 0) {
+      console.error("Survey fetch error:", surveyError);
+      alert("Failed to find survey.");
+      if (processingStatusCell) processingStatusCell.textContent = "Failed";
+      return;
+    }
+
+    const surveyId = surveyData[0].id;
+
+    if (processingMessage) processingMessage.textContent = "Loading tree records...";
+
+    const { data: treeRows, error: treeError } = await supabase
+      .from("fips_tree_records")
+      .select("*")
+      .eq("survey_id", surveyId);
+
+    if (treeError) {
+      console.error("Tree fetch error:", treeError);
+      alert("Failed to load tree records.");
+      if (processingStatusCell) processingStatusCell.textContent = "Failed";
+      return;
+    }
+
+    if (!treeRows || treeRows.length === 0) {
+      alert("No tree records found for this survey.");
+      if (processingStatusCell) processingStatusCell.textContent = "Failed";
+      return;
+    }
+
+    if (processingMessage) processingMessage.textContent = "Calculating results...";
+
+    const grouped = {};
+
+    treeRows.forEach((row) => {
+      const plotNo = row.plot_no || "UNKNOWN";
+
+      if (!grouped[plotNo]) {
+        grouped[plotNo] = {
+          survey_id: surveyId,
+          plot_no: plotNo,
+          tree_count: 0,
+          basal_area_m2: 0,
+          volume_m3: 0
+        };
+      }
+
+      grouped[plotNo].tree_count += 1;
+
+      if (row.dbh_cm && !isNaN(Number(row.dbh_cm))) {
+        grouped[plotNo].basal_area_m2 += calculateBasalArea(Number(row.dbh_cm));
+      }
+
+      if (row.dbh_cm && row.height_m &&
+          !isNaN(Number(row.dbh_cm)) &&
+          !isNaN(Number(row.height_m))) {
+        grouped[plotNo].volume_m3 += calculateVolume(
+          Number(row.dbh_cm),
+          Number(row.height_m)
+        );
+      }
+    });
+
+    const resultsPayload = Object.values(grouped).map((r) => ({
+      survey_id: r.survey_id,
+      plot_no: r.plot_no,
+      tree_count: r.tree_count,
+      basal_area_m2: Number(r.basal_area_m2.toFixed(6)),
+      volume_m3: Number(r.volume_m3.toFixed(6))
+    }));
+
+    console.log("Results payload:", resultsPayload);
+
+    // 既存結果を削除してから再計算結果を入れる
+    const { error: deleteError } = await supabase
+      .from("fips_results")
+      .delete()
+      .eq("survey_id", surveyId);
+
+    if (deleteError) {
+      console.error("Delete old results error:", deleteError);
+      alert("Failed to clear old results.");
+      if (processingStatusCell) processingStatusCell.textContent = "Failed";
+      return;
+    }
+
+    const { error: insertResultError } = await supabase
+      .from("fips_results")
+      .insert(resultsPayload);
+
+    if (insertResultError) {
+      console.error("Insert results error:", insertResultError);
+      alert(`Processing failed: ${insertResultError.message}`);
+      if (processingStatusCell) processingStatusCell.textContent = "Failed";
+      return;
+    }
+
+    if (processingMessage) processingMessage.textContent = "Processing completed successfully.";
+    if (processingStatusCell) processingStatusCell.textContent = "Completed";
+    if (resultStatusCell) resultStatusCell.textContent = "Generated";
+
+    alert("Processing completed successfully.");
+  });
+}
