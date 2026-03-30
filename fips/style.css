@@ -112,3 +112,34 @@ body {
 .survey-table th {
   background: #d7efe5;
 }
+
+.form-row{
+margin-bottom:12px;
+display:flex;
+flex-direction:column;
+}
+
+.form-row label{
+font-weight:bold;
+margin-bottom:4px;
+}
+
+input, select{
+padding:8px;
+font-size:14px;
+border:1px solid #777;
+}
+
+button{
+padding:10px 16px;
+font-size:14px;
+background:#1f7a5c;
+color:white;
+border:none;
+cursor:pointer;
+margin-right:8px;
+}
+
+button:hover{
+background:#14523d;
+}
