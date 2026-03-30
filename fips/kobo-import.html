@@ -41,10 +41,19 @@
         </div>
 
         <div class="form-row">
-          <label for="file">Upload File</label>
-          <input id="file" type="file" />
+        <label>Upload File</label>
+        
+        <input type="file" id="fileUpload" hidden>
+        
+        <button type="button" onclick="document.getElementById('fileUpload').click()">
+        Select File
+        </button>
+        
+        <span id="fileName">No file selected</span>
+        
         </div>
 
+        
         <div class="form-row">
           <label>Record Summary</label>
           <p>Total Records: -</p>
