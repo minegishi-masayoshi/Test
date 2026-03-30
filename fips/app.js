@@ -408,3 +408,68 @@ if (importBtn) {
     window.location.href = "./status.html";
   });
 }
+
+/* =========================
+   IMPORT TO FIPS FROM VALIDATION
+   ========================= */
+
+const importFromValidationBtn = document.getElementById("importFromValidationBtn");
+
+if (importFromValidationBtn) {
+  importFromValidationBtn.addEventListener("click", async () => {
+    const surveyName = localStorage.getItem("currentSurveyName");
+
+    if (!surveyName) {
+      alert("No survey found.");
+      return;
+    }
+
+    const rows = JSON.parse(localStorage.getItem("fipsParsedRows") || "[]");
+
+    if (rows.length === 0) {
+      alert("No parsed CSV data found.");
+      return;
+    }
+
+    const { data: surveyData, error: surveyError } = await supabase
+      .from("fips_surveys")
+      .select("id, survey_name")
+      .eq("survey_name", surveyName)
+      .order("id", { ascending: false })
+      .limit(1);
+
+    if (surveyError || !surveyData || surveyData.length === 0) {
+      console.error("Survey fetch error:", surveyError);
+      alert("Failed to find survey.");
+      return;
+    }
+
+    const surveyId = surveyData[0].id;
+
+    const payload = rows.map((row) => ({
+      survey_id: surveyId,
+      row_no: row.__rowNo ?? null,
+      plot_no: row.plot_no || row.plot || null,
+      tree_no: row.tree_no || row.tree || null,
+      species_code: row.species_code || row.species || null,
+      dbh_cm: row.dbh_cm && !isNaN(Number(row.dbh_cm)) ? Number(row.dbh_cm) : null,
+      height_m: row.height_m && !isNaN(Number(row.height_m)) ? Number(row.height_m) : null,
+      raw_json: row
+    }));
+
+    console.log("Import payload:", payload);
+
+    const { error: insertError } = await supabase
+      .from("fips_tree_records")
+      .insert(payload);
+
+    if (insertError) {
+      console.error("Insert error:", insertError);
+      alert(`Import failed: ${insertError.message}`);
+      return;
+    }
+
+    alert("Import completed successfully.");
+    window.location.href = "./status.html";
+  });
+}
