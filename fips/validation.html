@@ -4,81 +4,81 @@
 <meta charset="UTF-8">
 <title>Validation Result</title>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script type="module" src="./app.js"></script>
 
 <style>
 body{
-font-family: Arial, sans-serif;
-background:#f4f4f4;
-padding:30px;
+  font-family: Arial, sans-serif;
+  background:#f4f4f4;
+  padding:30px;
 }
 
 .container{
-background:white;
-padding:25px;
-border-radius:6px;
-max-width:900px;
-margin:auto;
+  background:white;
+  padding:25px;
+  border-radius:6px;
+  max-width:900px;
+  margin:auto;
 }
 
 h2{
-margin-bottom:10px;
+  margin-bottom:10px;
 }
 
 .summary-box{
-background:#fafafa;
-border:1px solid #ddd;
-padding:15px;
-margin-bottom:20px;
+  background:#fafafa;
+  border:1px solid #ddd;
+  padding:15px;
+  margin-bottom:20px;
 }
 
 .summary-box p{
-margin:8px 0;
+  margin:8px 0;
 }
 
 .ok{
-color:green;
-font-weight:bold;
+  color:green;
+  font-weight:bold;
 }
 
 .error{
-color:#b00020;
-font-weight:bold;
+  color:#b00020;
+  font-weight:bold;
 }
 
 table{
-width:100%;
-border-collapse:collapse;
-margin-top:15px;
+  width:100%;
+  border-collapse:collapse;
+  margin-top:15px;
 }
 
 th, td{
-border:1px solid #ccc;
-padding:10px;
-text-align:left;
-font-size:14px;
+  border:1px solid #ccc;
+  padding:10px;
+  text-align:left;
+  font-size:14px;
 }
 
 th{
-background:#f0f0f0;
+  background:#f0f0f0;
 }
 
 button{
-padding:10px 16px;
-border:none;
-background:#2e7d32;
-color:white;
-cursor:pointer;
-margin-right:10px;
+  padding:10px 16px;
+  border:none;
+  background:#2e7d32;
+  color:white;
+  cursor:pointer;
+  margin-right:10px;
 }
 
 button.secondary{
-background:#666;
+  background:#666;
 }
 
 .hidden{
-display:none;
+  display:none;
 }
 </style>
 </head>
@@ -87,41 +87,41 @@ display:none;
 
 <div class="container">
 
-<h2>Validation Result</h2>
+  <h2>Validation Result</h2>
 
-<div class="summary-box">
-<p>Total Records: <span id="totalRecords">-</span></p>
-<p>Error Count: <span id="errorCount">-</span></p>
-<p id="validationMessage">Checking...</p>
-</div>
+  <div class="summary-box">
+    <p>Total Records: <span id="totalRecords">-</span></p>
+    <p>Error Count: <span id="errorCount">-</span></p>
+    <p id="validationMessage">Checking...</p>
+  </div>
 
-<div id="errorSection">
-<h3>Error List</h3>
+  <div id="errorSection">
+    <h3>Error List</h3>
 
-<table>
-<thead>
-<tr>
-<th>Row</th>
-<th>Plot</th>
-<th>Tree</th>
-<th>Field</th>
-<th>Message</th>
-</tr>
-</thead>
-<tbody id="errorTableBody">
-</tbody>
-</table>
-</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Row</th>
+          <th>Plot</th>
+          <th>Tree</th>
+          <th>Field</th>
+          <th>Message</th>
+        </tr>
+      </thead>
+      <tbody id="errorTableBody">
+      </tbody>
+    </table>
+  </div>
 
-<br>
+  <br>
 
-<button class="secondary" onclick="window.location.href='./kobo-import.html'">
-Back to Import
-</button>
+  <button class="secondary" onclick="window.location.href='./kobo-import.html'">
+    Back to Import
+  </button>
 
-<button onclick="window.location.href='./status.html'">
-Continue
-</button>
+  <button id="importFromValidationBtn" type="button">
+    Import to FIPS
+  </button>
 
 </div>
 
