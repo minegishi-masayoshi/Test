@@ -1,16 +1,3 @@
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from "./config.js";
-
-const supabase = window.supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_ANON_KEY
-);
-
-console.log("FIPS connected to Supabase");
-
-window.fipsApp = {
-  supabase
-};
-
 const newSurveyForm = document.getElementById("newSurveyForm");
 
 if (newSurveyForm) {
@@ -48,21 +35,17 @@ if (newSurveyForm) {
         : null
     };
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("fips_surveys")
-      .insert([payload])
-      .select()
-      .single();
+      .insert([payload]);
 
     if (error) {
-      console.error(error);
+      console.error("Insert error:", error);
       alert(`Save failed: ${error.message}`);
       return;
     }
 
-    localStorage.setItem("currentSurveyId", String(data.id));
-    localStorage.setItem("currentSurveyName", data.survey_name);
-
+    localStorage.setItem("currentSurveyName", payload.survey_name);
     alert("Survey saved successfully.");
     window.location.href = "./kobo-import.html";
   });
