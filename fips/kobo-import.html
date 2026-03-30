@@ -8,6 +8,7 @@
 <script type="module" src="./app.js"></script>
 
 <style>
+
 body{
 font-family: Arial, sans-serif;
 background:#f4f4f4;
@@ -16,18 +17,23 @@ padding:30px;
 
 .container{
 background:white;
-padding:20px;
+padding:25px;
 border-radius:6px;
-max-width:700px;
+max-width:720px;
 margin:auto;
 }
 
 h2{
+margin-bottom:10px;
+}
+
+.subtitle{
+color:#555;
 margin-bottom:20px;
 }
 
 button{
-padding:10px 15px;
+padding:10px 16px;
 border:none;
 background:#2e7d32;
 color:white;
@@ -39,12 +45,22 @@ button.secondary{
 background:#666;
 }
 
+button.upload{
+background:#1976d2;
+}
+
 .summary{
 margin-top:20px;
-padding:10px;
+padding:12px;
 background:#fafafa;
 border:1px solid #ddd;
 }
+
+.file-name{
+margin-left:10px;
+color:#555;
+}
+
 </style>
 </head>
 
@@ -54,37 +70,76 @@ border:1px solid #ddd;
 
 <h2>Import Kobo Data</h2>
 
-<p>Select survey and upload Kobo CSV export.</p>
+<p class="subtitle">
+Select survey and upload Kobo CSV export.
+</p>
 
-<label>Survey</label><br>
+<label>Survey</label>
+<br>
+
 <select id="surveySelect"></select>
 
 <br><br>
 
-<input type="file" id="fileUpload" accept=".csv">
+<button class="upload" onclick="document.getElementById('fileUpload').click()">
+Choose CSV File
+</button>
+
+<span id="fileName" class="file-name">
+No file selected
+</span>
+
+<input type="file" id="fileUpload" accept=".csv" hidden>
 
 <br><br>
 
-<button id="validateBtn">Validate Data</button>
-<button id="importBtn">Import to FIPS</button>
+<button id="validateBtn">
+Validate Data
+</button>
+
+<button id="importBtn">
+Import to FIPS
+</button>
 
 <div class="summary">
 
 <h3>Summary</h3>
 
-<p>Total Records: <span id="totalRecords">-</span></p>
+<p>
+Total Records: <span id="totalRecords">-</span>
+</p>
 
-<p>Mapped Fields: <span id="mappedFields">-</span></p>
+<p>
+Mapped Fields: <span id="mappedFields">-</span>
+</p>
 
 </div>
 
 <br>
 
-<button class="secondary" onclick="window.location.href='./new-survey.html'">
+<button class="secondary"
+onclick="window.location.href='./new-survey.html'">
 Back
 </button>
 
 </div>
+
+<script>
+
+const fileInput = document.getElementById("fileUpload");
+const fileName = document.getElementById("fileName");
+
+fileInput.addEventListener("change", () => {
+
+if(fileInput.files.length > 0){
+
+fileName.textContent = fileInput.files[0].name;
+
+}
+
+});
+
+</script>
 
 </body>
 </html>
