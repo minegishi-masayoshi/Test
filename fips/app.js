@@ -1,3 +1,14 @@
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from "./config.js";
+
+const supabase = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
+);
+
+console.log("FIPS connected to Supabase");
+
+window.fipsApp = { supabase };
+
 const newSurveyForm = document.getElementById("newSurveyForm");
 
 if (newSurveyForm) {
@@ -34,6 +45,8 @@ if (newSurveyForm) {
         ? Number(document.getElementById("adjustedNetForestArea").value)
         : null
     };
+
+    console.log("payload", payload);
 
     const { error } = await supabase
       .from("fips_surveys")
