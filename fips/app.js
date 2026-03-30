@@ -631,3 +631,87 @@ if (viewResultBtn) {
     window.location.href = "./result.html";
   });
 }
+
+/* =========================
+   RESULT VIEW
+   ========================= */
+
+const resultSurveyName = document.getElementById("resultSurveyName");
+const resultPlotCount = document.getElementById("resultPlotCount");
+const resultTreeCount = document.getElementById("resultTreeCount");
+const resultBasalArea = document.getElementById("resultBasalArea");
+const resultVolume = document.getElementById("resultVolume");
+const resultTableBody = document.getElementById("resultTableBody");
+
+if (resultTableBody) {
+  (async () => {
+    const surveyName = localStorage.getItem("currentSurveyName");
+
+    if (!surveyName) {
+      alert("No survey found.");
+      return;
+    }
+
+    if (resultSurveyName) {
+      resultSurveyName.textContent = surveyName;
+    }
+
+    const { data: surveyData, error: surveyError } = await supabase
+      .from("fips_surveys")
+      .select("id, survey_name")
+      .eq("survey_name", surveyName)
+      .order("id", { ascending: false })
+      .limit(1);
+
+    if (surveyError || !surveyData || surveyData.length === 0) {
+      console.error("Survey fetch error:", surveyError);
+      alert("Failed to find survey.");
+      return;
+    }
+
+    const surveyId = surveyData[0].id;
+
+    const { data: resultsData, error: resultsError } = await supabase
+      .from("fips_results")
+      .select("*")
+      .eq("survey_id", surveyId)
+      .order("plot_no", { ascending: true });
+
+    if (resultsError) {
+      console.error("Result fetch error:", resultsError);
+      alert("Failed to load results.");
+      return;
+    }
+
+    if (!resultsData || resultsData.length === 0) {
+      alert("No results found.");
+      return;
+    }
+
+    let totalPlots = 0;
+    let totalTrees = 0;
+    let totalBasal = 0;
+    let totalVol = 0;
+
+    resultsData.forEach((row) => {
+      totalPlots += 1;
+      totalTrees += Number(row.tree_count || 0);
+      totalBasal += Number(row.basal_area_m2 || 0);
+      totalVol += Number(row.volume_m3 || 0);
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${row.plot_no ?? ""}</td>
+        <td>${row.tree_count ?? 0}</td>
+        <td>${Number(row.basal_area_m2 || 0).toFixed(4)}</td>
+        <td>${Number(row.volume_m3 || 0).toFixed(4)}</td>
+      `;
+      resultTableBody.appendChild(tr);
+    });
+
+    if (resultPlotCount) resultPlotCount.textContent = totalPlots;
+    if (resultTreeCount) resultTreeCount.textContent = totalTrees;
+    if (resultBasalArea) resultBasalArea.textContent = totalBasal.toFixed(4);
+    if (resultVolume) resultVolume.textContent = totalVol.toFixed(4);
+  })();
+}
