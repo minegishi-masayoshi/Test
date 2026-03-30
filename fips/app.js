@@ -283,3 +283,61 @@ mappedEl.textContent =
 });
 
 }
+
+
+/* =========================
+   VALIDATION DASHBOARD
+   ========================= */
+
+const validationTableBody = document.getElementById("errorTableBody");
+
+if (validationTableBody) {
+
+  const rows = JSON.parse(localStorage.getItem("fipsParsedRows") || "[]");
+  const errors = JSON.parse(localStorage.getItem("fipsValidationErrors") || "[]");
+
+  const totalEl = document.getElementById("totalRecords");
+  const errorCountEl = document.getElementById("errorCount");
+  const messageEl = document.getElementById("validationMessage");
+  const errorSection = document.getElementById("errorSection");
+
+  if (totalEl) totalEl.textContent = rows.length;
+  if (errorCountEl) errorCountEl.textContent = errors.length;
+
+  if (errors.length === 0) {
+
+    if (messageEl) {
+      messageEl.textContent = "Validation passed. No errors found.";
+      messageEl.className = "ok";
+    }
+
+    if (errorSection) {
+      errorSection.classList.add("hidden");
+    }
+
+  } else {
+
+    if (messageEl) {
+      messageEl.textContent = "Validation failed. Please review the errors below.";
+      messageEl.className = "error";
+    }
+
+    errors.forEach(err => {
+
+      const tr = document.createElement("tr");
+
+      tr.innerHTML = `
+        <td>${err.row_no ?? ""}</td>
+        <td>${err.plot_no ?? ""}</td>
+        <td>${err.tree_no ?? ""}</td>
+        <td>${err.field_name ?? ""}</td>
+        <td>${err.message ?? ""}</td>
+      `;
+
+      validationTableBody.appendChild(tr);
+
+    });
+
+  }
+
+}
