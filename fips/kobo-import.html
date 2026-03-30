@@ -1,74 +1,90 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Import Kobo Data</title>
-  <link rel="stylesheet" href="./style.css" />
+<meta charset="UTF-8">
+<title>Import Kobo Data</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+<script type="module" src="./app.js"></script>
+
+<style>
+body{
+font-family: Arial, sans-serif;
+background:#f4f4f4;
+padding:30px;
+}
+
+.container{
+background:white;
+padding:20px;
+border-radius:6px;
+max-width:700px;
+margin:auto;
+}
+
+h2{
+margin-bottom:20px;
+}
+
+button{
+padding:10px 15px;
+border:none;
+background:#2e7d32;
+color:white;
+cursor:pointer;
+margin-right:10px;
+}
+
+button.secondary{
+background:#666;
+}
+
+.summary{
+margin-top:20px;
+padding:10px;
+background:#fafafa;
+border:1px solid #ddd;
+}
+</style>
 </head>
+
 <body>
-  <header class="topbar">
-    <div class="brand">
-      <div class="brand-title">FIPS</div>
-      <div class="brand-subtitle">Import Kobo Data</div>
-    </div>
-  </header>
 
-  <main class="main-content">
-    <section class="welcome-panel">
-      <h1>Import Kobo Field Data</h1>
-      <p>Upload Kobo export data and prepare records for validation.</p>
-    </section>
+<div class="container">
 
-    <section class="menu-panel">
-      <form>
-        <div class="form-row">
-          <label for="survey">Select Survey</label>
-          <select id="survey">
-            <option>12001 - Sample Survey A</option>
-            <option>12002 - Sample Survey B</option>
-            <option>12003 - Sample Survey C</option>
-          </select>
-        </div>
+<h2>Import Kobo Data</h2>
 
-        <div class="form-row">
-          <label for="mode">Import Mode</label>
-          <select id="mode">
-            <option>Kobo CSV Export</option>
-            <option>Kobo Excel Export</option>
-            <option>Legacy Excel Import</option>
-          </select>
-        </div>
+<p>Select survey and upload Kobo CSV export.</p>
 
-        <div class="form-row">
-        <label>Upload File</label>
-        
-        <input type="file" id="fileUpload" hidden>
-        
-        <button type="button" onclick="document.getElementById('fileUpload').click()">
-        Select File
-        </button>
-        
-        <span id="fileName">No file selected</span>
-        
-        </div>
+<label>Survey</label><br>
+<select id="surveySelect"></select>
 
-        
-        <div class="form-row">
-          <label>Record Summary</label>
-          <p>Total Records: -</p>
-          <p>Mapped Fields: -</p>
-        </div>
+<br><br>
 
-        <div style="margin-top: 16px;">
-          <button type="button">Validate Data</button>
-          <button type="button">Import to FIPS</button>
-          <a href="./index.html" style="text-decoration:none;">
-            <button type="button">Back</button>
-          </a>
-        </div>
-      </form>
-    </section>
-  </main>
+<input type="file" id="fileUpload" accept=".csv">
+
+<br><br>
+
+<button id="validateBtn">Validate Data</button>
+<button id="importBtn">Import to FIPS</button>
+
+<div class="summary">
+
+<h3>Summary</h3>
+
+<p>Total Records: <span id="totalRecords">-</span></p>
+
+<p>Mapped Fields: <span id="mappedFields">-</span></p>
+
+</div>
+
+<br>
+
+<button class="secondary" onclick="window.location.href='./new-survey.html'">
+Back
+</button>
+
+</div>
+
 </body>
 </html>
