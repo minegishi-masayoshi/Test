@@ -223,3 +223,63 @@ window.location.href="./validation.html";
 });
 
 }
+
+/* =========================
+   CSV SUMMARY ON FILE SELECT
+   ========================= */
+
+const csvInput = document.getElementById("fileUpload");
+
+if (csvInput) {
+
+csvInput.addEventListener("change", async () => {
+
+if (csvInput.files.length === 0) return;
+
+const file = csvInput.files[0];
+
+const text = await file.text();
+
+const lines = text.split(/\r?\n/).filter(line => line.trim() !== "");
+
+if (lines.length === 0) return;
+
+const headers = lines[0].split(",").map(h => h.trim());
+
+const recordCount = lines.length - 1;
+
+const totalEl = document.getElementById("totalRecords");
+const mappedEl = document.getElementById("mappedFields");
+
+if (totalEl) {
+totalEl.textContent = recordCount;
+}
+
+const expectedFields = [
+"plot_no",
+"tree_no",
+"species_code",
+"dbh_cm",
+"height_m"
+];
+
+const matched = expectedFields.filter(f => headers.includes(f));
+
+if (mappedEl) {
+
+if (matched.length === expectedFields.length) {
+
+mappedEl.textContent = "All required fields detected";
+
+} else {
+
+mappedEl.textContent =
+"Detected: " + matched.join(", ");
+
+}
+
+}
+
+});
+
+}
