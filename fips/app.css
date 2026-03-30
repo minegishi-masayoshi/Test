@@ -1,0 +1,5 @@
+document.getElementById("fileUpload").addEventListener("change", function(){
+  const file = this.files[0];
+  document.getElementById("fileName").textContent =
+    file ? file.name : "No file selected";
+});
