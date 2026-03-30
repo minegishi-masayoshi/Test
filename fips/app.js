@@ -63,3 +63,163 @@ if (newSurveyForm) {
     window.location.href = "./kobo-import.html";
   });
 }
+
+/* =========================
+   FIPS CSV IMPORT MODULE
+   ========================= */
+
+let parsedRows = [];
+let validationErrors = [];
+
+function parseCsv(text) {
+
+  const lines = text.split(/\r?\n/).filter(line => line.trim() !== "");
+
+  if(lines.length < 2) return [];
+
+  const headers = lines[0].split(",").map(h => h.trim());
+
+  return lines.slice(1).map((line,index)=>{
+
+    const values = line.split(",").map(v=>v.trim());
+
+    const row={};
+
+    headers.forEach((h,i)=>{
+      row[h]=values[i] ?? "";
+    });
+
+    row.__rowNo = index+2;
+
+    return row;
+
+  });
+}
+
+function validateRows(rows){
+
+  const errors=[];
+
+  rows.forEach((row)=>{
+
+    const plotNo = row.plot_no || row.plot || "";
+    const treeNo = row.tree_no || row.tree || "";
+    const speciesCode = row.species_code || row.species || "";
+    const dbh = row.dbh_cm || row.dbh || "";
+    const height = row.height_m || row.height || "";
+
+    if(!plotNo){
+
+      errors.push({
+        row_no:row.__rowNo,
+        plot_no:"",
+        tree_no:treeNo,
+        field_name:"Plot No",
+        message:"Missing value"
+      });
+
+    }
+
+    if(!treeNo){
+
+      errors.push({
+        row_no:row.__rowNo,
+        plot_no:plotNo,
+        tree_no:"",
+        field_name:"Tree No",
+        message:"Missing value"
+      });
+
+    }
+
+    if(!speciesCode){
+
+      errors.push({
+        row_no:row.__rowNo,
+        plot_no:plotNo,
+        tree_no:treeNo,
+        field_name:"Species Code",
+        message:"Missing value"
+      });
+
+    }
+
+    if(dbh && isNaN(Number(dbh))){
+
+      errors.push({
+        row_no:row.__rowNo,
+        plot_no:plotNo,
+        tree_no:treeNo,
+        field_name:"DBH",
+        message:"Invalid number"
+      });
+
+    }
+
+    if(height && isNaN(Number(height))){
+
+      errors.push({
+        row_no:row.__rowNo,
+        plot_no:plotNo,
+        tree_no:treeNo,
+        field_name:"Height",
+        message:"Invalid number"
+      });
+
+    }
+
+  });
+
+  return errors;
+
+}
+
+const validateBtn = document.getElementById("validateBtn");
+const fileUpload = document.getElementById("fileUpload");
+
+if(validateBtn && fileUpload){
+
+validateBtn.addEventListener("click", async()=>{
+
+const file = fileUpload.files[0];
+
+if(!file){
+
+alert("Please select a CSV file.");
+
+return;
+
+}
+
+const text = await file.text();
+
+parsedRows = parseCsv(text);
+
+validationErrors = validateRows(parsedRows);
+
+const totalEl = document.getElementById("totalRecords");
+const mappedEl = document.getElementById("mappedFields");
+
+if(totalEl)
+totalEl.textContent = String(parsedRows.length);
+
+if(mappedEl)
+mappedEl.textContent = parsedRows.length>0
+? "Basic fields detected"
+: "-";
+
+localStorage.setItem(
+"fipsParsedRows",
+JSON.stringify(parsedRows)
+);
+
+localStorage.setItem(
+"fipsValidationErrors",
+JSON.stringify(validationErrors)
+);
+
+window.location.href="./validation.html";
+
+});
+
+}
