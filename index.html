@@ -3,7 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PNG Forest Information Prototype</title>
+
+  <title>Restricted Access Portal</title>
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
+  <meta name="referrer" content="no-referrer" />
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="
+      default-src 'self';
+      script-src 'self' 'unsafe-inline' https://esm.sh;
+      style-src 'self' 'unsafe-inline';
+      connect-src https://pncvddqeuxlkplwgvxgk.supabase.co;
+      img-src 'self' data:;
+      font-src 'self';
+      object-src 'none';
+      base-uri 'self';
+      frame-ancestors 'none';
+      form-action 'self';
+    "
+  />
 
   <style>
     body {
@@ -67,11 +88,17 @@
       font-size: 14px;
     }
 
+    #loginBox button:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+    }
+
     #loginMsg {
       margin-top: 12px;
       font-size: 14px;
       color: #374151;
       white-space: pre-line;
+      min-height: 20px;
     }
 
     #appArea {
@@ -118,7 +145,7 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      min-height: 240px;
+      min-height: 200px;
     }
 
     .card h2 {
@@ -160,52 +187,52 @@
 <body>
 
 <header>
-  <h1>PNG Forest Information Prototype</h1>
-  <p>Web-based system for map viewing, volume estimation, and GIS data management</p>
+  <h1>Restricted Access Portal</h1>
+  <p>Authorized users only</p>
 </header>
 
 <div class="container">
 
   <div id="loginBox">
     <h2>Login</h2>
-    <p>Enter your email and password.</p>
+    <p>Please sign in with your assigned account.</p>
 
-    <input id="email" type="email" placeholder="Email" />
-    <input id="password" type="password" placeholder="Password" />
+    <input id="email" type="email" placeholder="Email" autocomplete="username" />
+    <input id="password" type="password" placeholder="Password" autocomplete="current-password" />
 
-    <button id="loginBtn">Login</button>
+    <button id="loginBtn" type="button">Login</button>
 
-    <div id="loginMsg"></div>
+    <div id="loginMsg" aria-live="polite"></div>
   </div>
 
   <div id="appArea">
     <div class="topbar">
-      <div class="status" id="userStatus">Logged in</div>
-      <button class="logout-btn" id="logoutBtn">Logout</button>
+      <div class="status" id="userStatus">Access granted</div>
+      <button class="logout-btn" id="logoutBtn" type="button">Logout</button>
     </div>
 
     <div class="cards">
       <div class="card">
         <h2>1. LANMAP</h2>
-        <p>View forest compartments, FMUs, land use, and logging data on the map.</p>
+        <p>Restricted module</p>
         <a href="lanmap/index.html?v=20260324">Open</a>
       </div>
 
       <div class="card">
         <h2>2. FIMS</h2>
-        <p>Run timber volume estimation and export calculation results.</p>
+        <p>Restricted module</p>
         <a href="fims/index.html">Open</a>
       </div>
 
       <div class="card">
         <h2>3. FIPS</h2>
-        <p>Update GIS datasets and attribute information in the cloud.</p>
+        <p>Restricted module</p>
         <a href="fips/index.html">Open</a>
       </div>
     </div>
 
     <div class="note">
-      This prototype is intended for restricted users only.
+      Access is limited to authorized users.
     </div>
   </div>
 
@@ -216,7 +243,6 @@
 
   const supabaseUrl = 'https://pncvddqeuxlkplwgvxgk.supabase.co'
   const supabaseKey = 'sb_publishable_bOTwr6mBCgp_jUS2FAF-DQ_WXlMvdrT'
-
   const supabase = createClient(supabaseUrl, supabaseKey)
 
   const loginBox = document.getElementById('loginBox')
@@ -231,40 +257,66 @@
   function showLogin() {
     loginBox.style.display = 'block'
     appArea.style.display = 'none'
+    loginBtn.disabled = false
+    passInput.value = ''
   }
 
-  function showApp(session) {
-    const email = session?.user?.email ?? ''
-    userStatus.textContent = `Logged in: ${email}`
+  function showApp() {
+    userStatus.textContent = 'Access granted'
     loginBox.style.display = 'none'
     appArea.style.display = 'block'
+    loginMsg.textContent = ''
+  }
+
+  function showGenericError() {
+    loginMsg.textContent = 'Login failed. Please check your credentials or contact the administrator.'
   }
 
   loginBtn.addEventListener('click', async () => {
     loginMsg.textContent = ''
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email: emailInput.value,
-      password: passInput.value
-    })
+    const email = emailInput.value.trim()
+    const password = passInput.value
 
-    if (error) {
-      loginMsg.textContent = `Error: ${error.message}`
+    if (!email || !password) {
+      loginMsg.textContent = 'Please enter both email and password.'
+      return
+    }
+
+    loginBtn.disabled = true
+
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
+
+      if (error) {
+        showGenericError()
+        loginBtn.disabled = false
+        return
+      }
+    } catch (_e) {
+      showGenericError()
+      loginBtn.disabled = false
     }
   })
 
   logoutBtn.addEventListener('click', async () => {
-    await supabase.auth.signOut()
-    showLogin()
+    try {
+      await supabase.auth.signOut()
+    } finally {
+      showLogin()
+    }
   })
 
   const { data: { session } } = await supabase.auth.getSession()
 
-  if (session) showApp(session)
+  if (session) showApp()
   else showLogin()
 
   supabase.auth.onAuthStateChange((_event, session) => {
-    if (session) showApp(session)
+    if (session) showApp()
     else showLogin()
   })
 </script>
