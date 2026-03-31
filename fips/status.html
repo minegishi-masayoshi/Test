@@ -1,115 +1,168 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Processing Status</title>
+
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+
+<meta http-equiv="Cache-Control" content="no-store">
+<meta http-equiv="Pragma" content="no-cache">
+
+<meta http-equiv="Content-Security-Policy"
+content="
+default-src 'self';
+script-src 'self' https://cdn.jsdelivr.net;
+style-src 'self' 'unsafe-inline';
+connect-src https://pncvddqeuxlkplwgvxgk.supabase.co;
+img-src 'self' data:;
+font-src 'self';
+object-src 'none';
+base-uri 'self';
+frame-ancestors 'none';
+form-action 'self';
+">
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script type="module" src="./app.js"></script>
 
 <style>
+
 body{
-  font-family: Arial, sans-serif;
-  background:#f4f4f4;
-  padding:30px;
+font-family: Arial, sans-serif;
+background:#f4f4f4;
+padding:30px;
 }
 
 .container{
-  background:white;
-  padding:25px;
-  border-radius:6px;
-  max-width:900px;
-  margin:auto;
+background:white;
+padding:25px;
+border-radius:6px;
+max-width:900px;
+margin:auto;
 }
 
 h2{
-  margin-bottom:10px;
+margin-bottom:10px;
 }
 
 table{
-  width:100%;
-  border-collapse:collapse;
-  margin-top:15px;
+width:100%;
+border-collapse:collapse;
+margin-top:15px;
 }
 
 th, td{
-  border:1px solid #ccc;
-  padding:10px;
-  text-align:left;
-  font-size:14px;
+border:1px solid #ccc;
+padding:10px;
+text-align:left;
+font-size:14px;
 }
 
 th{
-  background:#f0f0f0;
+background:#f0f0f0;
 }
 
 button{
-  padding:10px 16px;
-  border:none;
-  background:#2e7d32;
-  color:white;
-  cursor:pointer;
-  margin-right:10px;
+padding:10px 16px;
+border:none;
+background:#2e7d32;
+color:white;
+cursor:pointer;
+margin-right:10px;
 }
 
 button.secondary{
-  background:#666;
+background:#666;
 }
 
 .status-box{
-  background:#fafafa;
-  border:1px solid #ddd;
-  padding:15px;
-  margin-bottom:20px;
+background:#fafafa;
+border:1px solid #ddd;
+padding:15px;
+margin-bottom:20px;
 }
+
 </style>
+
 </head>
 
 <body>
 
 <div class="container">
 
-  <h2>Processing Status</h2>
-  <p>Run processing and review survey results.</p>
+<h2>Processing Status</h2>
+<p>Run processing and review survey results.</p>
 
-  <div class="status-box">
-    <p><strong>Survey Name:</strong> <span id="surveyNameDisplay">-</span></p>
-    <p><strong>Processing Message:</strong> <span id="processingMessage">Not started</span></p>
-  </div>
+<div class="status-box">
 
-  <h3>Processing Steps</h3>
-  <table>
-    <thead>
-      <tr>
-        <th>Step</th>
-        <th>Status</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Data Import</td>
-        <td>Completed</td>
-      </tr>
-      <tr>
-        <td>Validation</td>
-        <td>Completed</td>
-      </tr>
-      <tr>
-        <td>Processing</td>
-        <td id="processingStatusCell">Not Started</td>
-      </tr>
-      <tr>
-        <td>Result</td>
-        <td id="resultStatusCell">Not Generated</td>
-      </tr>
-    </tbody>
-  </table>
+<p>
+<strong>Survey Name:</strong>
+<span id="surveyNameDisplay">-</span>
+</p>
 
-  <br>
+<p>
+<strong>Processing Message:</strong>
+<span id="processingMessage">Not started</span>
+</p>
 
-  <button id="runProcessingBtn" type="button">Run Processing</button>
-  <button id="viewResultBtn" type="button">View Result</button>
-  <button class="secondary" onclick="window.location.href='./index.html'">Back</button>
+</div>
+
+<h3>Processing Steps</h3>
+
+<table>
+
+<thead>
+<tr>
+<th>Step</th>
+<th>Status</th>
+</tr>
+</thead>
+
+<tbody>
+
+<tr>
+<td>Data Import</td>
+<td>Completed</td>
+</tr>
+
+<tr>
+<td>Validation</td>
+<td>Completed</td>
+</tr>
+
+<tr>
+<td>Processing</td>
+<td id="processingStatusCell">Not Started</td>
+</tr>
+
+<tr>
+<td>Result</td>
+<td id="resultStatusCell">Not Generated</td>
+</tr>
+
+</tbody>
+
+</table>
+
+<br>
+
+<button id="runProcessingBtn" type="button">
+Run Processing
+</button>
+
+<button id="viewResultBtn" type="button">
+View Result
+</button>
+
+<button class="secondary"
+onclick="window.location.href='./index.html'">
+Back
+</button>
 
 </div>
 
