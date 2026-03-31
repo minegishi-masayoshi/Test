@@ -1,127 +1,169 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Validation Result</title>
+
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+
+<meta http-equiv="Cache-Control" content="no-store">
+<meta http-equiv="Pragma" content="no-cache">
+
+<meta http-equiv="Content-Security-Policy"
+content="
+default-src 'self';
+script-src 'self' https://cdn.jsdelivr.net;
+style-src 'self' 'unsafe-inline';
+connect-src https://pncvddqeuxlkplwgvxgk.supabase.co;
+img-src 'self' data:;
+font-src 'self';
+object-src 'none';
+base-uri 'self';
+frame-ancestors 'none';
+form-action 'self';
+">
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script type="module" src="./app.js"></script>
 
 <style>
+
 body{
-  font-family: Arial, sans-serif;
-  background:#f4f4f4;
-  padding:30px;
+font-family: Arial, sans-serif;
+background:#f4f4f4;
+padding:30px;
 }
 
 .container{
-  background:white;
-  padding:25px;
-  border-radius:6px;
-  max-width:900px;
-  margin:auto;
+background:white;
+padding:25px;
+border-radius:6px;
+max-width:900px;
+margin:auto;
 }
 
 h2{
-  margin-bottom:10px;
+margin-bottom:10px;
 }
 
 .summary-box{
-  background:#fafafa;
-  border:1px solid #ddd;
-  padding:15px;
-  margin-bottom:20px;
+background:#fafafa;
+border:1px solid #ddd;
+padding:15px;
+margin-bottom:20px;
 }
 
 .summary-box p{
-  margin:8px 0;
+margin:8px 0;
 }
 
 .ok{
-  color:green;
-  font-weight:bold;
+color:green;
+font-weight:bold;
 }
 
 .error{
-  color:#b00020;
-  font-weight:bold;
+color:#b00020;
+font-weight:bold;
 }
 
 table{
-  width:100%;
-  border-collapse:collapse;
-  margin-top:15px;
+width:100%;
+border-collapse:collapse;
+margin-top:15px;
 }
 
 th, td{
-  border:1px solid #ccc;
-  padding:10px;
-  text-align:left;
-  font-size:14px;
+border:1px solid #ccc;
+padding:10px;
+text-align:left;
+font-size:14px;
 }
 
 th{
-  background:#f0f0f0;
+background:#f0f0f0;
 }
 
 button{
-  padding:10px 16px;
-  border:none;
-  background:#2e7d32;
-  color:white;
-  cursor:pointer;
-  margin-right:10px;
+padding:10px 16px;
+border:none;
+background:#2e7d32;
+color:white;
+cursor:pointer;
+margin-right:10px;
 }
 
 button.secondary{
-  background:#666;
+background:#666;
 }
 
 .hidden{
-  display:none;
+display:none;
 }
+
 </style>
+
 </head>
 
 <body>
 
 <div class="container">
 
-  <h2>Validation Result</h2>
+<h2>Validation Result</h2>
 
-  <div class="summary-box">
-    <p>Total Records: <span id="totalRecords">-</span></p>
-    <p>Error Count: <span id="errorCount">-</span></p>
-    <p id="validationMessage">Checking...</p>
-  </div>
+<div class="summary-box">
 
-  <div id="errorSection">
-    <h3>Error List</h3>
+<p>
+Total Records: <span id="totalRecords">-</span>
+</p>
 
-    <table>
-      <thead>
-        <tr>
-          <th>Row</th>
-          <th>Plot</th>
-          <th>Tree</th>
-          <th>Field</th>
-          <th>Message</th>
-        </tr>
-      </thead>
-      <tbody id="errorTableBody">
-      </tbody>
-    </table>
-  </div>
+<p>
+Error Count: <span id="errorCount">-</span>
+</p>
 
-  <br>
+<p id="validationMessage">
+Checking...
+</p>
 
-  <button class="secondary" onclick="window.location.href='./kobo-import.html'">
-    Back to Import
-  </button>
+</div>
 
-  <button id="importFromValidationBtn" type="button">
-    Import to FIPS
-  </button>
+<div id="errorSection">
+
+<h3>Error List</h3>
+
+<table>
+
+<thead>
+<tr>
+<th>Row</th>
+<th>Plot</th>
+<th>Tree</th>
+<th>Field</th>
+<th>Message</th>
+</tr>
+</thead>
+
+<tbody id="errorTableBody">
+</tbody>
+
+</table>
+
+</div>
+
+<br>
+
+<button class="secondary"
+onclick="window.location.href='./kobo-import.html'">
+Back to Import
+</button>
+
+<button id="importFromValidationBtn" type="button">
+Import to FIPS
+</button>
 
 </div>
 
