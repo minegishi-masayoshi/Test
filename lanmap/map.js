@@ -3,30 +3,28 @@
 // =====================
 const SUPABASE_URL = "https://pncvddqeuxlkplwgvxgk.supabase.co";
 const SUPABASE_KEY = "sb_publishable_bOTwr6mBCgp_jUS2FAF-DQ_WXlMvdrT";
-
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 async function checkLogin() {
-  const { data, error } = await supabaseClient.auth.getSession();
+  try {
+    const { data, error } = await supabaseClient.auth.getSession();
 
-  if (error) {
-    console.error('Session check error:', error);
-    window.location.href = "../index.html";
+    if (error || !data.session) {
+      window.location.replace("../index.html");
+      return false;
+    }
+
+    return true;
+  } catch (_e) {
+    window.location.replace("../index.html");
     return false;
   }
-
-  if (!data.session) {
-    window.location.href = "../index.html";
-    return false;
-  }
-
-  return true;
 }
-
 
 // =====================
 // Map initialization
 // =====================
-var map = L.map('map', {
+const map = L.map("map", {
   center: [-6.5, 145],
   zoom: 6,
   zoomControl: false
@@ -36,7 +34,7 @@ var map = L.map('map', {
 // Scale bar
 // =====================
 L.control.scale({
-  position: 'bottomleft',
+  position: "bottomleft",
   metric: true,
   imperial: false,
   maxWidth: 150
@@ -45,45 +43,45 @@ L.control.scale({
 // =====================
 // Base Layers
 // =====================
-var osmLayer = L.tileLayer(
-  'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+const osmLayer = L.tileLayer(
+  "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
   {
     maxZoom: 19,
-    attribution: '© OpenStreetMap'
+    attribution: "© OpenStreetMap"
   }
 ).addTo(map);
 
-// 後で非公開 Forest BaseMap に差し替え
-var forestLayer = L.layerGroup();
+// Placeholder for future private basemap
+const restrictedBaseLayer = L.layerGroup();
 
 // =====================
 // Pane settings
 // =====================
-map.createPane('concessionPane');
-map.getPane('concessionPane').style.zIndex = 450;
+map.createPane("concessionPane");
+map.getPane("concessionPane").style.zIndex = 450;
 
-map.createPane('drawPane');
-map.getPane('drawPane').style.zIndex = 500;
+map.createPane("drawPane");
+map.getPane("drawPane").style.zIndex = 500;
 
 // =====================
 // Layer variables
 // =====================
-var concessionLayer = null;
-var layerControl = null;
-var drawControl = null;
-var customSearchControl = null;
-var titleControl = null;
-var printControl = null;
-var highlightedLayer = null;
+let concessionLayer = null;
+let layerControl = null;
+let drawControl = null;
+let customSearchControl = null;
+let titleControl = null;
+let printControl = null;
+let highlightedLayer = null;
 
-var concessionSearchIndex = [];
-var currentSuggestions = [];
-var activeSuggestionIndex = -1;
+let concessionSearchIndex = [];
+let currentSuggestions = [];
+let activeSuggestionIndex = -1;
 
 // =====================
 // Draw / Measurement layer
 // =====================
-var drawnItems = new L.FeatureGroup();
+const drawnItems = new L.FeatureGroup();
 map.addLayer(drawnItems);
 
 // =====================
@@ -93,7 +91,7 @@ function createZoomControl() {
   if (map._customZoomControl) return;
 
   map._customZoomControl = L.control.zoom({
-    position: 'topleft'
+    position: "topleft"
   });
 
   map._customZoomControl.addTo(map);
@@ -102,17 +100,17 @@ function createZoomControl() {
 function createPrintControl() {
   if (printControl) return;
 
-  printControl = L.control({ position: 'topleft' });
+  printControl = L.control({ position: "topleft" });
 
   printControl.onAdd = function () {
-    var div = L.DomUtil.create('div', 'print-control');
+    const div = L.DomUtil.create("div", "print-control");
     div.innerHTML = '<button type="button" class="print-map-button">Print</button>';
 
     L.DomEvent.disableClickPropagation(div);
     L.DomEvent.disableScrollPropagation(div);
 
-    var btn = div.querySelector('.print-map-button');
-    btn.addEventListener('click', function () {
+    const btn = div.querySelector(".print-map-button");
+    btn.addEventListener("click", function () {
       clearSuggestionList();
       setTimeout(function () {
         window.print();
@@ -128,11 +126,11 @@ function createPrintControl() {
 function createMapTitleControl() {
   if (titleControl) return;
 
-  titleControl = L.control({ position: 'topright' });
+  titleControl = L.control({ position: "topright" });
 
   titleControl.onAdd = function () {
-    var div = L.DomUtil.create('div', 'map-title-control');
-    div.innerHTML = 'LANMAP – Forest Map Viewer';
+    const div = L.DomUtil.create("div", "map-title-control");
+    div.innerHTML = "Restricted Module";
     L.DomEvent.disableClickPropagation(div);
     return div;
   };
@@ -145,20 +143,20 @@ function createLayerControl() {
     map.removeControl(layerControl);
   }
 
-  var baseMaps = {
+  const baseMaps = {
     "OpenStreetMap": osmLayer,
-    "Forest BaseMap": forestLayer
+    "Alternate Base": restrictedBaseLayer
   };
 
-  var overlayMaps = {};
+  const overlayMaps = {};
 
   if (concessionLayer) {
-    overlayMaps["Concession"] = concessionLayer;
+    overlayMaps["Layer 1"] = concessionLayer;
   }
 
   layerControl = L.control.layers(baseMaps, overlayMaps, {
     collapsed: false,
-    position: 'topright'
+    position: "topright"
   }).addTo(map);
 }
 
@@ -166,42 +164,42 @@ function createDrawControl() {
   if (drawControl) return;
 
   drawControl = new L.Control.Draw({
-    position: 'topleft',
+    position: "topleft",
     draw: {
       polyline: {
         shapeOptions: {
-          color: '#ff6600',
+          color: "#ff6600",
           weight: 3,
-          pane: 'drawPane'
+          pane: "drawPane"
         }
       },
       polygon: {
         allowIntersection: false,
         showArea: true,
         shapeOptions: {
-          color: '#ff6600',
+          color: "#ff6600",
           weight: 3,
-          fillColor: '#ffcc99',
+          fillColor: "#ffcc99",
           fillOpacity: 0.3,
-          pane: 'drawPane'
+          pane: "drawPane"
         }
       },
       rectangle: {
         shapeOptions: {
-          color: '#ff6600',
+          color: "#ff6600",
           weight: 3,
-          fillColor: '#ffcc99',
+          fillColor: "#ffcc99",
           fillOpacity: 0.3,
-          pane: 'drawPane'
+          pane: "drawPane"
         }
       },
       circle: {
         shapeOptions: {
-          color: '#ff6600',
+          color: "#ff6600",
           weight: 3,
-          fillColor: '#ffcc99',
+          fillColor: "#ffcc99",
           fillOpacity: 0.3,
-          pane: 'drawPane'
+          pane: "drawPane"
         }
       },
       marker: false,
@@ -226,78 +224,78 @@ function initializeControls() {
 }
 
 function escapeHtml(value) {
-  if (value === null || value === undefined) return '';
+  if (value === null || value === undefined) return "";
   return String(value)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 function formatDistance(meters) {
-  if (meters >= 1000) return (meters / 1000).toFixed(2) + ' km';
-  return meters.toFixed(1) + ' m';
+  if (meters >= 1000) return (meters / 1000).toFixed(2) + " km";
+  return meters.toFixed(1) + " m";
 }
 
 function formatAreaSqMeters(areaSqMeters) {
-  var hectares = areaSqMeters / 10000;
-  var sqKm = areaSqMeters / 1000000;
+  const hectares = areaSqMeters / 10000;
+  const sqKm = areaSqMeters / 1000000;
 
-  if (sqKm >= 1) return sqKm.toFixed(2) + ' km² / ' + hectares.toFixed(2) + ' ha';
-  if (hectares >= 1) return hectares.toFixed(2) + ' ha / ' + areaSqMeters.toFixed(0) + ' m²';
-  return areaSqMeters.toFixed(0) + ' m²';
+  if (sqKm >= 1) return sqKm.toFixed(2) + " km² / " + hectares.toFixed(2) + " ha";
+  if (hectares >= 1) return hectares.toFixed(2) + " ha / " + areaSqMeters.toFixed(0) + " m²";
+  return areaSqMeters.toFixed(0) + " m²";
 }
 
 function geodesicDistance(latlngs) {
-  var total = 0;
-  for (var i = 1; i < latlngs.length; i++) {
+  let total = 0;
+  for (let i = 1; i < latlngs.length; i++) {
     total += latlngs[i - 1].distanceTo(latlngs[i]);
   }
   return total;
 }
 
 function polygonAreaGeodesic(layer) {
-  var latlngs = layer.getLatLngs();
+  const latlngs = layer.getLatLngs();
   if (!latlngs || latlngs.length === 0) return 0;
 
-  var ring = latlngs[0];
+  const ring = latlngs[0];
   if (!ring || ring.length < 3) return 0;
 
   return L.GeometryUtil.geodesicArea(ring);
 }
 
 function bindMeasurementPopup(layer) {
-  var content = '';
+  let content = "";
 
   if (layer instanceof L.Polygon && !(layer instanceof L.Rectangle)) {
-    content = '<div class="measure-popup"><b>Area</b><br>' + formatAreaSqMeters(polygonAreaGeodesic(layer)) + '</div>';
+    content = '<div class="measure-popup"><b>Area</b><br>' + formatAreaSqMeters(polygonAreaGeodesic(layer)) + "</div>";
   } else if (layer instanceof L.Rectangle) {
-    content = '<div class="measure-popup"><b>Area</b><br>' + formatAreaSqMeters(polygonAreaGeodesic(layer)) + '</div>';
+    content = '<div class="measure-popup"><b>Area</b><br>' + formatAreaSqMeters(polygonAreaGeodesic(layer)) + "</div>";
   } else if (layer instanceof L.Polyline) {
-    content = '<div class="measure-popup"><b>Distance</b><br>' + formatDistance(geodesicDistance(layer.getLatLngs())) + '</div>';
+    content = '<div class="measure-popup"><b>Distance</b><br>' + formatDistance(geodesicDistance(layer.getLatLngs())) + "</div>";
   } else if (layer instanceof L.Circle) {
-    var radius = layer.getRadius();
-    var circleArea = Math.PI * radius * radius;
+    const radius = layer.getRadius();
+    const circleArea = Math.PI * radius * radius;
     content =
       '<div class="measure-popup"><b>Radius</b><br>' +
       formatDistance(radius) +
-      '<br><b>Area</b><br>' +
+      "<br><b>Area</b><br>" +
       formatAreaSqMeters(circleArea) +
-      '</div>';
+      "</div>";
   }
 
   if (content) layer.bindPopup(content);
 }
 
-function buildConcessionPopup(props) {
-  let html = '<b>Concession</b><table>';
+function buildFeaturePopup(props) {
+  let html = "<b>Details</b><table>";
 
   for (const key in props) {
-    if (key === 'geometry') continue;
+    if (key === "geometry") continue;
 
     const value = props[key];
-    if (value === null || value === undefined || value === '') continue;
+    if (value === null || value === undefined || value === "") continue;
 
     html +=
       "<tr><td style='padding-right:10px; vertical-align:top;'><b>" +
@@ -307,7 +305,7 @@ function buildConcessionPopup(props) {
       "</td></tr>";
   }
 
-  html += '</table>';
+  html += "</table>";
   return html;
 }
 
@@ -317,7 +315,7 @@ function buildConcessionPopup(props) {
 function resetHighlight() {
   if (highlightedLayer && highlightedLayer.setStyle) {
     highlightedLayer.setStyle({
-      color: '#008000',
+      color: "#008000",
       weight: 1,
       fillOpacity: 0.3
     });
@@ -325,7 +323,7 @@ function resetHighlight() {
   highlightedLayer = null;
 }
 
-function zoomToConcession(layer) {
+function zoomToFeature(layer) {
   if (!layer) return;
 
   resetHighlight();
@@ -333,9 +331,9 @@ function zoomToConcession(layer) {
 
   if (layer.setStyle) {
     layer.setStyle({
-      color: '#ffff00',
+      color: "#ffff00",
       weight: 4,
-      fillColor: '#ffff00',
+      fillColor: "#ffff00",
       fillOpacity: 0.15
     });
   }
@@ -349,16 +347,16 @@ function zoomToConcession(layer) {
   }
 }
 
-function buildConcessionSearchIndex() {
+function buildSearchIndex() {
   concessionSearchIndex = [];
 
   if (!concessionLayer) return;
 
   concessionLayer.eachLayer(function (layer) {
-    var props = layer.feature && layer.feature.properties ? layer.feature.properties : {};
-    var name = (props.name || '').toString().trim();
-    var objectid = props.objectid ? props.objectid.toString() : '';
-    var province = props.province ? props.province.toString() : '';
+    const props = layer.feature && layer.feature.properties ? layer.feature.properties : {};
+    const name = (props.name || "").toString().trim();
+    const objectid = props.objectid ? props.objectid.toString() : "";
+    const province = props.province ? props.province.toString() : "";
 
     if (name) {
       concessionSearchIndex.push({
@@ -377,14 +375,14 @@ function buildConcessionSearchIndex() {
 }
 
 function getSearchSuggestions(keyword, maxResults) {
-  var q = (keyword || '').trim().toLowerCase();
+  const q = (keyword || "").trim().toLowerCase();
   if (!q) return [];
 
-  var starts = [];
-  var partials = [];
+  const starts = [];
+  const partials = [];
 
-  for (var i = 0; i < concessionSearchIndex.length; i++) {
-    var item = concessionSearchIndex[i];
+  for (let i = 0; i < concessionSearchIndex.length; i++) {
+    const item = concessionSearchIndex[i];
 
     if (item.nameLower.indexOf(q) === 0) {
       starts.push(item);
@@ -397,86 +395,86 @@ function getSearchSuggestions(keyword, maxResults) {
 }
 
 function clearSuggestionList() {
-  var list = document.getElementById('concession-search-suggestions');
+  const list = document.getElementById("concession-search-suggestions");
   if (!list) return;
 
-  list.innerHTML = '';
-  list.style.display = 'none';
+  list.innerHTML = "";
+  list.style.display = "none";
   currentSuggestions = [];
   activeSuggestionIndex = -1;
 }
 
 function updateSuggestionActiveState() {
-  var list = document.getElementById('concession-search-suggestions');
+  const list = document.getElementById("concession-search-suggestions");
   if (!list) return;
 
-  var items = list.querySelectorAll('.search-suggestion-item');
+  const items = list.querySelectorAll(".search-suggestion-item");
   items.forEach(function (item, index) {
     if (index === activeSuggestionIndex) {
-      item.classList.add('active');
+      item.classList.add("active");
     } else {
-      item.classList.remove('active');
+      item.classList.remove("active");
     }
   });
 }
 
 function selectSuggestion(item) {
-  var input = document.getElementById('concession-search-input');
+  const input = document.getElementById("concession-search-input");
   if (input) {
     input.value = item.name;
   }
 
   clearSuggestionList();
-  zoomToConcession(item.layer);
+  zoomToFeature(item.layer);
 }
 
 function renderSuggestionList(items) {
-  var list = document.getElementById('concession-search-suggestions');
+  const list = document.getElementById("concession-search-suggestions");
   if (!list) return;
 
-  list.innerHTML = '';
+  list.innerHTML = "";
   currentSuggestions = items || [];
   activeSuggestionIndex = -1;
 
   if (!items || items.length === 0) {
-    list.style.display = 'none';
+    list.style.display = "none";
     return;
   }
 
   items.forEach(function (item, index) {
-    var row = document.createElement('div');
-    row.className = 'search-suggestion-item';
+    const row = document.createElement("div");
+    row.className = "search-suggestion-item";
 
-    var metaParts = [];
-    if (item.objectid) metaParts.push('OBJECTID: ' + item.objectid);
-    if (item.province) metaParts.push('Province: ' + item.province);
+    const metaParts = [];
+    if (item.objectid) metaParts.push("ID: " + item.objectid);
+    if (item.province) metaParts.push("Area: " + item.province);
 
     row.innerHTML =
-      '<div class="search-suggestion-name">' + escapeHtml(item.name) + '</div>' +
+      '<div class="search-suggestion-name">' + escapeHtml(item.name) + "</div>" +
       (metaParts.length
-        ? '<div class="search-suggestion-meta">' + escapeHtml(metaParts.join(' | ')) + '</div>'
-        : '');
+        ? '<div class="search-suggestion-meta">' + escapeHtml(metaParts.join(" | ")) + "</div>"
+        : "");
 
-    row.addEventListener('mouseenter', function () {
+    row.addEventListener("mouseenter", function () {
       activeSuggestionIndex = index;
       updateSuggestionActiveState();
     });
 
-    row.addEventListener('click', function () {
+    row.addEventListener("click", function () {
       selectSuggestion(item);
     });
 
     list.appendChild(row);
   });
 
-  list.style.display = 'block';
+  list.style.display = "block";
 }
 
-function searchConcession(keyword) {
-  var suggestions = getSearchSuggestions(keyword, 10);
+function searchFeature(keyword) {
+  const suggestions = getSearchSuggestions(keyword, 10);
 
   if (!suggestions.length) {
-    alert('Concession not found.');
+    alert("No matching record found.");
     return;
   }
 
@@ -491,19 +489,19 @@ function searchConcession(keyword) {
 function createCustomSearchControl() {
   if (customSearchControl) return;
 
-  customSearchControl = L.control({ position: 'topleft' });
+  customSearchControl = L.control({ position: "topleft" });
 
   customSearchControl.onAdd = function () {
-    var div = L.DomUtil.create('div', 'custom-search-control');
+    const div = L.DomUtil.create("div", "custom-search-control");
 
     div.innerHTML =
       '<div class="search-box-wrapper">' +
         '<div class="search-row">' +
-          '<input type="text" id="concession-search-input" placeholder="Search concession...">' +
+          '<input type="text" id="concession-search-input" placeholder="Search...">' +
           '<button type="button" id="concession-search-btn">Search</button>' +
-        '</div>' +
+        "</div>" +
         '<div id="concession-search-suggestions" class="search-suggestion-list" style="display:none;"></div>' +
-      '</div>';
+      "</div>";
 
     L.DomEvent.disableClickPropagation(div);
     L.DomEvent.disableScrollPropagation(div);
@@ -514,13 +512,13 @@ function createCustomSearchControl() {
   customSearchControl.addTo(map);
 
   setTimeout(function () {
-    var input = document.getElementById('concession-search-input');
-    var button = document.getElementById('concession-search-btn');
-    var suggestionList = document.getElementById('concession-search-suggestions');
+    const input = document.getElementById("concession-search-input");
+    const button = document.getElementById("concession-search-btn");
+    const suggestionList = document.getElementById("concession-search-suggestions");
 
     if (input) {
-      input.addEventListener('input', function () {
-        var value = input.value.trim();
+      input.addEventListener("input", function () {
+        const value = input.value.trim();
 
         if (!value) {
           clearSuggestionList();
@@ -530,53 +528,53 @@ function createCustomSearchControl() {
         renderSuggestionList(getSearchSuggestions(value, 10));
       });
 
-      input.addEventListener('focus', function () {
-        var value = input.value.trim();
+      input.addEventListener("focus", function () {
+        const value = input.value.trim();
         if (value) {
           renderSuggestionList(getSearchSuggestions(value, 10));
         }
       });
 
-      input.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter') {
+      input.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
           e.preventDefault();
 
           if (currentSuggestions.length && activeSuggestionIndex >= 0) {
             selectSuggestion(currentSuggestions[activeSuggestionIndex]);
           } else {
-            searchConcession(input.value);
+            searchFeature(input.value);
           }
-        } else if (e.key === 'ArrowDown') {
+        } else if (e.key === "ArrowDown") {
           e.preventDefault();
           if (!currentSuggestions.length) return;
           activeSuggestionIndex = Math.min(activeSuggestionIndex + 1, currentSuggestions.length - 1);
           updateSuggestionActiveState();
-        } else if (e.key === 'ArrowUp') {
+        } else if (e.key === "ArrowUp") {
           e.preventDefault();
           if (!currentSuggestions.length) return;
           activeSuggestionIndex = Math.max(activeSuggestionIndex - 1, 0);
           updateSuggestionActiveState();
-        } else if (e.key === 'Escape') {
+        } else if (e.key === "Escape") {
           clearSuggestionList();
         }
       });
     }
 
     if (button) {
-      button.addEventListener('click', function () {
-        searchConcession(input.value);
+      button.addEventListener("click", function () {
+        searchFeature(input.value);
       });
     }
 
-    document.addEventListener('click', function (e) {
-      var wrapper = document.querySelector('.search-box-wrapper');
+    document.addEventListener("click", function (e) {
+      const wrapper = document.querySelector(".search-box-wrapper");
       if (wrapper && !wrapper.contains(e.target)) {
         clearSuggestionList();
       }
     });
 
     if (suggestionList) {
-      suggestionList.addEventListener('mouseleave', function () {
+      suggestionList.addEventListener("mouseleave", function () {
         activeSuggestionIndex = -1;
         updateSuggestionActiveState();
       });
@@ -588,7 +586,7 @@ function createCustomSearchControl() {
 // Draw events
 // =====================
 map.on(L.Draw.Event.CREATED, function (e) {
-  var layer = e.layer;
+  const layer = e.layer;
   drawnItems.addLayer(layer);
   bindMeasurementPopup(layer);
 
@@ -612,22 +610,22 @@ map.on(L.Draw.Event.EDITED, function (e) {
 });
 
 // =====================
-// Load concessions from Supabase
+// Load data from Supabase
 // =====================
-async function loadConcessionsFromSupabase() {
+async function loadFeaturesFromSupabase() {
   const { data, error } = await supabaseClient
-    .from('concessions_geojson')
-    .select('*');
+    .from("concessions_geojson")
+    .select("*");
 
   if (error) {
-    console.error('Supabase error:', error);
-    alert('Failed to load concessions from Supabase.');
+    console.error("Supabase load error:", error);
+    alert("Data could not be loaded.");
     return;
   }
 
   const features = data.map(function (row) {
     return {
-      type: 'Feature',
+      type: "Feature",
       properties: {
         fid: row.fid,
         objectid: row.objectid,
@@ -659,25 +657,25 @@ async function loadConcessionsFromSupabase() {
   });
 
   const geojson = {
-    type: 'FeatureCollection',
+    type: "FeatureCollection",
     features: features
   };
 
   concessionLayer = L.geoJSON(geojson, {
-    pane: 'concessionPane',
+    pane: "concessionPane",
     style: function () {
       return {
-        color: '#008000',
+        color: "#008000",
         weight: 1,
         fillOpacity: 0.3
       };
     },
     onEachFeature: function (feature, layer) {
-      layer.bindPopup(buildConcessionPopup(feature.properties));
+      layer.bindPopup(buildFeaturePopup(feature.properties));
     }
   }).addTo(map);
 
-  buildConcessionSearchIndex();
+  buildSearchIndex();
   createLayerControl();
 
   if (concessionLayer.getBounds && concessionLayer.getBounds().isValid()) {
@@ -693,8 +691,7 @@ async function initApp() {
   if (!ok) return;
 
   initializeControls();
-  await loadConcessionsFromSupabase();
+  await loadFeaturesFromSupabase();
 }
 
 initApp();
-
