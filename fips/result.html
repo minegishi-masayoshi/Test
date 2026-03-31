@@ -1,108 +1,159 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>FIPS Results</title>
+
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+
+<meta http-equiv="Cache-Control" content="no-store">
+<meta http-equiv="Pragma" content="no-cache">
+
+<meta http-equiv="Content-Security-Policy"
+content="
+default-src 'self';
+script-src 'self' https://cdn.jsdelivr.net;
+style-src 'self' 'unsafe-inline';
+connect-src https://pncvddqeuxlkplwgvxgk.supabase.co;
+img-src 'self' data:;
+font-src 'self';
+object-src 'none';
+base-uri 'self';
+frame-ancestors 'none';
+form-action 'self';
+">
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script type="module" src="./app.js"></script>
 
 <style>
+
 body{
-  font-family: Arial, sans-serif;
-  background:#f4f4f4;
-  padding:30px;
+font-family: Arial, sans-serif;
+background:#f4f4f4;
+padding:30px;
 }
 
 .container{
-  background:white;
-  padding:25px;
-  border-radius:6px;
-  max-width:1000px;
-  margin:auto;
+background:white;
+padding:25px;
+border-radius:6px;
+max-width:1000px;
+margin:auto;
 }
 
 h2{
-  margin-bottom:10px;
+margin-bottom:10px;
 }
 
 .info-box{
-  background:#fafafa;
-  border:1px solid #ddd;
-  padding:15px;
-  margin-bottom:20px;
+background:#fafafa;
+border:1px solid #ddd;
+padding:15px;
+margin-bottom:20px;
 }
 
 table{
-  width:100%;
-  border-collapse:collapse;
-  margin-top:15px;
+width:100%;
+border-collapse:collapse;
+margin-top:15px;
 }
 
 th, td{
-  border:1px solid #ccc;
-  padding:10px;
-  text-align:left;
-  font-size:14px;
+border:1px solid #ccc;
+padding:10px;
+text-align:left;
+font-size:14px;
 }
 
 th{
-  background:#f0f0f0;
+background:#f0f0f0;
 }
 
 button{
-  padding:10px 16px;
-  border:none;
-  background:#2e7d32;
-  color:white;
-  cursor:pointer;
-  margin-right:10px;
+padding:10px 16px;
+border:none;
+background:#2e7d32;
+color:white;
+cursor:pointer;
+margin-right:10px;
 }
 
 button.secondary{
-  background:#666;
+background:#666;
 }
 
 .summary-table{
-  margin-top:20px;
+margin-top:20px;
 }
+
 </style>
+
 </head>
 
 <body>
 
 <div class="container">
 
-  <h2>FIPS Results</h2>
+<h2>FIPS Results</h2>
 
-  <div class="info-box">
-    <p><strong>Survey Name:</strong> <span id="resultSurveyName">-</span></p>
-    <p><strong>Total Plots:</strong> <span id="resultPlotCount">-</span></p>
-    <p><strong>Total Trees:</strong> <span id="resultTreeCount">-</span></p>
-    <p><strong>Total Basal Area (m²):</strong> <span id="resultBasalArea">-</span></p>
-    <p><strong>Total Volume (m³):</strong> <span id="resultVolume">-</span></p>
-  </div>
+<div class="info-box">
 
-  <h3>Plot Results</h3>
+<p>
+<strong>Survey Name:</strong>
+<span id="resultSurveyName">-</span>
+</p>
 
-  <table>
-    <thead>
-      <tr>
-        <th>Plot</th>
-        <th>Tree Count</th>
-        <th>Basal Area (m²)</th>
-        <th>Volume (m³)</th>
-      </tr>
-    </thead>
-    <tbody id="resultTableBody">
-    </tbody>
-  </table>
+<p>
+<strong>Total Plots:</strong>
+<span id="resultPlotCount">-</span>
+</p>
 
-  <br>
+<p>
+<strong>Total Trees:</strong>
+<span id="resultTreeCount">-</span>
+</p>
 
-  <button class="secondary" onclick="window.location.href='./status.html'">
-    Back
-  </button>
+<p>
+<strong>Total Basal Area (m²):</strong>
+<span id="resultBasalArea">-</span>
+</p>
+
+<p>
+<strong>Total Volume (m³):</strong>
+<span id="resultVolume">-</span>
+</p>
+
+</div>
+
+<h3>Plot Results</h3>
+
+<table>
+
+<thead>
+<tr>
+<th>Plot</th>
+<th>Tree Count</th>
+<th>Basal Area (m²)</th>
+<th>Volume (m³)</th>
+</tr>
+</thead>
+
+<tbody id="resultTableBody">
+</tbody>
+
+</table>
+
+<br>
+
+<button class="secondary"
+onclick="window.location.href='./status.html'">
+Back
+</button>
 
 </div>
 
