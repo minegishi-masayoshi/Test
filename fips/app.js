@@ -5,9 +5,57 @@ const supabase = window.supabase.createClient(
   SUPABASE_ANON_KEY
 );
 
-console.log("FIPS connected to Supabase");
-
 window.fipsApp = { supabase };
+
+function redirectToPortal() {
+  window.location.replace("../index.html");
+}
+
+function showGenericError(message) {
+  alert(message);
+}
+
+function escapeHtml(value) {
+  if (value === null || value === undefined) return "";
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+async function checkLogin() {
+  try {
+    const { data, error } = await supabase.auth.getSession();
+
+    if (error || !data.session) {
+      redirectToPortal();
+      return null;
+    }
+
+    return data.session;
+  } catch (_e) {
+    redirectToPortal();
+    return null;
+  }
+}
+
+function applyUserStatus(session) {
+  const userStatus = document.getElementById("userStatus");
+  if (!userStatus) return;
+  userStatus.textContent = "Access granted";
+}
+
+const session = await checkLogin();
+if (!session) {
+  throw new Error("Unauthorized");
+}
+applyUserStatus(session);
+
+/* =========================
+   NEW SURVEY
+   ========================= */
 
 const newSurveyForm = document.getElementById("newSurveyForm");
 
@@ -46,244 +94,192 @@ if (newSurveyForm) {
         : null
     };
 
-    console.log("payload", payload);
+    if (!payload.survey_number || !payload.survey_name) {
+      showGenericError("Please enter the required fields.");
+      return;
+    }
 
     const { error } = await supabase
       .from("fips_surveys")
       .insert([payload]);
 
     if (error) {
-      console.error("Insert error:", error);
-      alert(`Save failed: ${error.message}`);
+      showGenericError("Save failed.");
       return;
     }
 
     localStorage.setItem("currentSurveyName", payload.survey_name);
-    alert("Survey saved successfully.");
+    alert("Saved successfully.");
     window.location.href = "./kobo-import.html";
   });
 }
 
 /* =========================
-   FIPS CSV IMPORT MODULE
+   CSV PARSE / VALIDATION
    ========================= */
 
 let parsedRows = [];
 let validationErrors = [];
 
 function parseCsv(text) {
+  const lines = text.split(/\r?\n/).filter((line) => line.trim() !== "");
+  if (lines.length < 2) return [];
 
-  const lines = text.split(/\r?\n/).filter(line => line.trim() !== "");
+  const headers = lines[0].split(",").map((h) => h.trim());
 
-  if(lines.length < 2) return [];
+  return lines.slice(1).map((line, index) => {
+    const values = line.split(",").map((v) => v.trim());
+    const row = {};
 
-  const headers = lines[0].split(",").map(h => h.trim());
-
-  return lines.slice(1).map((line,index)=>{
-
-    const values = line.split(",").map(v=>v.trim());
-
-    const row={};
-
-    headers.forEach((h,i)=>{
-      row[h]=values[i] ?? "";
+    headers.forEach((h, i) => {
+      row[h] = values[i] ?? "";
     });
 
-    row.__rowNo = index+2;
-
+    row.__rowNo = index + 2;
     return row;
-
   });
 }
 
-function validateRows(rows){
+function validateRows(rows) {
+  const errors = [];
 
-  const errors=[];
-
-  rows.forEach((row)=>{
-
+  rows.forEach((row) => {
     const plotNo = row.plot_no || row.plot || "";
     const treeNo = row.tree_no || row.tree || "";
     const speciesCode = row.species_code || row.species || "";
     const dbh = row.dbh_cm || row.dbh || "";
     const height = row.height_m || row.height || "";
 
-    if(!plotNo){
-
+    if (!plotNo) {
       errors.push({
-        row_no:row.__rowNo,
-        plot_no:"",
-        tree_no:treeNo,
-        field_name:"Plot No",
-        message:"Missing value"
+        row_no: row.__rowNo,
+        plot_no: "",
+        tree_no: treeNo,
+        field_name: "Plot No",
+        message: "Missing value"
       });
-
     }
 
-    if(!treeNo){
-
+    if (!treeNo) {
       errors.push({
-        row_no:row.__rowNo,
-        plot_no:plotNo,
-        tree_no:"",
-        field_name:"Tree No",
-        message:"Missing value"
+        row_no: row.__rowNo,
+        plot_no: plotNo,
+        tree_no: "",
+        field_name: "Tree No",
+        message: "Missing value"
       });
-
     }
 
-    if(!speciesCode){
-
+    if (!speciesCode) {
       errors.push({
-        row_no:row.__rowNo,
-        plot_no:plotNo,
-        tree_no:treeNo,
-        field_name:"Species Code",
-        message:"Missing value"
+        row_no: row.__rowNo,
+        plot_no: plotNo,
+        tree_no: treeNo,
+        field_name: "Species Code",
+        message: "Missing value"
       });
-
     }
 
-    if(dbh && isNaN(Number(dbh))){
-
+    if (dbh && isNaN(Number(dbh))) {
       errors.push({
-        row_no:row.__rowNo,
-        plot_no:plotNo,
-        tree_no:treeNo,
-        field_name:"DBH",
-        message:"Invalid number"
+        row_no: row.__rowNo,
+        plot_no: plotNo,
+        tree_no: treeNo,
+        field_name: "DBH",
+        message: "Invalid number"
       });
-
     }
 
-    if(height && isNaN(Number(height))){
-
+    if (height && isNaN(Number(height))) {
       errors.push({
-        row_no:row.__rowNo,
-        plot_no:plotNo,
-        tree_no:treeNo,
-        field_name:"Height",
-        message:"Invalid number"
+        row_no: row.__rowNo,
+        plot_no: plotNo,
+        tree_no: treeNo,
+        field_name: "Height",
+        message: "Invalid number"
       });
-
     }
-
   });
 
   return errors;
-
 }
 
 const validateBtn = document.getElementById("validateBtn");
 const fileUpload = document.getElementById("fileUpload");
 
-if(validateBtn && fileUpload){
+if (validateBtn && fileUpload) {
+  validateBtn.addEventListener("click", async () => {
+    const file = fileUpload.files[0];
 
-validateBtn.addEventListener("click", async()=>{
+    if (!file) {
+      showGenericError("Please select a CSV file.");
+      return;
+    }
 
-const file = fileUpload.files[0];
+    const text = await file.text();
+    parsedRows = parseCsv(text);
+    validationErrors = validateRows(parsedRows);
 
-if(!file){
+    const totalEl = document.getElementById("totalRecords");
+    const mappedEl = document.getElementById("mappedFields");
 
-alert("Please select a CSV file.");
+    if (totalEl) totalEl.textContent = String(parsedRows.length);
+    if (mappedEl) {
+      mappedEl.textContent = parsedRows.length > 0 ? "Basic fields detected" : "-";
+    }
 
-return;
+    localStorage.setItem("fipsParsedRows", JSON.stringify(parsedRows));
+    localStorage.setItem("fipsValidationErrors", JSON.stringify(validationErrors));
 
-}
-
-const text = await file.text();
-
-parsedRows = parseCsv(text);
-
-validationErrors = validateRows(parsedRows);
-
-const totalEl = document.getElementById("totalRecords");
-const mappedEl = document.getElementById("mappedFields");
-
-if(totalEl)
-totalEl.textContent = String(parsedRows.length);
-
-if(mappedEl)
-mappedEl.textContent = parsedRows.length>0
-? "Basic fields detected"
-: "-";
-
-localStorage.setItem(
-"fipsParsedRows",
-JSON.stringify(parsedRows)
-);
-
-localStorage.setItem(
-"fipsValidationErrors",
-JSON.stringify(validationErrors)
-);
-
-window.location.href="./validation.html";
-
-});
-
+    window.location.href = "./validation.html";
+  });
 }
 
 /* =========================
-   CSV SUMMARY ON FILE SELECT
+   CSV SUMMARY
    ========================= */
 
 const csvInput = document.getElementById("fileUpload");
 
 if (csvInput) {
+  csvInput.addEventListener("change", async () => {
+    if (csvInput.files.length === 0) return;
 
-csvInput.addEventListener("change", async () => {
+    const file = csvInput.files[0];
+    const text = await file.text();
+    const lines = text.split(/\r?\n/).filter((line) => line.trim() !== "");
 
-if (csvInput.files.length === 0) return;
+    if (lines.length === 0) return;
 
-const file = csvInput.files[0];
+    const headers = lines[0].split(",").map((h) => h.trim());
+    const recordCount = lines.length - 1;
 
-const text = await file.text();
+    const totalEl = document.getElementById("totalRecords");
+    const mappedEl = document.getElementById("mappedFields");
 
-const lines = text.split(/\r?\n/).filter(line => line.trim() !== "");
+    if (totalEl) {
+      totalEl.textContent = String(recordCount);
+    }
 
-if (lines.length === 0) return;
+    const expectedFields = [
+      "plot_no",
+      "tree_no",
+      "species_code",
+      "dbh_cm",
+      "height_m"
+    ];
 
-const headers = lines[0].split(",").map(h => h.trim());
+    const matched = expectedFields.filter((f) => headers.includes(f));
 
-const recordCount = lines.length - 1;
-
-const totalEl = document.getElementById("totalRecords");
-const mappedEl = document.getElementById("mappedFields");
-
-if (totalEl) {
-totalEl.textContent = recordCount;
+    if (mappedEl) {
+      if (matched.length === expectedFields.length) {
+        mappedEl.textContent = "All required fields detected";
+      } else {
+        mappedEl.textContent = "Detected: " + matched.join(", ");
+      }
+    }
+  });
 }
-
-const expectedFields = [
-"plot_no",
-"tree_no",
-"species_code",
-"dbh_cm",
-"height_m"
-];
-
-const matched = expectedFields.filter(f => headers.includes(f));
-
-if (mappedEl) {
-
-if (matched.length === expectedFields.length) {
-
-mappedEl.textContent = "All required fields detected";
-
-} else {
-
-mappedEl.textContent =
-"Detected: " + matched.join(", ");
-
-}
-
-}
-
-});
-
-}
-
 
 /* =========================
    VALIDATION DASHBOARD
@@ -292,7 +288,6 @@ mappedEl.textContent =
 const validationTableBody = document.getElementById("errorTableBody");
 
 if (validationTableBody) {
-
   const rows = JSON.parse(localStorage.getItem("fipsParsedRows") || "[]");
   const errors = JSON.parse(localStorage.getItem("fipsValidationErrors") || "[]");
 
@@ -301,11 +296,10 @@ if (validationTableBody) {
   const messageEl = document.getElementById("validationMessage");
   const errorSection = document.getElementById("errorSection");
 
-  if (totalEl) totalEl.textContent = rows.length;
-  if (errorCountEl) errorCountEl.textContent = errors.length;
+  if (totalEl) totalEl.textContent = String(rows.length);
+  if (errorCountEl) errorCountEl.textContent = String(errors.length);
 
   if (errors.length === 0) {
-
     if (messageEl) {
       messageEl.textContent = "Validation passed. No errors found.";
       messageEl.className = "ok";
@@ -314,160 +308,106 @@ if (validationTableBody) {
     if (errorSection) {
       errorSection.classList.add("hidden");
     }
-
   } else {
-
     if (messageEl) {
       messageEl.textContent = "Validation failed. Please review the errors below.";
       messageEl.className = "error";
     }
 
-    errors.forEach(err => {
-
+    errors.forEach((err) => {
       const tr = document.createElement("tr");
-
       tr.innerHTML = `
-        <td>${err.row_no ?? ""}</td>
-        <td>${err.plot_no ?? ""}</td>
-        <td>${err.tree_no ?? ""}</td>
-        <td>${err.field_name ?? ""}</td>
-        <td>${err.message ?? ""}</td>
+        <td>${escapeHtml(err.row_no ?? "")}</td>
+        <td>${escapeHtml(err.plot_no ?? "")}</td>
+        <td>${escapeHtml(err.tree_no ?? "")}</td>
+        <td>${escapeHtml(err.field_name ?? "")}</td>
+        <td>${escapeHtml(err.message ?? "")}</td>
       `;
-
       validationTableBody.appendChild(tr);
-
     });
-
   }
-
 }
 
 /* =========================
-   IMPORT TO FIPS DATABASE
+   IMPORT TO DATABASE
    ========================= */
 
-const importBtn = document.getElementById("importBtn");
+async function getCurrentSurveyId() {
+  const surveyName = localStorage.getItem("currentSurveyName");
 
+  if (!surveyName) {
+    showGenericError("No survey found.");
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from("fips_surveys")
+    .select("id, survey_name")
+    .eq("survey_name", surveyName)
+    .order("id", { ascending: false })
+    .limit(1);
+
+  if (error || !data || data.length === 0) {
+    showGenericError("Failed to find survey.");
+    return null;
+  }
+
+  return data[0].id;
+}
+
+function buildTreePayload(rows, surveyId) {
+  return rows.map((row) => ({
+    survey_id: surveyId,
+    row_no: row.__rowNo ?? null,
+    plot_no: row.plot_no || row.plot || null,
+    tree_no: row.tree_no || row.tree || null,
+    species_code: row.species_code || row.species || null,
+    dbh_cm: row.dbh_cm && !isNaN(Number(row.dbh_cm)) ? Number(row.dbh_cm) : null,
+    height_m: row.height_m && !isNaN(Number(row.height_m)) ? Number(row.height_m) : null,
+    raw_json: row
+  }));
+}
+
+async function importParsedRowsToTreeRecords() {
+  const surveyId = await getCurrentSurveyId();
+  if (!surveyId) return false;
+
+  const rows = JSON.parse(localStorage.getItem("fipsParsedRows") || "[]");
+  if (rows.length === 0) {
+    showGenericError("No parsed CSV data found.");
+    return false;
+  }
+
+  const payload = buildTreePayload(rows, surveyId);
+
+  const { error } = await supabase
+    .from("fips_tree_records")
+    .insert(payload);
+
+  if (error) {
+    showGenericError("Import failed.");
+    return false;
+  }
+
+  return true;
+}
+
+const importBtn = document.getElementById("importBtn");
 if (importBtn) {
   importBtn.addEventListener("click", async () => {
-
-    const surveyName = localStorage.getItem("currentSurveyName");
-
-    if (!surveyName) {
-      alert("No survey selected.");
-      return;
-    }
-
-    // 最新のsurveyを取得
-    const { data: surveyData, error: surveyError } = await supabase
-      .from("fips_surveys")
-      .select("id, survey_name")
-      .eq("survey_name", surveyName)
-      .order("id", { ascending: false })
-      .limit(1);
-
-    if (surveyError || !surveyData || surveyData.length === 0) {
-      console.error("Survey fetch error:", surveyError);
-      alert("Failed to find survey.");
-      return;
-    }
-
-    const surveyId = surveyData[0].id;
-
-    const rows = JSON.parse(localStorage.getItem("fipsParsedRows") || "[]");
-
-    if (rows.length === 0) {
-      alert("No parsed CSV data found.");
-      return;
-    }
-
-    const payload = rows.map((row) => ({
-      survey_id: surveyId,
-      row_no: row.__rowNo ?? null,
-      plot_no: row.plot_no || row.plot || null,
-      tree_no: row.tree_no || row.tree || null,
-      species_code: row.species_code || row.species || null,
-      dbh_cm: row.dbh_cm && !isNaN(Number(row.dbh_cm)) ? Number(row.dbh_cm) : null,
-      height_m: row.height_m && !isNaN(Number(row.height_m)) ? Number(row.height_m) : null,
-      raw_json: row
-    }));
-
-    console.log("Import payload:", payload);
-
-    const { error: insertError } = await supabase
-      .from("fips_tree_records")
-      .insert(payload);
-
-    if (insertError) {
-      console.error("Insert error:", insertError);
-      alert(`Import failed: ${insertError.message}`);
-      return;
-    }
+    const ok = await importParsedRowsToTreeRecords();
+    if (!ok) return;
 
     alert("Import completed successfully.");
     window.location.href = "./status.html";
   });
 }
 
-/* =========================
-   IMPORT TO FIPS FROM VALIDATION
-   ========================= */
-
 const importFromValidationBtn = document.getElementById("importFromValidationBtn");
-
 if (importFromValidationBtn) {
   importFromValidationBtn.addEventListener("click", async () => {
-    const surveyName = localStorage.getItem("currentSurveyName");
-
-    if (!surveyName) {
-      alert("No survey found.");
-      return;
-    }
-
-    const rows = JSON.parse(localStorage.getItem("fipsParsedRows") || "[]");
-
-    if (rows.length === 0) {
-      alert("No parsed CSV data found.");
-      return;
-    }
-
-    const { data: surveyData, error: surveyError } = await supabase
-      .from("fips_surveys")
-      .select("id, survey_name")
-      .eq("survey_name", surveyName)
-      .order("id", { ascending: false })
-      .limit(1);
-
-    if (surveyError || !surveyData || surveyData.length === 0) {
-      console.error("Survey fetch error:", surveyError);
-      alert("Failed to find survey.");
-      return;
-    }
-
-    const surveyId = surveyData[0].id;
-
-    const payload = rows.map((row) => ({
-      survey_id: surveyId,
-      row_no: row.__rowNo ?? null,
-      plot_no: row.plot_no || row.plot || null,
-      tree_no: row.tree_no || row.tree || null,
-      species_code: row.species_code || row.species || null,
-      dbh_cm: row.dbh_cm && !isNaN(Number(row.dbh_cm)) ? Number(row.dbh_cm) : null,
-      height_m: row.height_m && !isNaN(Number(row.height_m)) ? Number(row.height_m) : null,
-      raw_json: row
-    }));
-
-    console.log("Import payload:", payload);
-
-    const { error: insertError } = await supabase
-      .from("fips_tree_records")
-      .insert(payload);
-
-    if (insertError) {
-      console.error("Insert error:", insertError);
-      alert(`Import failed: ${insertError.message}`);
-      return;
-    }
+    const ok = await importParsedRowsToTreeRecords();
+    if (!ok) return;
 
     alert("Import completed successfully.");
     window.location.href = "./status.html";
@@ -501,33 +441,14 @@ if (surveyNameDisplay) {
 
 if (runProcessingBtn) {
   runProcessingBtn.addEventListener("click", async () => {
-    const surveyName = localStorage.getItem("currentSurveyName");
-
-    if (!surveyName) {
-      alert("No survey found.");
-      return;
-    }
-
-    if (processingMessage) processingMessage.textContent = "Fetching survey...";
-    if (processingStatusCell) processingStatusCell.textContent = "Running";
-
-    const { data: surveyData, error: surveyError } = await supabase
-      .from("fips_surveys")
-      .select("id, survey_name")
-      .eq("survey_name", surveyName)
-      .order("id", { ascending: false })
-      .limit(1);
-
-    if (surveyError || !surveyData || surveyData.length === 0) {
-      console.error("Survey fetch error:", surveyError);
-      alert("Failed to find survey.");
+    const surveyId = await getCurrentSurveyId();
+    if (!surveyId) {
       if (processingStatusCell) processingStatusCell.textContent = "Failed";
       return;
     }
 
-    const surveyId = surveyData[0].id;
-
-    if (processingMessage) processingMessage.textContent = "Loading tree records...";
+    if (processingMessage) processingMessage.textContent = "Loading records...";
+    if (processingStatusCell) processingStatusCell.textContent = "Running";
 
     const { data: treeRows, error: treeError } = await supabase
       .from("fips_tree_records")
@@ -535,14 +456,13 @@ if (runProcessingBtn) {
       .eq("survey_id", surveyId);
 
     if (treeError) {
-      console.error("Tree fetch error:", treeError);
-      alert("Failed to load tree records.");
+      showGenericError("Failed to load records.");
       if (processingStatusCell) processingStatusCell.textContent = "Failed";
       return;
     }
 
     if (!treeRows || treeRows.length === 0) {
-      alert("No tree records found for this survey.");
+      showGenericError("No records found.");
       if (processingStatusCell) processingStatusCell.textContent = "Failed";
       return;
     }
@@ -570,9 +490,12 @@ if (runProcessingBtn) {
         grouped[plotNo].basal_area_m2 += calculateBasalArea(Number(row.dbh_cm));
       }
 
-      if (row.dbh_cm && row.height_m &&
-          !isNaN(Number(row.dbh_cm)) &&
-          !isNaN(Number(row.height_m))) {
+      if (
+        row.dbh_cm &&
+        row.height_m &&
+        !isNaN(Number(row.dbh_cm)) &&
+        !isNaN(Number(row.height_m))
+      ) {
         grouped[plotNo].volume_m3 += calculateVolume(
           Number(row.dbh_cm),
           Number(row.height_m)
@@ -588,17 +511,13 @@ if (runProcessingBtn) {
       volume_m3: Number(r.volume_m3.toFixed(6))
     }));
 
-    console.log("Results payload:", resultsPayload);
-
-    // 既存結果を削除してから再計算結果を入れる
     const { error: deleteError } = await supabase
       .from("fips_results")
       .delete()
       .eq("survey_id", surveyId);
 
     if (deleteError) {
-      console.error("Delete old results error:", deleteError);
-      alert("Failed to clear old results.");
+      showGenericError("Failed to clear old results.");
       if (processingStatusCell) processingStatusCell.textContent = "Failed";
       return;
     }
@@ -608,8 +527,7 @@ if (runProcessingBtn) {
       .insert(resultsPayload);
 
     if (insertResultError) {
-      console.error("Insert results error:", insertResultError);
-      alert(`Processing failed: ${insertResultError.message}`);
+      showGenericError("Processing failed.");
       if (processingStatusCell) processingStatusCell.textContent = "Failed";
       return;
     }
@@ -621,10 +539,6 @@ if (runProcessingBtn) {
     alert("Processing completed successfully.");
   });
 }
-
-/* =========================
-   VIEW RESULT NAVIGATION
-   ========================= */
 
 if (viewResultBtn) {
   viewResultBtn.addEventListener("click", () => {
@@ -642,34 +556,18 @@ const resultTreeCount = document.getElementById("resultTreeCount");
 const resultBasalArea = document.getElementById("resultBasalArea");
 const resultVolume = document.getElementById("resultVolume");
 const resultTableBody = document.getElementById("resultTableBody");
+const recentRecordsBody = document.getElementById("recentRecordsBody");
 
 if (resultTableBody) {
   (async () => {
+    const surveyId = await getCurrentSurveyId();
     const surveyName = localStorage.getItem("currentSurveyName");
 
-    if (!surveyName) {
-      alert("No survey found.");
-      return;
-    }
+    if (!surveyId || !surveyName) return;
 
     if (resultSurveyName) {
       resultSurveyName.textContent = surveyName;
     }
-
-    const { data: surveyData, error: surveyError } = await supabase
-      .from("fips_surveys")
-      .select("id, survey_name")
-      .eq("survey_name", surveyName)
-      .order("id", { ascending: false })
-      .limit(1);
-
-    if (surveyError || !surveyData || surveyData.length === 0) {
-      console.error("Survey fetch error:", surveyError);
-      alert("Failed to find survey.");
-      return;
-    }
-
-    const surveyId = surveyData[0].id;
 
     const { data: resultsData, error: resultsError } = await supabase
       .from("fips_results")
@@ -678,13 +576,12 @@ if (resultTableBody) {
       .order("plot_no", { ascending: true });
 
     if (resultsError) {
-      console.error("Result fetch error:", resultsError);
-      alert("Failed to load results.");
+      showGenericError("Failed to load results.");
       return;
     }
 
     if (!resultsData || resultsData.length === 0) {
-      alert("No results found.");
+      showGenericError("No results found.");
       return;
     }
 
@@ -701,17 +598,48 @@ if (resultTableBody) {
 
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${row.plot_no ?? ""}</td>
-        <td>${row.tree_count ?? 0}</td>
+        <td>${escapeHtml(row.plot_no ?? "")}</td>
+        <td>${escapeHtml(row.tree_count ?? 0)}</td>
         <td>${Number(row.basal_area_m2 || 0).toFixed(4)}</td>
         <td>${Number(row.volume_m3 || 0).toFixed(4)}</td>
       `;
       resultTableBody.appendChild(tr);
     });
 
-    if (resultPlotCount) resultPlotCount.textContent = totalPlots;
-    if (resultTreeCount) resultTreeCount.textContent = totalTrees;
+    if (resultPlotCount) resultPlotCount.textContent = String(totalPlots);
+    if (resultTreeCount) resultTreeCount.textContent = String(totalTrees);
     if (resultBasalArea) resultBasalArea.textContent = totalBasal.toFixed(4);
     if (resultVolume) resultVolume.textContent = totalVol.toFixed(4);
+  })();
+}
+
+if (recentRecordsBody) {
+  (async () => {
+    const { data, error } = await supabase
+      .from("fips_surveys")
+      .select("survey_number, survey_name")
+      .order("id", { ascending: false })
+      .limit(5);
+
+    if (error || !data || data.length === 0) {
+      recentRecordsBody.innerHTML = `
+        <tr>
+          <td colspan="3">No records to display.</td>
+        </tr>
+      `;
+      return;
+    }
+
+    recentRecordsBody.innerHTML = "";
+
+    data.forEach((row) => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${escapeHtml(row.survey_number ?? "")}</td>
+        <td>${escapeHtml(row.survey_name ?? "")}</td>
+        <td>Available</td>
+      `;
+      recentRecordsBody.appendChild(tr);
+    });
   })();
 }
