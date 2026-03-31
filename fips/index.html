@@ -3,27 +3,48 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FIPS</title>
+  <title>Restricted Module</title>
+
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="
+      default-src 'self';
+      script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net;
+      style-src 'self' 'unsafe-inline';
+      connect-src https://pncvddqeuxlkplwgvxgk.supabase.co;
+      img-src 'self' data:;
+      font-src 'self' data:;
+      object-src 'none';
+      base-uri 'self';
+      frame-ancestors 'none';
+      form-action 'self';
+    "
+  />
+
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
   <div class="page">
     <header class="topbar">
       <div class="brand">
-        <div class="brand-title">FIPS</div>
-        <div class="brand-subtitle">Forest Inventory Processing System</div>
+        <div class="brand-title">Restricted Module</div>
+        <div class="brand-subtitle">Authorized access only</div>
       </div>
       <div class="user-box">
-        <span>User: Demo</span>
+        <span id="userStatus">Access granted</span>
       </div>
     </header>
 
     <main class="main-content">
       <section class="welcome-panel">
-        <h1>Welcome to New FIPS</h1>
+        <h1>Module Home</h1>
         <p>
-          This system is used to manage survey information, import field data
-          collected through Kobo, validate records, run processing, and review results.
+          This page is available to authorized users only.
         </p>
       </section>
 
@@ -31,57 +52,45 @@
         <h2>Main Menu</h2>
         <div class="menu-grid">
           <a class="menu-card" href="./new-survey.html">
-            <div class="menu-card-title">Create New Survey</div>
-            <div class="menu-card-text">Register a new survey and basic survey information.</div>
+            <div class="menu-card-title">Module 1</div>
+            <div class="menu-card-text">Open module.</div>
           </a>
 
           <a class="menu-card" href="./kobo-import.html">
-            <div class="menu-card-title">Import Kobo Data</div>
-            <div class="menu-card-text">Upload Kobo export data and prepare records for validation.</div>
+            <div class="menu-card-title">Module 2</div>
+            <div class="menu-card-text">Open module.</div>
           </a>
 
           <a class="menu-card" href="./validation.html">
-            <div class="menu-card-title">Review Validation</div>
-            <div class="menu-card-text">Check errors and warnings before import and processing.</div>
+            <div class="menu-card-title">Module 3</div>
+            <div class="menu-card-text">Open module.</div>
           </a>
 
           <a class="menu-card" href="./status.html">
-            <div class="menu-card-title">Processing / Results</div>
-            <div class="menu-card-text">Run processing and review survey results.</div>
+            <div class="menu-card-title">Module 4</div>
+            <div class="menu-card-text">Open module.</div>
           </a>
 
           <a class="menu-card" href="./reference.html">
-            <div class="menu-card-title">Reference Codes</div>
-            <div class="menu-card-text">Check plot type, forest type, and species codes.</div>
+            <div class="menu-card-title">Module 5</div>
+            <div class="menu-card-text">Open module.</div>
           </a>
         </div>
       </section>
 
       <section class="recent-panel">
-        <h2>Recent Surveys</h2>
+        <h2>Recent Records</h2>
         <table class="survey-table">
           <thead>
             <tr>
-              <th>Survey No.</th>
-              <th>Survey Name</th>
+              <th>ID</th>
+              <th>Name</th>
               <th>Status</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="recentRecordsBody">
             <tr>
-              <td>12001</td>
-              <td>Sample Survey A</td>
-              <td>Draft</td>
-            </tr>
-            <tr>
-              <td>12002</td>
-              <td>Sample Survey B</td>
-              <td>Validated</td>
-            </tr>
-            <tr>
-              <td>12003</td>
-              <td>Sample Survey C</td>
-              <td>Processed</td>
+              <td colspan="3">No records to display.</td>
             </tr>
           </tbody>
         </table>
