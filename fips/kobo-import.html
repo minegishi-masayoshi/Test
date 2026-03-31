@@ -1,8 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Import Kobo Data</title>
+
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+
+<meta http-equiv="Cache-Control" content="no-store">
+<meta http-equiv="Pragma" content="no-cache">
+
+<meta http-equiv="Content-Security-Policy"
+content="
+default-src 'self';
+script-src 'self' https://cdn.jsdelivr.net;
+style-src 'self' 'unsafe-inline';
+connect-src https://pncvddqeuxlkplwgvxgk.supabase.co;
+img-src 'self' data:;
+font-src 'self';
+object-src 'none';
+base-uri 'self';
+frame-ancestors 'none';
+form-action 'self';
+">
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 <script type="module" src="./app.js"></script>
@@ -62,6 +85,7 @@ color:#555;
 }
 
 </style>
+
 </head>
 
 <body>
@@ -71,10 +95,11 @@ color:#555;
 <h2>Import Kobo Data</h2>
 
 <p class="subtitle">
-Select survey and upload Kobo CSV export.
+Upload Kobo CSV export file.
 </p>
 
-<button class="upload" onclick="document.getElementById('fileUpload').click()">
+<button class="upload"
+onclick="document.getElementById('fileUpload').click()">
 Choose CSV File
 </button>
 
@@ -82,7 +107,11 @@ Choose CSV File
 No file selected
 </span>
 
-<input type="file" id="fileUpload" accept=".csv" hidden>
+<input
+type="file"
+id="fileUpload"
+accept=".csv,text/csv"
+hidden>
 
 <br><br>
 
@@ -120,11 +149,33 @@ const fileName = document.getElementById("fileName");
 
 fileInput.addEventListener("change", () => {
 
-if(fileInput.files.length > 0){
+if(fileInput.files.length === 0){
+return;
+}
 
-fileName.textContent = fileInput.files[0].name;
+const file = fileInput.files[0];
+
+const MAX_SIZE = 5 * 1024 * 1024;
+
+if(file.size > MAX_SIZE){
+
+alert("File too large (max 5MB)");
+fileInput.value="";
+fileName.textContent="No file selected";
+return;
 
 }
+
+if(!file.name.toLowerCase().endsWith(".csv")){
+
+alert("Invalid file type. Please upload CSV.");
+fileInput.value="";
+fileName.textContent="No file selected";
+return;
+
+}
+
+fileName.textContent = file.name;
 
 });
 
