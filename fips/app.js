@@ -878,10 +878,8 @@ if (surveyTableBody) {
 
 }
 
-document.addEventListener("click", (e) => {
-
+document.addEventListener("click", async (e) => {
   if (e.target.classList.contains("openSurveyBtn")) {
-
     const surveyId = e.target.dataset.id;
     const surveyName = e.target.dataset.name;
 
@@ -889,7 +887,61 @@ document.addEventListener("click", (e) => {
     localStorage.setItem("currentSurveyName", surveyName);
 
     window.location.href = "./result.html";
-
   }
 
+  if (e.target.classList.contains("deleteSurveyBtn")) {
+    const surveyId = e.target.dataset.id;
+    const surveyName = e.target.dataset.name;
+
+    const ok = confirm(`Delete survey "${surveyName}"?`);
+    if (!ok) return;
+
+    const { error: treeError } = await supabase
+      .from("fips_tree_records")
+      .delete()
+      .eq("survey_id", Number(surveyId));
+
+    if (treeError) {
+      showGenericError("Failed to delete tree records.");
+      return;
+    }
+
+    const { error: plotError } = await supabase
+      .from("fips_plot_results")
+      .delete()
+      .eq("survey_id", Number(surveyId));
+
+    if (plotError) {
+      showGenericError("Failed to delete plot results.");
+      return;
+    }
+
+    const { error: summaryError } = await supabase
+      .from("fips_survey_results")
+      .delete()
+      .eq("survey_id", Number(surveyId));
+
+    if (summaryError) {
+      showGenericError("Failed to delete survey summary.");
+      return;
+    }
+
+    const { error: surveyError } = await supabase
+      .from("fips_surveys")
+      .delete()
+      .eq("id", Number(surveyId));
+
+    if (surveyError) {
+      showGenericError("Failed to delete survey.");
+      return;
+    }
+
+    if (localStorage.getItem("currentSurveyId") === String(surveyId)) {
+      localStorage.removeItem("currentSurveyId");
+      localStorage.removeItem("currentSurveyName");
+    }
+
+    alert("Survey deleted successfully.");
+    window.location.reload();
+  }
 });
