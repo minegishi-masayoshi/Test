@@ -138,8 +138,7 @@ const AuthenticatedSupabaseTileLayer = L.GridLayer.extend({
 
 const restrictedBaseLayer = new AuthenticatedSupabaseTileLayer({
   tileSize: 256,
-  minZoom: 5,
-  maxNativeZoom: 12,
+  minZoom: 0,
   maxZoom: 18,
   attribution: "Forest Base Map"
 });
