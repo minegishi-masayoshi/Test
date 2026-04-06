@@ -346,6 +346,56 @@ if (csvInput) {
 }
 
 /* =========================
+   FILE PICKER UI
+   ========================= */
+
+const chooseFileBtn = document.getElementById("chooseFileBtn");
+const backToSurveyBtn = document.getElementById("backToSurveyBtn");
+const fileNameLabel = document.getElementById("fileName");
+const importFileInput = document.getElementById("fileUpload");
+
+if (chooseFileBtn && importFileInput) {
+  chooseFileBtn.addEventListener("click", () => {
+    importFileInput.click();
+  });
+}
+
+if (backToSurveyBtn) {
+  backToSurveyBtn.addEventListener("click", () => {
+    window.location.href = "./new-survey.html";
+  });
+}
+
+if (importFileInput && fileNameLabel) {
+  importFileInput.addEventListener("change", () => {
+    if (importFileInput.files.length === 0) {
+      fileNameLabel.textContent = "No file selected";
+      return;
+    }
+
+    const file = importFileInput.files[0];
+    const maxSize = 5 * 1024 * 1024;
+
+    if (file.size > maxSize) {
+      alert("File too large (max 5MB)");
+      importFileInput.value = "";
+      fileNameLabel.textContent = "No file selected";
+      return;
+    }
+
+    if (!file.name.toLowerCase().endsWith(".csv")) {
+      alert("Invalid file type. Please upload CSV.");
+      importFileInput.value = "";
+      fileNameLabel.textContent = "No file selected";
+      return;
+    }
+
+    fileNameLabel.textContent = file.name;
+  });
+}
+
+
+/* =========================
    VALIDATION DASHBOARD
    ========================= */
 
