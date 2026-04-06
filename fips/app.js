@@ -482,6 +482,8 @@ async function importParsedRowsToTreeRecords() {
     return false;
   }
 
+  localStorage.setItem("currentSurveyId", String(surveyId));
+
   return true;
 }
 
