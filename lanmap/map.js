@@ -67,9 +67,15 @@ const AuthenticatedSupabaseTileLayer = L.GridLayer.extend({
     tile.width = tileSize.x;
     tile.height = tileSize.y;
 
-    const z = coords.z;
-    const x = coords.x;
-    const y = coords.y;
+    // z>12 では z=12 のタイルを拡大利用する
+    const sourceZ = Math.min(coords.z, 12);
+    const scale = Math.pow(2, coords.z - sourceZ);
+
+    const x = Math.floor(coords.x / scale);
+    const y = Math.floor(coords.y / scale);
+    const z = sourceZ;
+
+    // Storage 内は TMS なので Y を反転
     const yTms = (Math.pow(2, z) - 1) - y;
 
     (async () => {
@@ -82,7 +88,16 @@ const AuthenticatedSupabaseTileLayer = L.GridLayer.extend({
           .download(tilePath);
 
         if (error) {
-          console.error("Tile download error:", z, x, y, yTms, error);
+          console.error("Tile download error:", {
+            requestZ: coords.z,
+            requestX: coords.x,
+            requestY: coords.y,
+            sourceZ: z,
+            sourceX: x,
+            sourceY: y,
+            sourceYTms: yTms,
+            error: error
+          });
           tile.src = EMPTY_TILE;
           done(null, tile);
           return;
@@ -105,7 +120,16 @@ const AuthenticatedSupabaseTileLayer = L.GridLayer.extend({
 
         tile.src = objectUrl;
       } catch (err) {
-        console.error("Private tile load error:", z, x, y, yTms, err);
+        console.error("Private tile load error:", {
+          requestZ: coords.z,
+          requestX: coords.x,
+          requestY: coords.y,
+          sourceZ: z,
+          sourceX: x,
+          sourceY: y,
+          sourceYTms: yTms,
+          error: err
+        });
         tile.src = EMPTY_TILE;
         done(null, tile);
       }
