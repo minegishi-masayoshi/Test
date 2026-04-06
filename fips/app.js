@@ -880,7 +880,16 @@ if (surveyTableBody) {
   (async () => {
     const { data, error } = await supabase
       .from("fips_surveys")
-      .select("id, survey_number, survey_name")
+      .select(`
+      id,
+      survey_number,
+      survey_name,
+      survey_date,
+      fips_survey_results (
+      total_plots,
+      total_trees
+      )
+      `)
       .order("id", { ascending: false });
 
     if (error || !data) {
