@@ -51,30 +51,34 @@ const osmLayer = L.tileLayer(
   }
 ).addTo(map);
 
-// 1x1 transparent gif
+// transparent 1x1 gif
 const EMPTY_TILE =
   "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
 
+// private bucket path:
+// lanmap_tiles / tiles / {z} / {x} / {y}.png
+const PRIVATE_TILE_BASE =
+  `${SUPABASE_URL}/storage/v1/object/authenticated/lanmap_tiles/tiles`;
+
 // =====================
-// Authenticated tile layer for private Supabase Storage
+// Authenticated GridLayer for private Supabase Storage
 // =====================
 const AuthenticatedSupabaseTileLayer = L.GridLayer.extend({
   createTile: function (coords, done) {
     const tile = document.createElement("img");
+    const tileSize = this.getTileSize();
 
     tile.alt = "";
-    tile.setAttribute("role", "presentation");
-    tile.width = this.getTileSize().x;
-    tile.height = this.getTileSize().y;
+    tile.width = tileSize.x;
+    tile.height = tileSize.y;
+    tile.decoding = "async";
+    tile.loading = "lazy";
 
     const z = coords.z;
     const x = coords.x;
     const y = coords.y;
 
-    // LANMAP raster tiles are stored in:
-    // lanmap_tiles / tiles / {z} / {x} / {y}.png
-    const tileUrl =
-      `${SUPABASE_URL}/storage/v1/object/authenticated/lanmap_tiles/tiles/${z}/${x}/${y}.png`;
+    const tileUrl = `${PRIVATE_TILE_BASE}/${z}/${x}/${y}.png`;
 
     (async () => {
       try {
@@ -94,7 +98,6 @@ const AuthenticatedSupabaseTileLayer = L.GridLayer.extend({
           }
         });
 
-        // Tile not found -> return blank tile quietly
         if (response.status === 404) {
           tile.src = EMPTY_TILE;
           done(null, tile);
@@ -102,7 +105,7 @@ const AuthenticatedSupabaseTileLayer = L.GridLayer.extend({
         }
 
         if (!response.ok) {
-          throw new Error(`Tile fetch failed: ${response.status} ${response.statusText}`);
+          throw new Error(`Tile fetch failed: ${response.status}`);
         }
 
         const blob = await response.blob();
@@ -539,7 +542,7 @@ function renderSuggestionList(items) {
     row.innerHTML =
       '<div class="search-suggestion-name">' + escapeHtml(item.name) + "</div>" +
       (metaParts.length
-        ? '<div class="search-suggestion-meta">' + escapeHtml(metaParts.join(" | ")) + "</div>"
+        ? '<div class="search-suggestion-meta">' + escapeHtml(metaParts.join(" | ")) + "</div>'
         : "");
 
     row.addEventListener("mouseenter", function () {
