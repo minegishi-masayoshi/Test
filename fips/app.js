@@ -691,6 +691,12 @@ if (runProcessingBtn) {
   });
 }
 
+if (viewResultBtn) {
+  viewResultBtn.addEventListener("click", () => {
+    window.location.href = "./result.html";
+  });
+}
+
 /* =========================
    RESULT VIEW
    ========================= */
