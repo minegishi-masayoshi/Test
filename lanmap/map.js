@@ -51,8 +51,95 @@ const osmLayer = L.tileLayer(
   }
 ).addTo(map);
 
-// Placeholder for future private basemap
-const restrictedBaseLayer = L.layerGroup();
+// 1x1 transparent gif
+const EMPTY_TILE =
+  "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
+
+// =====================
+// Authenticated tile layer for private Supabase Storage
+// =====================
+const AuthenticatedSupabaseTileLayer = L.GridLayer.extend({
+  createTile: function (coords, done) {
+    const tile = document.createElement("img");
+
+    tile.alt = "";
+    tile.setAttribute("role", "presentation");
+    tile.width = this.getTileSize().x;
+    tile.height = this.getTileSize().y;
+
+    const z = coords.z;
+    const x = coords.x;
+    const y = coords.y;
+
+    // LANMAP raster tiles are stored in:
+    // lanmap_tiles / tiles / {z} / {x} / {y}.png
+    const tileUrl =
+      `${SUPABASE_URL}/storage/v1/object/authenticated/lanmap_tiles/tiles/${z}/${x}/${y}.png`;
+
+    (async () => {
+      try {
+        const { data, error } = await supabaseClient.auth.getSession();
+
+        if (error || !data.session) {
+          tile.src = EMPTY_TILE;
+          done(null, tile);
+          return;
+        }
+
+        const response = await fetch(tileUrl, {
+          method: "GET",
+          headers: {
+            apikey: SUPABASE_KEY,
+            Authorization: `Bearer ${data.session.access_token}`
+          }
+        });
+
+        // Tile not found -> return blank tile quietly
+        if (response.status === 404) {
+          tile.src = EMPTY_TILE;
+          done(null, tile);
+          return;
+        }
+
+        if (!response.ok) {
+          throw new Error(`Tile fetch failed: ${response.status} ${response.statusText}`);
+        }
+
+        const blob = await response.blob();
+        const objectUrl = URL.createObjectURL(blob);
+
+        tile.onload = function () {
+          setTimeout(function () {
+            URL.revokeObjectURL(objectUrl);
+          }, 1000);
+          done(null, tile);
+        };
+
+        tile.onerror = function () {
+          URL.revokeObjectURL(objectUrl);
+          tile.src = EMPTY_TILE;
+          done(null, tile);
+        };
+
+        tile.src = objectUrl;
+      } catch (err) {
+        console.error("Private tile load error:", z, x, y, err);
+        tile.src = EMPTY_TILE;
+        done(null, tile);
+      }
+    })();
+
+    return tile;
+  }
+});
+
+const restrictedBaseLayer = new AuthenticatedSupabaseTileLayer({
+  tileSize: 256,
+  minZoom: 5,
+  maxNativeZoom: 12,
+  maxZoom: 18,
+  attribution: "Forest Base Map"
+});
 
 // =====================
 // Pane settings
