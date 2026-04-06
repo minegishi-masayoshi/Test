@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FIPS Surveys</title>
+<link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+
+<h1>Survey List</h1>
+
+<table border="1">
+<thead>
+<tr>
+<th>Survey Number</th>
+<th>Survey Name</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody id="surveyTableBody">
+
+<tr>
+<td colspan="3">Loading...</td>
+</tr>
+
+</tbody>
+
+</table>
+
+<br>
+
+<a href="./new-survey.html">Create New Survey</a>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script type="module" src="./app.js"></script>
+
+</body>
+</html>
