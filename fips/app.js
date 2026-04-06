@@ -828,3 +828,49 @@ if (recentRecordsBody) {
     });
   })();
 }
+
+const surveyTableBody = document.getElementById("surveyTableBody");
+
+if (surveyTableBody) {
+
+  (async () => {
+
+    const { data, error } = await supabase
+      .from("fips_surveys")
+      .select("id, survey_number, survey_name")
+      .order("id", { ascending: false });
+
+    if (error || !data) {
+
+      surveyTableBody.innerHTML = `
+      <tr>
+      <td colspan="3">Failed to load surveys.</td>
+      </tr>
+      `;
+
+      return;
+    }
+
+    surveyTableBody.innerHTML = "";
+
+    data.forEach((row) => {
+
+      const tr = document.createElement("tr");
+
+      tr.innerHTML = `
+      <td>${escapeHtml(row.survey_number)}</td>
+      <td>${escapeHtml(row.survey_name)}</td>
+      <td>
+        <button data-id="${row.id}" data-name="${row.survey_name}" class="openSurveyBtn">
+        Open
+        </button>
+      </td>
+      `;
+
+      surveyTableBody.appendChild(tr);
+
+    });
+
+  })();
+
+}
