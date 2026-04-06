@@ -983,3 +983,44 @@ document.addEventListener("click", async (e) => {
     window.location.reload();
   }
 });
+
+
+/* =========================
+   BACK BUTTONS
+   ========================= */
+
+const backToImportBtn = document.getElementById("backToImportBtn");
+const backToHomeBtn = document.getElementById("backToHomeBtn");
+const backToStatusBtn = document.getElementById("backToStatusBtn");
+const backToSurveyListBtn = document.getElementById("backToSurveyListBtn");
+const backFromSurveyBtn = document.getElementById("backFromSurveyBtn");
+
+if (backToImportBtn) {
+  backToImportBtn.addEventListener("click", () => {
+    window.location.href = "./kobo-import.html";
+  });
+}
+
+if (backToHomeBtn) {
+  backToHomeBtn.addEventListener("click", () => {
+    window.location.href = "./index.html";
+  });
+}
+
+if (backToStatusBtn) {
+  backToStatusBtn.addEventListener("click", () => {
+    window.location.href = "./status.html";
+  });
+}
+
+if (backToSurveyListBtn) {
+  backToSurveyListBtn.addEventListener("click", () => {
+    window.location.href = "./surveys.html";
+  });
+}
+
+if (backFromSurveyBtn) {
+  backFromSurveyBtn.addEventListener("click", () => {
+    window.location.href = "./index.html";
+  });
+}
