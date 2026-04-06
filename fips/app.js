@@ -537,8 +537,14 @@ if (surveyNameDisplay) {
 
 if (runProcessingBtn) {
   runProcessingBtn.addEventListener("click", async () => {
-    const surveyId = await getCurrentSurveyId();
+    const surveyId = localStorage.getItem("currentSurveyId");
+    const surveyName = localStorage.getItem("currentSurveyName");
+
+    console.log("Run Processing surveyId =", surveyId);
+    console.log("Run Processing surveyName =", surveyName);
+
     if (!surveyId) {
+      showGenericError("No current survey selected.");
       if (processingStatusCell) processingStatusCell.textContent = "Failed";
       return;
     }
@@ -549,7 +555,10 @@ if (runProcessingBtn) {
     const { data: treeRows, error: treeError } = await supabase
       .from("fips_tree_records")
       .select("*")
-      .eq("survey_id", surveyId);
+      .eq("survey_id", Number(surveyId));
+
+    console.log("treeRows =", treeRows);
+    console.log("treeError =", treeError);
 
     if (treeError) {
       showGenericError("Failed to load records.");
@@ -572,7 +581,7 @@ if (runProcessingBtn) {
 
       if (!grouped[plotNo]) {
         grouped[plotNo] = {
-          survey_id: surveyId,
+          survey_id: Number(surveyId),
           plot_no: plotNo,
           tree_count: 0,
           basal_area_m2: 0,
@@ -622,7 +631,7 @@ if (runProcessingBtn) {
     );
 
     const surveyResultsPayload = {
-      survey_id: surveyId,
+      survey_id: Number(surveyId),
       total_plots: totalPlots,
       total_trees: totalTrees,
       total_basal_area_m2: Number(totalBasalArea.toFixed(6)),
@@ -633,7 +642,7 @@ if (runProcessingBtn) {
     const { error: deletePlotError } = await supabase
       .from("fips_plot_results")
       .delete()
-      .eq("survey_id", surveyId);
+      .eq("survey_id", Number(surveyId));
 
     if (deletePlotError) {
       showGenericError("Failed to clear old plot results.");
@@ -654,7 +663,7 @@ if (runProcessingBtn) {
     const { error: deleteSurveyError } = await supabase
       .from("fips_survey_results")
       .delete()
-      .eq("survey_id", surveyId);
+      .eq("survey_id", Number(surveyId));
 
     if (deleteSurveyError) {
       showGenericError("Failed to clear old survey results.");
@@ -679,12 +688,6 @@ if (runProcessingBtn) {
     if (resultStatusCell) resultStatusCell.textContent = "Generated";
 
     alert("Processing completed successfully.");
-  });
-}
-
-if (viewResultBtn) {
-  viewResultBtn.addEventListener("click", () => {
-    window.location.href = "./result.html";
   });
 }
 
