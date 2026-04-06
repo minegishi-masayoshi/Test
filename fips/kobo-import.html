@@ -1,185 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Import Kobo Data</title>
 
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
 
-<title>Import Kobo Data</title>
+  <meta http-equiv="Content-Security-Policy"
+    content="
+      default-src 'self';
+      script-src 'self' https://cdn.jsdelivr.net;
+      style-src 'self' 'unsafe-inline';
+      connect-src https://pncvddqeuxlkplwgvxgk.supabase.co;
+      img-src 'self' data:;
+      font-src 'self' data:;
+      object-src 'none';
+      base-uri 'self';
+      frame-ancestors 'none';
+      form-action 'self';
+    ">
 
-<meta name="robots" content="noindex, nofollow">
-<meta name="referrer" content="strict-origin-when-cross-origin">
-
-<meta http-equiv="Cache-Control" content="no-store">
-<meta http-equiv="Pragma" content="no-cache">
-
-<meta http-equiv="Content-Security-Policy"
-content="
-default-src 'self';
-script-src 'self' https://cdn.jsdelivr.net;
-style-src 'self' 'unsafe-inline';
-connect-src https://pncvddqeuxlkplwgvxgk.supabase.co;
-img-src 'self' data:;
-font-src 'self';
-object-src 'none';
-base-uri 'self';
-frame-ancestors 'none';
-form-action 'self';
-">
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
-<script type="module" src="./app.js"></script>
-
-<style>
-
-body{
-font-family: Arial, sans-serif;
-background:#f4f4f4;
-padding:30px;
-}
-
-.container{
-background:white;
-padding:25px;
-border-radius:6px;
-max-width:720px;
-margin:auto;
-}
-
-h2{
-margin-bottom:10px;
-}
-
-.subtitle{
-color:#555;
-margin-bottom:20px;
-}
-
-button{
-padding:10px 16px;
-border:none;
-background:#2e7d32;
-color:white;
-cursor:pointer;
-margin-right:10px;
-}
-
-button.secondary{
-background:#666;
-}
-
-button.upload{
-background:#1976d2;
-}
-
-.summary{
-margin-top:20px;
-padding:12px;
-background:#fafafa;
-border:1px solid #ddd;
-}
-
-.file-name{
-margin-left:10px;
-color:#555;
-}
-
-</style>
-
+  <link rel="stylesheet" href="./style.css">
 </head>
-
 <body>
+  <div class="page">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-title">FIPS</div>
+        <div class="brand-subtitle">Import Kobo Data</div>
+      </div>
+      <div class="user-box">
+        <span id="userStatus">Access granted</span>
+      </div>
+    </header>
 
-<div class="container">
+    <main class="main-content">
+      <section class="welcome-panel">
+        <h1>Import Kobo Data</h1>
+        <p>Upload a Kobo CSV export file for validation and import.</p>
+      </section>
 
-<h2>Import Kobo Data</h2>
+      <section class="menu-panel">
+        <button id="chooseFileBtn" class="upload" type="button">
+          Choose CSV File
+        </button>
 
-<p class="subtitle">
-Upload Kobo CSV export file.
-</p>
+        <span id="fileName" class="file-name">No file selected</span>
 
-<button class="upload"
-onclick="document.getElementById('fileUpload').click()">
-Choose CSV File
-</button>
+        <input
+          type="file"
+          id="fileUpload"
+          accept=".csv,text/csv"
+          hidden
+        >
 
-<span id="fileName" class="file-name">
-No file selected
-</span>
+        <br><br>
 
-<input
-type="file"
-id="fileUpload"
-accept=".csv,text/csv"
-hidden>
+        <button id="validateBtn" type="button">
+          Validate Data
+        </button>
 
-<br><br>
+        <div class="summary">
+          <h3>Summary</h3>
 
-<button id="validateBtn">
-Validate Data
-</button>
+          <p>
+            Total Records: <span id="totalRecords">-</span>
+          </p>
 
-<div class="summary">
+          <p>
+            Mapped Fields: <span id="mappedFields">-</span>
+          </p>
+        </div>
 
-<h3>Summary</h3>
+        <br>
 
-<p>
-Total Records: <span id="totalRecords">-</span>
-</p>
+        <button id="backToSurveyBtn" class="secondary" type="button">
+          Back
+        </button>
+      </section>
+    </main>
+  </div>
 
-<p>
-Mapped Fields: <span id="mappedFields">-</span>
-</p>
-
-</div>
-
-<br>
-
-<button class="secondary"
-onclick="window.location.href='./new-survey.html'">
-Back
-</button>
-
-</div>
-
-<script>
-
-const fileInput = document.getElementById("fileUpload");
-const fileName = document.getElementById("fileName");
-
-fileInput.addEventListener("change", () => {
-
-if(fileInput.files.length === 0){
-return;
-}
-
-const file = fileInput.files[0];
-
-const MAX_SIZE = 5 * 1024 * 1024;
-
-if(file.size > MAX_SIZE){
-
-alert("File too large (max 5MB)");
-fileInput.value="";
-fileName.textContent="No file selected";
-return;
-
-}
-
-if(!file.name.toLowerCase().endsWith(".csv")){
-
-alert("Invalid file type. Please upload CSV.");
-fileInput.value="";
-fileName.textContent="No file selected";
-return;
-
-}
-
-fileName.textContent = file.name;
-
-});
-
-</script>
-
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script type="module" src="./app.js"></script>
 </body>
 </html>
