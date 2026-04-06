@@ -874,3 +874,19 @@ if (surveyTableBody) {
   })();
 
 }
+
+document.addEventListener("click", (e) => {
+
+  if (e.target.classList.contains("openSurveyBtn")) {
+
+    const surveyId = e.target.dataset.id;
+    const surveyName = e.target.dataset.name;
+
+    localStorage.setItem("currentSurveyId", surveyId);
+    localStorage.setItem("currentSurveyName", surveyName);
+
+    window.location.href = "./result.html";
+
+  }
+
+});
