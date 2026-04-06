@@ -70,10 +70,11 @@ const AuthenticatedSupabaseTileLayer = L.GridLayer.extend({
     const z = coords.z;
     const x = coords.x;
     const y = coords.y;
+    const yTms = (Math.pow(2, z) - 1) - y;
 
     (async () => {
       try {
-        const tilePath = `tiles/${z}/${x}/${y}.png`;
+        const tilePath = `tiles/${z}/${x}/${yTms}.png`;
 
         const { data: blob, error } = await supabaseClient
           .storage
@@ -81,7 +82,7 @@ const AuthenticatedSupabaseTileLayer = L.GridLayer.extend({
           .download(tilePath);
 
         if (error) {
-          console.error("Tile download error:", z, x, y, error);
+          console.error("Tile download error:", z, x, y, yTms, error);
           tile.src = EMPTY_TILE;
           done(null, tile);
           return;
@@ -104,7 +105,7 @@ const AuthenticatedSupabaseTileLayer = L.GridLayer.extend({
 
         tile.src = objectUrl;
       } catch (err) {
-        console.error("Private tile load error:", z, x, y, err);
+        console.error("Private tile load error:", z, x, y, yTms, err);
         tile.src = EMPTY_TILE;
         done(null, tile);
       }
