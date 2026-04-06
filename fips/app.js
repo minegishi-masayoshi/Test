@@ -624,7 +624,7 @@ if (recentRecordsBody) {
     if (error || !data || data.length === 0) {
       recentRecordsBody.innerHTML = `
         <tr>
-          <td colspan="3">No records to display.</td>
+          <td colspan="2">No surveys to display.</td>
         </tr>
       `;
       return;
@@ -637,7 +637,6 @@ if (recentRecordsBody) {
       tr.innerHTML = `
         <td>${escapeHtml(row.survey_number ?? "")}</td>
         <td>${escapeHtml(row.survey_name ?? "")}</td>
-        <td>Available</td>
       `;
       recentRecordsBody.appendChild(tr);
     });
