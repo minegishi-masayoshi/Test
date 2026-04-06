@@ -903,23 +903,24 @@ if (surveyTableBody) {
     data.forEach((row) => {
       const tr = document.createElement("tr");
 
+      const plots = row.fips_survey_results?.[0]?.total_plots ?? "-";
+      const trees = row.fips_survey_results?.[0]?.total_trees ?? "-";
+      
       tr.innerHTML = `
-        <td>${escapeHtml(row.survey_number)}</td>
-        <td>${escapeHtml(row.survey_name)}</td>
-        <td>
-          <button data-id="${row.id}" data-name="${escapeHtml(row.survey_name)}" class="openSurveyBtn">
-            Open
-          </button>
-          <button data-id="${row.id}" data-name="${escapeHtml(row.survey_name)}" class="deleteSurveyBtn">
-            Delete
-          </button>
-        </td>
+      <td>${escapeHtml(row.survey_number)}</td>
+      <td>${escapeHtml(row.survey_name)}</td>
+      <td>${escapeHtml(row.survey_date ?? "-")}</td>
+      <td>${plots}</td>
+      <td>${trees}</td>
+      <td>
+      <button data-id="${row.id}" data-name="${escapeHtml(row.survey_name)}" class="openSurveyBtn">
+      Open
+      </button>
+      <button data-id="${row.id}" data-name="${escapeHtml(row.survey_name)}" class="deleteSurveyBtn">
+      Delete
+      </button>
+      </td>
       `;
-
-      surveyTableBody.appendChild(tr);
-    });
-  })();
-}
 
 /* =========================
    SURVEY LIST ACTIONS
