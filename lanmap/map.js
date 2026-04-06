@@ -55,11 +55,6 @@ const osmLayer = L.tileLayer(
 const EMPTY_TILE =
   "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
 
-// private bucket path:
-// lanmap_tiles / tiles / {z} / {x} / {y}.png
-const PRIVATE_TILE_BASE =
-  `${SUPABASE_URL}/storage/v1/object/authenticated/lanmap_tiles/tiles`;
-
 // =====================
 // Authenticated GridLayer for private Supabase Storage
 // =====================
@@ -71,44 +66,27 @@ const AuthenticatedSupabaseTileLayer = L.GridLayer.extend({
     tile.alt = "";
     tile.width = tileSize.x;
     tile.height = tileSize.y;
-    tile.decoding = "async";
-    tile.loading = "lazy";
 
     const z = coords.z;
     const x = coords.x;
     const y = coords.y;
 
-    const tileUrl = `${PRIVATE_TILE_BASE}/${z}/${x}/${y}.png`;
-
     (async () => {
       try {
-        const { data, error } = await supabaseClient.auth.getSession();
+        const tilePath = `tiles/${z}/${x}/${y}.png`;
 
-        if (error || !data.session) {
+        const { data: blob, error } = await supabaseClient
+          .storage
+          .from("lanmap_tiles")
+          .download(tilePath);
+
+        if (error) {
+          console.error("Tile download error:", z, x, y, error);
           tile.src = EMPTY_TILE;
           done(null, tile);
           return;
         }
 
-        const response = await fetch(tileUrl, {
-          method: "GET",
-          headers: {
-            apikey: SUPABASE_KEY,
-            Authorization: `Bearer ${data.session.access_token}`
-          }
-        });
-
-        if (response.status === 404) {
-          tile.src = EMPTY_TILE;
-          done(null, tile);
-          return;
-        }
-
-        if (!response.ok) {
-          throw new Error(`Tile fetch failed: ${response.status}`);
-        }
-
-        const blob = await response.blob();
         const objectUrl = URL.createObjectURL(blob);
 
         tile.onload = function () {
