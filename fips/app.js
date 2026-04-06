@@ -132,7 +132,8 @@ if (newSurveyForm) {
       elevation_max: document.getElementById("elevationMax").value
         ? Number(document.getElementById("elevationMax").value)
         : null,
-      adjusted_net_forest_area: document.getElementById("adjustedNetForestArea").value
+      adjusted_net_forest_area: document.getElementById("adjustedNetForestArea")
+        .value
         ? Number(document.getElementById("adjustedNetForestArea").value)
         : null
     };
@@ -293,7 +294,10 @@ if (validateBtn && fileUpload) {
     }
 
     localStorage.setItem("fipsParsedRows", JSON.stringify(parsedRows));
-    localStorage.setItem("fipsValidationErrors", JSON.stringify(validationErrors));
+    localStorage.setItem(
+      "fipsValidationErrors",
+      JSON.stringify(validationErrors)
+    );
 
     window.location.href = "./validation.html";
   });
@@ -423,7 +427,8 @@ if (validationTableBody) {
     }
   } else {
     if (messageEl) {
-      messageEl.textContent = "Validation failed. Please review the errors below.";
+      messageEl.textContent =
+        "Validation failed. Please review the errors below.";
       messageEl.className = "error";
     }
 
@@ -502,9 +507,7 @@ async function importParsedRowsToTreeRecords() {
 
   const payload = buildTreePayload(rows, Number(surveyId));
 
-  const { error } = await supabase
-    .from("fips_tree_records")
-    .insert(payload);
+  const { error } = await supabase.from("fips_tree_records").insert(payload);
 
   if (error) {
     showGenericError("Import failed.");
@@ -526,7 +529,9 @@ if (importBtn) {
   });
 }
 
-const importFromValidationBtn = document.getElementById("importFromValidationBtn");
+const importFromValidationBtn = document.getElementById(
+  "importFromValidationBtn"
+);
 if (importFromValidationBtn) {
   importFromValidationBtn.addEventListener("click", async () => {
     const ok = await importParsedRowsToTreeRecords();
@@ -600,7 +605,9 @@ if (runProcessingBtn) {
       return;
     }
 
-    if (processingMessage) processingMessage.textContent = "Calculating results...";
+    if (processingMessage) {
+      processingMessage.textContent = "Calculating results...";
+    }
 
     const grouped = {};
 
@@ -783,7 +790,8 @@ if (resultTableBody) {
       return;
     }
 
-    const summary = summaryData && summaryData.length > 0 ? summaryData[0] : null;
+    const summary =
+      summaryData && summaryData.length > 0 ? summaryData[0] : null;
 
     if (summary) {
       if (resultPlotCount) {
@@ -881,20 +889,20 @@ if (surveyTableBody) {
     const { data, error } = await supabase
       .from("fips_surveys")
       .select(`
-      id,
-      survey_number,
-      survey_name,
-      survey_date,
-      fips_survey_results (
-      total_plots,
-      total_trees
-      )
+        id,
+        survey_number,
+        survey_name,
+        survey_date,
+        fips_survey_results (
+          total_plots,
+          total_trees
+        )
       `)
       .order("id", { ascending: false });
 
     if (error || !data) {
       surveyTableBody.innerHTML =
-        `<tr><td colspan="3">Failed to load surveys.</td></tr>`;
+        `<tr><td colspan="6">Failed to load surveys.</td></tr>`;
       return;
     }
 
@@ -905,22 +913,31 @@ if (surveyTableBody) {
 
       const plots = row.fips_survey_results?.[0]?.total_plots ?? "-";
       const trees = row.fips_survey_results?.[0]?.total_trees ?? "-";
-      
+
       tr.innerHTML = `
-      <td>${escapeHtml(row.survey_number)}</td>
-      <td>${escapeHtml(row.survey_name)}</td>
-      <td>${escapeHtml(row.survey_date ?? "-")}</td>
-      <td>${plots}</td>
-      <td>${trees}</td>
-      <td>
-      <button data-id="${row.id}" data-name="${escapeHtml(row.survey_name)}" class="openSurveyBtn">
-      Open
-      </button>
-      <button data-id="${row.id}" data-name="${escapeHtml(row.survey_name)}" class="deleteSurveyBtn">
-      Delete
-      </button>
-      </td>
+        <td>${escapeHtml(row.survey_number)}</td>
+        <td>${escapeHtml(row.survey_name)}</td>
+        <td>${escapeHtml(row.survey_date ?? "-")}</td>
+        <td>${plots}</td>
+        <td>${trees}</td>
+        <td>
+          <button data-id="${row.id}" data-name="${escapeHtml(
+            row.survey_name
+          )}" class="openSurveyBtn">
+            Open
+          </button>
+          <button data-id="${row.id}" data-name="${escapeHtml(
+            row.survey_name
+          )}" class="deleteSurveyBtn">
+            Delete
+          </button>
+        </td>
       `;
+
+      surveyTableBody.appendChild(tr);
+    });
+  })();
+}
 
 /* =========================
    SURVEY LIST ACTIONS
@@ -993,7 +1010,6 @@ document.addEventListener("click", async (e) => {
     window.location.reload();
   }
 });
-
 
 /* =========================
    BACK BUTTONS
