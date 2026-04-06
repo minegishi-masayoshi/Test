@@ -470,7 +470,37 @@ async function importParsedRowsToTreeRecords() {
     return false;
   }
 
-  const payload = buildTreePayload(rows, surveyId);
+  const { error: deleteTreeError } = await supabase
+    .from("fips_tree_records")
+    .delete()
+    .eq("survey_id", Number(surveyId));
+
+  if (deleteTreeError) {
+    showGenericError("Failed to clear old tree records.");
+    return false;
+  }
+
+  const { error: deletePlotError } = await supabase
+    .from("fips_plot_results")
+    .delete()
+    .eq("survey_id", Number(surveyId));
+
+  if (deletePlotError) {
+    showGenericError("Failed to clear old plot results.");
+    return false;
+  }
+
+  const { error: deleteSurveyError } = await supabase
+    .from("fips_survey_results")
+    .delete()
+    .eq("survey_id", Number(surveyId));
+
+  if (deleteSurveyError) {
+    showGenericError("Failed to clear old survey results.");
+    return false;
+  }
+
+  const payload = buildTreePayload(rows, Number(surveyId));
 
   const { error } = await supabase
     .from("fips_tree_records")
@@ -706,6 +736,13 @@ const resultBasalArea = document.getElementById("resultBasalArea");
 const resultVolume = document.getElementById("resultVolume");
 const resultTableBody = document.getElementById("resultTableBody");
 const recentRecordsBody = document.getElementById("recentRecordsBody");
+const reimportBtn = document.getElementById("reimportBtn");
+
+if (reimportBtn) {
+  reimportBtn.addEventListener("click", () => {
+    window.location.href = "./kobo-import.html";
+  });
+}
 
 if (resultTableBody) {
   (async () => {
@@ -721,7 +758,7 @@ if (resultTableBody) {
     const { data: summaryData, error: summaryError } = await supabase
       .from("fips_survey_results")
       .select("*")
-      .eq("survey_id", surveyId)
+      .eq("survey_id", Number(surveyId))
       .order("calculated_at", { ascending: false })
       .limit(1);
 
@@ -733,7 +770,7 @@ if (resultTableBody) {
     const { data: plotResults, error: plotError } = await supabase
       .from("fips_plot_results")
       .select("*")
-      .eq("survey_id", surveyId)
+      .eq("survey_id", Number(surveyId))
       .order("plot_no", { ascending: true });
 
     if (plotError) {
