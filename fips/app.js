@@ -862,7 +862,10 @@ if (surveyTableBody) {
       <td>${escapeHtml(row.survey_name)}</td>
       <td>
         <button data-id="${row.id}" data-name="${row.survey_name}" class="openSurveyBtn">
-        Open
+          Open
+        </button>
+        <button data-id="${row.id}" data-name="${row.survey_name}" class="deleteSurveyBtn">
+          Delete
         </button>
       </td>
       `;
