@@ -542,7 +542,7 @@ function renderSuggestionList(items) {
     row.innerHTML =
       '<div class="search-suggestion-name">' + escapeHtml(item.name) + "</div>" +
       (metaParts.length
-        ? '<div class="search-suggestion-meta">' + escapeHtml(metaParts.join(" | ")) + "</div>'
+        ? '<div class="search-suggestion-meta">' + escapeHtml(metaParts.join(" | ")) + "</div>"
         : "");
 
     row.addEventListener("mouseenter", function () {
