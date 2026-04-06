@@ -394,7 +394,6 @@ if (importFileInput && fileNameLabel) {
   });
 }
 
-
 /* =========================
    VALIDATION DASHBOARD
    ========================= */
@@ -483,7 +482,6 @@ async function importParsedRowsToTreeRecords() {
   }
 
   localStorage.setItem("currentSurveyId", String(surveyId));
-
   return true;
 }
 
@@ -786,6 +784,8 @@ if (resultTableBody) {
       if (resultVolume) resultVolume.textContent = totalVol.toFixed(4);
     }
 
+    resultTableBody.innerHTML = "";
+
     plotResults.forEach((row) => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
@@ -798,6 +798,10 @@ if (resultTableBody) {
     });
   })();
 }
+
+/* =========================
+   HOME RECENT SURVEYS
+   ========================= */
 
 if (recentRecordsBody) {
   (async () => {
@@ -829,54 +833,51 @@ if (recentRecordsBody) {
   })();
 }
 
+/* =========================
+   SURVEY LIST
+   ========================= */
+
 const surveyTableBody = document.getElementById("surveyTableBody");
 
 if (surveyTableBody) {
-
   (async () => {
-
     const { data, error } = await supabase
       .from("fips_surveys")
       .select("id, survey_number, survey_name")
       .order("id", { ascending: false });
 
     if (error || !data) {
-
-      surveyTableBody.innerHTML = `
-      <tr>
-      <td colspan="3">Failed to load surveys.</td>
-      </tr>
-      `;
-
+      surveyTableBody.innerHTML =
+        `<tr><td colspan="3">Failed to load surveys.</td></tr>`;
       return;
     }
 
     surveyTableBody.innerHTML = "";
 
     data.forEach((row) => {
-
       const tr = document.createElement("tr");
 
       tr.innerHTML = `
-      <td>${escapeHtml(row.survey_number)}</td>
-      <td>${escapeHtml(row.survey_name)}</td>
-      <td>
-        <button data-id="${row.id}" data-name="${row.survey_name}" class="openSurveyBtn">
-          Open
-        </button>
-        <button data-id="${row.id}" data-name="${row.survey_name}" class="deleteSurveyBtn">
-          Delete
-        </button>
-      </td>
+        <td>${escapeHtml(row.survey_number)}</td>
+        <td>${escapeHtml(row.survey_name)}</td>
+        <td>
+          <button data-id="${row.id}" data-name="${escapeHtml(row.survey_name)}" class="openSurveyBtn">
+            Open
+          </button>
+          <button data-id="${row.id}" data-name="${escapeHtml(row.survey_name)}" class="deleteSurveyBtn">
+            Delete
+          </button>
+        </td>
       `;
 
       surveyTableBody.appendChild(tr);
-
     });
-
   })();
-
 }
+
+/* =========================
+   SURVEY LIST ACTIONS
+   ========================= */
 
 document.addEventListener("click", async (e) => {
   if (e.target.classList.contains("openSurveyBtn")) {
