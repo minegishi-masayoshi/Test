@@ -5,9 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Create New Survey</title>
 
-  <meta name="robots" content="noindex, nofollow" />
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
-
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
@@ -20,9 +19,10 @@
       style-src 'self' 'unsafe-inline';
       connect-src 'self' https://pncvddqeuxlkplwgvxgk.supabase.co;
       img-src 'self' data:;
-      font-src 'self';
+      font-src 'self' data:;
       object-src 'none';
       base-uri 'self';
+      frame-ancestors 'none';
       form-action 'self';
     "
   />
@@ -30,104 +30,197 @@
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">
-      <div class="brand-title">FIPS</div>
-      <div class="brand-subtitle">Create New Survey</div>
-    </div>
-  </header>
+  <div class="page">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-title">FIPS</div>
+        <div class="brand-subtitle">Create New Survey</div>
+      </div>
+      <div class="user-box">
+        <span id="userStatus">Access granted</span>
+      </div>
+    </header>
 
-  <main class="main-content">
-    <section class="welcome-panel">
-      <h1>Create New Survey</h1>
-      <p>Register a new survey and basic survey information.</p>
-    </section>
+    <main class="main-content">
+      <section class="welcome-panel">
+        <h1>Create New Survey</h1>
+        <p>
+          Register a new survey and basic survey information before importing Kobo CSV data.
+        </p>
+      </section>
 
-    <section class="menu-panel">
-      <form id="newSurveyForm">
-        <div class="form-row">
-          <label for="surveyNumber">Survey Number</label>
-          <input id="surveyNumber" type="text" required maxlength="50" />
-        </div>
+      <section class="menu-panel">
+        <form id="newSurveyForm" novalidate>
+          <div class="form-row">
+            <label for="surveyNumber">Survey Number *</label>
+            <input
+              id="surveyNumber"
+              name="surveyNumber"
+              type="text"
+              required
+              maxlength="50"
+              autocomplete="off"
+              placeholder="e.g. 12006"
+            />
+          </div>
 
-        <div class="form-row">
-          <label for="surveyName">Survey Name</label>
-          <input id="surveyName" type="text" required maxlength="120" />
-        </div>
+          <div class="form-row">
+            <label for="surveyName">Survey Name *</label>
+            <input
+              id="surveyName"
+              name="surveyName"
+              type="text"
+              required
+              maxlength="120"
+              autocomplete="off"
+              placeholder="e.g. RAMU BLOCK2"
+            />
+          </div>
 
-        <div class="form-row">
-          <label for="surveyDate">Survey Date</label>
-          <input id="surveyDate" type="date" />
-        </div>
+          <div class="form-row">
+            <label for="surveyDate">Survey Date</label>
+            <input
+              id="surveyDate"
+              name="surveyDate"
+              type="date"
+            />
+          </div>
 
-        <div class="form-row">
-          <label for="province">Province</label>
-          <input id="province" type="text" maxlength="120" />
-        </div>
+          <div class="form-row">
+            <label for="province">Province</label>
+            <input
+              id="province"
+              name="province"
+              type="text"
+              maxlength="120"
+              autocomplete="off"
+              placeholder="e.g. Madang"
+            />
+          </div>
 
-        <div class="form-row">
-          <label for="numberOfBlocks">Number of Blocks</label>
-          <input id="numberOfBlocks" type="number" min="0" />
-        </div>
+          <div class="form-row">
+            <label for="numberOfBlocks">Number of Blocks</label>
+            <input
+              id="numberOfBlocks"
+              name="numberOfBlocks"
+              type="number"
+              min="1"
+              max="10"
+              step="1"
+              placeholder="e.g. 1"
+            />
+          </div>
 
-        <div class="form-row">
-          <label for="grossArea">Gross Area (ha)</label>
-          <input id="grossArea" type="number" step="any" min="0" />
-        </div>
+          <div class="form-row">
+            <label for="grossArea">Gross Area (ha)</label>
+            <input
+              id="grossArea"
+              name="grossArea"
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="e.g. 48000"
+            />
+          </div>
 
-        <div class="form-row">
-          <label for="planId">Plan ID</label>
-          <input id="planId" type="text" maxlength="50" />
-        </div>
+          <div class="form-row">
+            <label for="planId">Plan ID</label>
+            <input
+              id="planId"
+              name="planId"
+              type="text"
+              maxlength="50"
+              autocomplete="off"
+              placeholder="e.g. 13014"
+            />
+          </div>
 
-        <div class="form-row">
-          <label for="surveyType">Survey Type</label>
-          <select id="surveyType">
-            <option value="Virgin">Virgin</option>
-            <option value="LOI">LOI</option>
-            <option value="Unlogged">Unlogged</option>
-          </select>
-        </div>
+          <div class="form-row">
+            <label for="surveyType">Survey Type</label>
+            <select id="surveyType" name="surveyType">
+              <option value="">Select</option>
+              <option value="Virgin">Virgin</option>
+              <option value="LOI">LOI</option>
+              <option value="Unlogged">Unlogged</option>
+            </select>
+          </div>
 
-        <div class="form-row">
-          <label for="vegetation">Vegetation</label>
-          <input id="vegetation" type="text" maxlength="120" />
-        </div>
+          <div class="form-row">
+            <label for="vegetation">Vegetation</label>
+            <input
+              id="vegetation"
+              name="vegetation"
+              type="text"
+              maxlength="120"
+              autocomplete="off"
+              placeholder="e.g. Hm"
+            />
+          </div>
 
-        <div class="form-row">
-          <label for="slopeMin">Slope Min (%)</label>
-          <input id="slopeMin" type="number" step="any" />
-        </div>
+          <div class="form-row">
+            <label for="slopeMin">Slope Min (%)</label>
+            <input
+              id="slopeMin"
+              name="slopeMin"
+              type="number"
+              step="0.01"
+              placeholder="e.g. 0"
+            />
+          </div>
 
-        <div class="form-row">
-          <label for="slopeMax">Slope Max (%)</label>
-          <input id="slopeMax" type="number" step="any" />
-        </div>
+          <div class="form-row">
+            <label for="slopeMax">Slope Max (%)</label>
+            <input
+              id="slopeMax"
+              name="slopeMax"
+              type="number"
+              step="0.01"
+              placeholder="e.g. 20"
+            />
+          </div>
 
-        <div class="form-row">
-          <label for="elevationMin">Elevation Min (m)</label>
-          <input id="elevationMin" type="number" step="any" />
-        </div>
+          <div class="form-row">
+            <label for="elevationMin">Elevation Min (m)</label>
+            <input
+              id="elevationMin"
+              name="elevationMin"
+              type="number"
+              step="0.01"
+              placeholder="e.g. 70"
+            />
+          </div>
 
-        <div class="form-row">
-          <label for="elevationMax">Elevation Max (m)</label>
-          <input id="elevationMax" type="number" step="any" />
-        </div>
+          <div class="form-row">
+            <label for="elevationMax">Elevation Max (m)</label>
+            <input
+              id="elevationMax"
+              name="elevationMax"
+              type="number"
+              step="0.01"
+              placeholder="e.g. 400"
+            />
+          </div>
 
-        <div class="form-row">
-          <label for="adjustedNetForestArea">Adjusted Net Forest Area</label>
-          <input id="adjustedNetForestArea" type="number" step="any" />
-        </div>
+          <div class="form-row">
+            <label for="adjustedNetForestArea">Adjusted Net Forest Area (ha)</label>
+            <input
+              id="adjustedNetForestArea"
+              name="adjustedNetForestArea"
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="e.g. 45000"
+            />
+          </div>
 
-        <div style="margin-top: 16px;">
-          <button type="submit">Save Survey</button>
-          <a href="./index.html" style="text-decoration:none;">
-            <button type="button">Back</button>
-          </a>
-        </div>
-      </form>
-    </section>
-  </main>
+          <div style="margin-top:16px;">
+            <button type="submit">Save Survey</button>
+            <button type="button" onclick="window.location.href='./index.html'">Back</button>
+          </div>
+        </form>
+      </section>
+    </main>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script type="module" src="./app.js"></script>
