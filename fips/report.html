@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FIPS Summary Report</title>
+  <link rel="stylesheet" href="./report.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script type="module" src="./report.js"></script>
+</head>
+<body>
+  <div class="report-page">
+    <header class="report-header">
+      <h1>FIPS Survey Summary Report</h1>
+      <div id="reportMeta" class="report-meta"></div>
+    </header>
+
+    <section class="summary-section">
+      <h2>Executive Summary</h2>
+      <div id="summaryCards" class="summary-cards"></div>
+    </section>
+
+    <section class="info-section">
+      <h2>Survey Information</h2>
+      <table class="info-table">
+        <tbody id="surveyInfoBody"></tbody>
+      </table>
+    </section>
+
+    <section class="plot-section">
+      <h2>Plot Results</h2>
+      <table class="plot-table">
+        <thead>
+          <tr>
+            <th>Plot No</th>
+            <th>Tree Count</th>
+            <th>Basal Area (m²)</th>
+            <th>Volume (m³)</th>
+          </tr>
+        </thead>
+        <tbody id="plotResultsBody"></tbody>
+      </table>
+    </section>
+
+    <section class="note-section">
+      <p class="report-note">
+        Generated automatically from processed survey results.
+      </p>
+    </section>
+
+    <div class="report-actions no-print">
+      <button id="printReportBtn">Print / Save as PDF</button>
+      <button id="backToResultBtn">Back</button>
+    </div>
+  </div>
+</body>
+</html>
