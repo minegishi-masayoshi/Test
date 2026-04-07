@@ -1,0 +1,124 @@
+body {
+  margin: 0;
+  background: #f3f4f6;
+  font-family: Arial, sans-serif;
+  color: #111827;
+}
+
+.report-page {
+  width: 210mm;
+  min-height: 297mm;
+  margin: 16px auto;
+  background: #ffffff;
+  padding: 18mm 16mm;
+  box-sizing: border-box;
+}
+
+.report-header {
+  border-bottom: 2px solid #d1d5db;
+  padding-bottom: 12px;
+  margin-bottom: 20px;
+}
+
+.report-header h1 {
+  margin: 0 0 10px 0;
+  font-size: 24px;
+}
+
+.report-meta {
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.summary-section,
+.info-section,
+.plot-section {
+  margin-top: 24px;
+}
+
+.summary-section h2,
+.info-section h2,
+.plot-section h2 {
+  font-size: 16px;
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #d1d5db;
+}
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.summary-card {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 12px;
+  background: #f9fafb;
+}
+
+.summary-card .label {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+
+.summary-card .value {
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.info-table,
+.plot-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.info-table td,
+.plot-table th,
+.plot-table td {
+  border: 1px solid #d1d5db;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+.plot-table th {
+  background: #f3f4f6;
+  text-align: left;
+}
+
+.plot-table td:nth-child(2),
+.plot-table td:nth-child(3),
+.plot-table td:nth-child(4) {
+  text-align: right;
+}
+
+.report-note {
+  margin-top: 24px;
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.report-actions {
+  margin-top: 24px;
+  display: flex;
+  gap: 10px;
+}
+
+@media print {
+  body {
+    background: #ffffff;
+  }
+
+  .report-page {
+    margin: 0;
+    width: auto;
+    min-height: auto;
+    padding: 0;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}
