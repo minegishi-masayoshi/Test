@@ -1050,3 +1050,17 @@ if (backFromSurveyBtn) {
     window.location.href = "./index.html";
   });
 }
+
+const exportPdfReportBtn = document.getElementById("exportPdfReportBtn");
+
+if (exportPdfReportBtn) {
+  exportPdfReportBtn.addEventListener("click", () => {
+    const surveyId = localStorage.getItem("currentSurveyId");
+    if (!surveyId) {
+      showGenericError("No current survey selected.");
+      return;
+    }
+
+    window.location.href = "./report.html";
+  });
+}
