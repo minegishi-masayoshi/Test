@@ -249,6 +249,27 @@ function validateRows(rows) {
       });
     }
 
+    const optionalNumericFields = [
+      ["block_no", row.block_no || row.block],
+      ["strip_no", row.strip_no || row.strip],
+      ["plot_type", row.plot_type],
+      ["tree_length_m", row.tree_length_m || row.length_m || row.length || row.len],
+      ["form_code", row.form_code || row.form],
+      ["quality_code", row.quality_code || row.quality]
+    ];
+
+    optionalNumericFields.forEach(([fieldName, value]) => {
+      if (value !== "" && value !== null && value !== undefined && isNaN(Number(value))) {
+        errors.push({
+          row_no: row.__rowNo,
+          plot_no: plotNo,
+          tree_no: treeNo,
+          field_name: fieldName,
+          message: "Invalid number"
+        });
+      }
+    });
+
     if (plotNo && treeNo) {
       const key = `${plotNo}__${treeNo}`;
       if (seenKeys.has(key)) {
@@ -337,11 +358,27 @@ if (csvInput) {
       "height_m"
     ];
 
+    const recommendedFields = [
+      "block_no",
+      "strip_no",
+      "plot_type",
+      "tree_length_m",
+      "form_code",
+      "quality_code"
+    ];
+
     const matched = expectedFields.filter((f) => headers.includes(f));
 
     if (mappedEl) {
       if (matched.length === expectedFields.length) {
-        mappedEl.textContent = "All required fields detected";
+        const recommendedMatched = recommendedFields.filter((f) =>
+          headers.includes(f)
+        );
+
+        mappedEl.textContent =
+          recommendedMatched.length === recommendedFields.length
+            ? "All required and recommended fields detected"
+            : "All required fields detected";
       } else {
         mappedEl.textContent = "Detected: " + matched.join(", ");
       }
@@ -450,17 +487,29 @@ if (validationTableBody) {
    IMPORT TO DATABASE
    ========================= */
 
+function toNullableNumber(value) {
+  if (value === null || value === undefined || value === "") return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
 function buildTreePayload(rows, surveyId) {
   return rows.map((row) => ({
-    survey_id: surveyId,
+    survey_id: Number(surveyId),
     row_no: row.__rowNo ?? null,
+    block_no: toNullableNumber(row.block_no || row.block),
+    strip_no: toNullableNumber(row.strip_no || row.strip),
     plot_no: row.plot_no || row.plot || null,
+    plot_type: toNullableNumber(row.plot_type),
     tree_no: row.tree_no || row.tree || null,
     species_code: row.species_code || row.species || null,
-    dbh_cm:
-      row.dbh_cm && !isNaN(Number(row.dbh_cm)) ? Number(row.dbh_cm) : null,
-    height_m:
-      row.height_m && !isNaN(Number(row.height_m)) ? Number(row.height_m) : null,
+    dbh_cm: toNullableNumber(row.dbh_cm || row.dbh),
+    height_m: toNullableNumber(row.height_m || row.height),
+    tree_length_m: toNullableNumber(
+      row.tree_length_m || row.length_m || row.length || row.len
+    ),
+    form_code: toNullableNumber(row.form_code || row.form),
+    quality_code: toNullableNumber(row.quality_code || row.quality),
     raw_json: row
   }));
 }
@@ -510,7 +559,8 @@ async function importParsedRowsToTreeRecords() {
   const { error } = await supabase.from("fips_tree_records").insert(payload);
 
   if (error) {
-    showGenericError("Import failed.");
+    console.error("Tree record import failed:", error);
+    showGenericError(`Import failed: ${error.message || "Unknown error"}`);
     return false;
   }
 
@@ -546,16 +596,6 @@ if (importFromValidationBtn) {
    PROCESSING ENGINE
    ========================= */
 
-function calculateBasalArea(dbhCm) {
-  return Math.PI * Math.pow(dbhCm / 200, 2);
-}
-
-function calculateVolume(dbhCm, heightM) {
-  const basalArea = calculateBasalArea(dbhCm);
-  const formFactor = 0.45;
-  return basalArea * heightM * formFactor;
-}
-
 const surveyNameDisplay = document.getElementById("surveyNameDisplay");
 const processingMessage = document.getElementById("processingMessage");
 const processingStatusCell = document.getElementById("processingStatusCell");
@@ -568,161 +608,63 @@ if (surveyNameDisplay) {
     localStorage.getItem("currentSurveyName") || "-";
 }
 
+async function processCurrentSurvey() {
+  const surveyId = await getCurrentSurveyId();
+
+  if (!surveyId) {
+    throw new Error("No current survey selected.");
+  }
+
+  const numericSurveyId = Number(surveyId);
+  if (!Number.isInteger(numericSurveyId) || numericSurveyId <= 0) {
+    throw new Error("Invalid survey ID.");
+  }
+
+  const { data, error } = await supabase.rpc("process_survey", {
+    p_survey_id: numericSurveyId
+  });
+
+  if (error) {
+    throw new Error(error.message || "Survey processing failed.");
+  }
+
+  return data;
+}
+
 if (runProcessingBtn) {
   runProcessingBtn.addEventListener("click", async () => {
-    const surveyId = localStorage.getItem("currentSurveyId");
-    const surveyName = localStorage.getItem("currentSurveyName");
+    runProcessingBtn.disabled = true;
 
-    console.log("Run Processing surveyId =", surveyId);
-    console.log("Run Processing surveyName =", surveyName);
-
-    if (!surveyId) {
-      showGenericError("No current survey selected.");
-      if (processingStatusCell) processingStatusCell.textContent = "Failed";
-      return;
+    if (processingMessage) {
+      processingMessage.textContent = "Calculating results in PostgreSQL...";
     }
-
-    if (processingMessage) processingMessage.textContent = "Loading records...";
     if (processingStatusCell) processingStatusCell.textContent = "Running";
+    if (resultStatusCell) resultStatusCell.textContent = "Pending";
 
-    const { data: treeRows, error: treeError } = await supabase
-      .from("fips_tree_records")
-      .select("*")
-      .eq("survey_id", Number(surveyId));
+    try {
+      await processCurrentSurvey();
 
-    console.log("treeRows =", treeRows);
-    console.log("treeError =", treeError);
-
-    if (treeError) {
-      showGenericError("Failed to load records.");
-      if (processingStatusCell) processingStatusCell.textContent = "Failed";
-      return;
-    }
-
-    if (!treeRows || treeRows.length === 0) {
-      showGenericError("No records found.");
-      if (processingStatusCell) processingStatusCell.textContent = "Failed";
-      return;
-    }
-
-    if (processingMessage) {
-      processingMessage.textContent = "Calculating results...";
-    }
-
-    const grouped = {};
-
-    treeRows.forEach((row) => {
-      const plotNo = row.plot_no || "UNKNOWN";
-
-      if (!grouped[plotNo]) {
-        grouped[plotNo] = {
-          survey_id: Number(surveyId),
-          plot_no: plotNo,
-          tree_count: 0,
-          basal_area_m2: 0,
-          volume_m3: 0
-        };
+      if (processingMessage) {
+        processingMessage.textContent = "Processing completed successfully.";
       }
+      if (processingStatusCell) processingStatusCell.textContent = "Completed";
+      if (resultStatusCell) resultStatusCell.textContent = "Generated";
 
-      grouped[plotNo].tree_count += 1;
+      alert("Processing completed successfully.");
+    } catch (error) {
+      console.error("process_survey failed:", error);
 
-      if (row.dbh_cm && !isNaN(Number(row.dbh_cm))) {
-        grouped[plotNo].basal_area_m2 += calculateBasalArea(Number(row.dbh_cm));
+      if (processingMessage) {
+        processingMessage.textContent =
+          "Processing failed. Please check the database function and input data.";
       }
-
-      if (
-        row.dbh_cm &&
-        row.height_m &&
-        !isNaN(Number(row.dbh_cm)) &&
-        !isNaN(Number(row.height_m))
-      ) {
-        grouped[plotNo].volume_m3 += calculateVolume(
-          Number(row.dbh_cm),
-          Number(row.height_m)
-        );
-      }
-    });
-
-    const plotResultsPayload = Object.values(grouped).map((r) => ({
-      survey_id: r.survey_id,
-      plot_no: r.plot_no,
-      tree_count: r.tree_count,
-      basal_area_m2: Number(r.basal_area_m2.toFixed(6)),
-      volume_m3: Number(r.volume_m3.toFixed(6))
-    }));
-
-    const totalPlots = plotResultsPayload.length;
-    const totalTrees = plotResultsPayload.reduce(
-      (sum, row) => sum + Number(row.tree_count || 0),
-      0
-    );
-    const totalBasalArea = plotResultsPayload.reduce(
-      (sum, row) => sum + Number(row.basal_area_m2 || 0),
-      0
-    );
-    const totalVolume = plotResultsPayload.reduce(
-      (sum, row) => sum + Number(row.volume_m3 || 0),
-      0
-    );
-
-    const surveyResultsPayload = {
-      survey_id: Number(surveyId),
-      total_plots: totalPlots,
-      total_trees: totalTrees,
-      total_basal_area_m2: Number(totalBasalArea.toFixed(6)),
-      total_volume_m3: Number(totalVolume.toFixed(6)),
-      calculated_at: new Date().toISOString()
-    };
-
-    const { error: deletePlotError } = await supabase
-      .from("fips_plot_results")
-      .delete()
-      .eq("survey_id", Number(surveyId));
-
-    if (deletePlotError) {
-      showGenericError("Failed to clear old plot results.");
       if (processingStatusCell) processingStatusCell.textContent = "Failed";
-      return;
+      if (resultStatusCell) resultStatusCell.textContent = "Not generated";
+
+      showGenericError(error.message || "Processing failed.");
+    } finally {
+      runProcessingBtn.disabled = false;
     }
-
-    const { error: insertPlotError } = await supabase
-      .from("fips_plot_results")
-      .insert(plotResultsPayload);
-
-    if (insertPlotError) {
-      showGenericError("Processing failed while saving plot results.");
-      if (processingStatusCell) processingStatusCell.textContent = "Failed";
-      return;
-    }
-
-    const { error: deleteSurveyError } = await supabase
-      .from("fips_survey_results")
-      .delete()
-      .eq("survey_id", Number(surveyId));
-
-    if (deleteSurveyError) {
-      showGenericError("Failed to clear old survey results.");
-      if (processingStatusCell) processingStatusCell.textContent = "Failed";
-      return;
-    }
-
-    const { error: insertSurveyError } = await supabase
-      .from("fips_survey_results")
-      .insert([surveyResultsPayload]);
-
-    if (insertSurveyError) {
-      showGenericError("Processing failed while saving survey results.");
-      if (processingStatusCell) processingStatusCell.textContent = "Failed";
-      return;
-    }
-
-    if (processingMessage) {
-      processingMessage.textContent = "Processing completed successfully.";
-    }
-    if (processingStatusCell) processingStatusCell.textContent = "Completed";
-    if (resultStatusCell) resultStatusCell.textContent = "Generated";
-
-    alert("Processing completed successfully.");
   });
 }
 
