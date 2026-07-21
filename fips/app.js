@@ -250,10 +250,16 @@ function validateRows(rows) {
     }
 
     const optionalNumericFields = [
-      ["block_no", row.block_no || row.block],
-      ["strip_no", row.strip_no || row.strip],
       ["plot_type", row.plot_type],
-      ["tree_length_m", row.tree_length_m || row.length_m || row.length || row.len],
+      ["forest_type", row.forest_type],
+      [
+        "tree_length_m",
+        row.tree_length_m ||
+          row.merchantable_length_m ||
+          row.length_m ||
+          row.length ||
+          row.len
+      ],
       ["form_code", row.form_code || row.form],
       ["quality_code", row.quality_code || row.quality]
     ];
@@ -362,7 +368,7 @@ if (csvInput) {
       "block_no",
       "strip_no",
       "plot_type",
-      "tree_length_m",
+      "forest_type",
       "form_code",
       "quality_code"
     ];
@@ -493,23 +499,42 @@ function toNullableNumber(value) {
   return Number.isFinite(number) ? number : null;
 }
 
+function toNullableText(value) {
+  if (value === null || value === undefined) return null;
+
+  const text = String(value).trim();
+  return text === "" ? null : text;
+}
+
 function buildTreePayload(rows, surveyId) {
   return rows.map((row) => ({
     survey_id: Number(surveyId),
     row_no: row.__rowNo ?? null,
-    block_no: toNullableNumber(row.block_no || row.block),
-    strip_no: toNullableNumber(row.strip_no || row.strip),
-    plot_no: row.plot_no || row.plot || null,
+
+    block_no: toNullableText(row.block_no || row.block),
+    strip_no: toNullableText(row.strip_no || row.strip),
+    plot_no: toNullableText(row.plot_no || row.plot),
+
     plot_type: toNullableNumber(row.plot_type),
-    tree_no: row.tree_no || row.tree || null,
-    species_code: row.species_code || row.species || null,
-    dbh_cm: toNullableNumber(row.dbh_cm || row.dbh),
-    height_m: toNullableNumber(row.height_m || row.height),
-    tree_length_m: toNullableNumber(
-      row.tree_length_m || row.length_m || row.length || row.len
-    ),
+    forest_type: toNullableNumber(row.forest_type),
+
+    tree_no: toNullableText(row.tree_no || row.tree),
+    species_code: toNullableText(row.species_code || row.species),
+
     form_code: toNullableNumber(row.form_code || row.form),
     quality_code: toNullableNumber(row.quality_code || row.quality),
+
+    dbh_cm: toNullableNumber(row.dbh_cm || row.dbh),
+    height_m: toNullableNumber(row.height_m || row.height),
+
+    tree_length_m: toNullableNumber(
+      row.tree_length_m ||
+        row.merchantable_length_m ||
+        row.length_m ||
+        row.length ||
+        row.len
+    ),
+
     raw_json: row
   }));
 }
