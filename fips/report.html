@@ -2,33 +2,14 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  />
+  <title>FIPS Assessment Summary - All Blocks</title>
 
-  <title>FIPS Assessment Summary Report</title>
-
-  <meta
-    name="robots"
-    content="noindex, nofollow"
-  />
-
-  <meta
-    name="referrer"
-    content="strict-origin-when-cross-origin"
-  />
-
-  <meta
-    http-equiv="Cache-Control"
-    content="no-store"
-  />
-
-  <meta
-    http-equiv="Pragma"
-    content="no-cache"
-  />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <meta http-equiv="Cache-Control" content="no-store" />
+  <meta http-equiv="Pragma" content="no-cache" />
 
   <meta
     http-equiv="Content-Security-Policy"
@@ -46,212 +27,161 @@
     "
   />
 
-  <link
-    rel="stylesheet"
-    href="./report.css"
-  />
+  <link rel="stylesheet" href="./report.css" />
 
-  <script
-    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
-  ></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
 
-  <script
-    src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"
-  ></script>
-
-  <script
-    src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"
-  ></script>
-
-  <script
-    type="module"
-    src="./report.js"
-  ></script>
-
-  <script
-    type="module"
-    src="./pdf-report.js"
-  ></script>
+  <script type="module" src="./report.js"></script>
+  <script type="module" src="./pdf-report.js"></script>
 </head>
 
 <body>
-
   <main class="report-page">
 
-    <!-- ==================================================
-         Report Header
-    =================================================== -->
     <header class="report-header">
+      <div class="report-title-row">
+        <div>
+          <h1 id="reportTitle">ASSESSMENT SUMMARY - ALL BLOCKS</h1>
+          <p class="report-subtitle">FIPS Survey Assessment Report</p>
+        </div>
+        <div class="version-badge">FIPS Cloud version 1.0</div>
+      </div>
 
-      <h1 id="reportTitle">
-        FIPS Assessment Summary Report
-      </h1>
-
-      <div
-        id="reportMeta"
-        class="report-meta"
-      >
+      <div id="reportMeta" class="report-meta">
         Loading survey information...
       </div>
-
     </header>
 
+    <section class="survey-information-section">
+      <h2>Survey Information</h2>
 
-    <!-- ==================================================
-         Assessment Summary
-    =================================================== -->
-    <section class="assessment-section">
-
-      <h2>Assessment Summary</h2>
-
-
-      <!-- ================================================
-           A. Stocking per hectare
-      ================================================= -->
-      <div class="assessment-table-block">
-
-        <h3>
-          (A) Stocking per hectare
-        </h3>
-
-        <div class="table-wrapper">
-
-          <table
-            id="stockingAssessmentTable"
-            class="assessment-table"
-          >
-
-            <thead>
-              <tr>
-                <th>Quality Class</th>
-                <th>10–19 cm</th>
-                <th>20–49 cm</th>
-                <th>50 cm+</th>
-                <th>10 cm+</th>
-              </tr>
-            </thead>
-
-            <tbody id="stockingAssessmentBody">
-
-              <tr>
-                <td colspan="5">
-                  Loading stocking assessment...
-                </td>
-              </tr>
-
-            </tbody>
-
-          </table>
-
+      <div id="legacyInfoGrid" class="legacy-info-grid">
+        <div class="legacy-info-item">
+          <span class="legacy-info-label">Gross Area (ha)</span>
+          <span id="grossAreaValue" class="legacy-info-value">-</span>
         </div>
 
-      </div>
-
-
-      <!-- ================================================
-           B. Basal area per hectare
-      ================================================= -->
-      <div class="assessment-table-block">
-
-        <h3>
-          (B) Basal area per hectare
-        </h3>
-
-        <div class="table-wrapper">
-
-          <table
-            id="basalAreaAssessmentTable"
-            class="assessment-table"
-          >
-
-            <thead>
-              <tr>
-                <th>Quality Class</th>
-                <th>10–19 cm</th>
-                <th>20–49 cm</th>
-                <th>50 cm+</th>
-                <th>10 cm+</th>
-              </tr>
-            </thead>
-
-            <tbody id="basalAreaAssessmentBody">
-
-              <tr>
-                <td colspan="5">
-                  Loading basal area assessment...
-                </td>
-              </tr>
-
-            </tbody>
-
-          </table>
-
+        <div class="legacy-info-item">
+          <span class="legacy-info-label">Date of Survey</span>
+          <span id="surveyDateValue" class="legacy-info-value">-</span>
         </div>
 
-      </div>
-
-
-      <!-- ================================================
-           C. Gross volume per hectare
-      ================================================= -->
-      <div class="assessment-table-block">
-
-        <h3>
-          (C) Gross volume per hectare
-        </h3>
-
-        <div class="table-wrapper">
-
-          <table
-            id="volumeAssessmentTable"
-            class="assessment-table"
-          >
-
-            <thead>
-              <tr>
-                <th>Quality Class</th>
-                <th>10–19 cm</th>
-                <th>20–49 cm</th>
-                <th>50 cm+</th>
-                <th>10 cm+</th>
-              </tr>
-            </thead>
-
-            <tbody id="volumeAssessmentBody">
-
-              <tr>
-                <td colspan="5">
-                  Loading volume assessment...
-                </td>
-              </tr>
-
-            </tbody>
-
-          </table>
-
+        <div class="legacy-info-item">
+          <span class="legacy-info-label">Net Area (ha)</span>
+          <span id="netAreaValue" class="legacy-info-value">-</span>
         </div>
 
-      </div>
+        <div class="legacy-info-item">
+          <span class="legacy-info-label">File Reference</span>
+          <span id="fileReferenceValue" class="legacy-info-value">-</span>
+        </div>
 
+        <div class="legacy-info-item">
+          <span class="legacy-info-label">Sample Area (ha), stems 50 cm+</span>
+          <span id="sampleArea50Value" class="legacy-info-value">-</span>
+        </div>
+
+        <div class="legacy-info-item">
+          <span class="legacy-info-label">Number of Plots</span>
+          <span id="numberOfPlotsValue" class="legacy-info-value">-</span>
+        </div>
+
+        <div class="legacy-info-item">
+          <span class="legacy-info-label">Sample Area (ha), stems 20–49 cm</span>
+          <span id="sampleArea20Value" class="legacy-info-value">-</span>
+        </div>
+
+        <div class="legacy-info-item">
+          <span class="legacy-info-label">Sampling Intensity</span>
+          <span id="samplingIntensityValue" class="legacy-info-value">-</span>
+        </div>
+      </div>
     </section>
 
+    <section class="assessment-section">
+      <h2>Assessment Summary</h2>
 
-    <!-- ==================================================
-         D. Major species summary
-    =================================================== -->
+      <div class="assessment-table-block">
+        <h3>(A) Stocking per hectare</h3>
+        <p class="diameter-caption">Diameter Class</p>
+
+        <div class="table-wrapper">
+          <table id="stockingAssessmentTable" class="assessment-table">
+            <thead>
+              <tr>
+                <th>Quality Class</th>
+                <th>10–19 cm</th>
+                <th>20–49 cm</th>
+                <th>50 cm+</th>
+                <th>10 cm+</th>
+              </tr>
+            </thead>
+            <tbody id="stockingAssessmentBody">
+              <tr><td colspan="5">Loading stocking assessment...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="assessment-table-block">
+        <h3>(B) Basal area per hectare (m²/ha)</h3>
+        <p class="diameter-caption">Diameter Class</p>
+
+        <div class="table-wrapper">
+          <table id="basalAreaAssessmentTable" class="assessment-table">
+            <thead>
+              <tr>
+                <th>Quality Class</th>
+                <th>10–19 cm</th>
+                <th>20–49 cm</th>
+                <th>50 cm+</th>
+                <th>10 cm+</th>
+              </tr>
+            </thead>
+            <tbody id="basalAreaAssessmentBody">
+              <tr><td colspan="5">Loading basal area assessment...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="assessment-table-block">
+        <h3>(C) Gross volume per hectare (m³/ha)</h3>
+        <p class="diameter-caption">Diameter Class</p>
+
+        <div class="table-wrapper">
+          <table id="volumeAssessmentTable" class="assessment-table">
+            <thead>
+              <tr>
+                <th>Quality Class</th>
+                <th>10–19 cm</th>
+                <th>20–49 cm</th>
+                <th>50 cm+</th>
+                <th>10 cm+</th>
+              </tr>
+            </thead>
+            <tbody id="volumeAssessmentBody">
+              <tr><td colspan="5">Loading volume assessment...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <p class="legacy-note">
+        NB. If Quality Class figures do not add up to TOTAL, quality-code records may be incomplete.
+      </p>
+    </section>
+
     <section class="major-species-section">
-
-      <h2>
-        (D) Major species summary
-      </h2>
+      <h2>(D) Major species summary</h2>
+      <p class="major-species-description">
+        List of major species in sawlog size classes, in order of volume representation in the assessment.
+      </p>
 
       <div class="table-wrapper">
-
-        <table
-          id="majorSpeciesTable"
-          class="major-species-table"
-        >
-
+        <table id="majorSpeciesTable" class="major-species-table">
           <thead>
             <tr>
               <th>Species</th>
@@ -262,62 +192,28 @@
               <th>Percentage of total</th>
             </tr>
           </thead>
-
           <tbody id="majorSpeciesBody">
-
-            <tr>
-              <td colspan="6">
-                Loading major species summary...
-              </td>
-            </tr>
-
+            <tr><td colspan="6">Loading major species summary...</td></tr>
           </tbody>
-
         </table>
-
       </div>
-
     </section>
 
-
-    <!-- ==================================================
-         Report Note
-    =================================================== -->
     <section class="note-section">
-
       <p class="report-note">
-        Generated automatically from processed FIPS survey
-        results stored in the PostgreSQL database.
+        Generated automatically from processed FIPS survey results stored in the PostgreSQL database.
       </p>
-
     </section>
 
-
-    <!-- ==================================================
-         Actions
-    =================================================== -->
     <div class="report-actions no-print">
-
-      <button
-        id="printReportBtn"
-        type="button"
-        class="primary-button"
-        disabled
-      >
+      <button id="printReportBtn" type="button" class="primary-button" disabled>
         Preparing PDF...
       </button>
-
-      <button
-        id="backToResultBtn"
-        type="button"
-        class="secondary-button"
-      >
+      <button id="backToResultBtn" type="button" class="secondary-button">
         Back
       </button>
-
     </div>
 
   </main>
-
 </body>
 </html>
