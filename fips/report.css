@@ -1,18 +1,11 @@
 /* =========================================================
-   FIPS Survey Summary Report
+   FIPS Assessment Summary Report
    report.css - Complete Replacement Version
-
-   Policy:
-   - Keep PDF appearance close to the Web view
-   - A4 portrait
-   - Page 1: Header / Executive Summary / Assessment Summary
-   - Page 2: Plot Results / Species Summary
-   - Preserve readable font sizes and table spacing
 ========================================================= */
 
 
 /* =========================================================
-   1. Reset
+   Reset
 ========================================================= */
 
 * {
@@ -25,12 +18,12 @@ body {
   padding: 0;
 }
 
-html {
+html,
+body {
   background: #e5e7eb;
 }
 
 body {
-  background: #e5e7eb;
   color: #111827;
 
   font-family:
@@ -44,7 +37,7 @@ body {
 
 
 /* =========================================================
-   2. Report Page - Screen
+   Report Page
 ========================================================= */
 
 .report-page {
@@ -65,7 +58,7 @@ body {
 
 
 /* =========================================================
-   3. Report Header
+   Header
 ========================================================= */
 
 .report-header {
@@ -99,9 +92,7 @@ body {
 }
 
 .report-meta strong {
-  flex: 0 0 112px;
-
-  color: #111827;
+  flex: 0 0 120px;
 }
 
 .report-meta span {
@@ -110,21 +101,17 @@ body {
 
 
 /* =========================================================
-   4. Common Sections
+   Sections
 ========================================================= */
 
-.summary-section,
 .assessment-section,
-.plot-section,
-.species-section,
+.major-species-section,
 .note-section {
-  margin: 17px 0 0;
+  margin-top: 17px;
 }
 
-.summary-section h2,
 .assessment-section h2,
-.plot-section h2,
-.species-section h2 {
+.major-species-section h2 {
   margin: 0 0 8px;
   padding: 0 0 5px;
 
@@ -139,51 +126,7 @@ body {
 
 
 /* =========================================================
-   5. Executive Summary
-========================================================= */
-
-.summary-cards {
-  display: grid;
-
-  grid-template-columns:
-    repeat(2, minmax(0, 1fr));
-
-  gap: 9px;
-}
-
-.summary-card {
-  min-height: 64px;
-
-  padding: 9px 11px;
-
-  background: #f8fafc;
-
-  border: 1px solid #cbd5e1;
-  border-radius: 5px;
-}
-
-.summary-card .label {
-  margin-bottom: 3px;
-
-  color: #64748b;
-
-  font-size: 11px;
-  line-height: 1.2;
-}
-
-.summary-card .value {
-  color: #111827;
-
-  font-size: 19px;
-  font-weight: 700;
-  line-height: 1.2;
-
-  font-variant-numeric: tabular-nums;
-}
-
-
-/* =========================================================
-   6. General Table Settings
+   Table Wrapper
 ========================================================= */
 
 .table-wrapper {
@@ -192,46 +135,10 @@ body {
   overflow-x: auto;
 }
 
-.assessment-table,
-.plot-table,
-.species-table {
-  width: 100%;
-
-  border-collapse: collapse;
-  border-spacing: 0;
-
-  background: #ffffff;
-}
-
-.assessment-table th,
-.assessment-table td,
-.plot-table th,
-.plot-table td,
-.species-table th,
-.species-table td {
-  border: 1px solid #94a3b8;
-
-  vertical-align: middle;
-}
-
-.assessment-table thead th,
-.plot-table thead th,
-.species-table thead th {
-  background: #e2e8f0;
-
-  color: #111827;
-
-  font-weight: 700;
-}
-
 
 /* =========================================================
-   7. Assessment Summary
+   Assessment Summary
 ========================================================= */
-
-.assessment-section {
-  margin-top: 18px;
-}
 
 .assessment-table-block {
   margin: 0 0 12px;
@@ -252,7 +159,14 @@ body {
 }
 
 .assessment-table {
+  width: 100%;
+
+  border-collapse: collapse;
+  border-spacing: 0;
+
   table-layout: fixed;
+
+  background: #ffffff;
 
   border: 1px solid #475569;
 }
@@ -267,9 +181,16 @@ body {
 
   font-size: 10.5px;
   line-height: 1.2;
+
+  vertical-align: middle;
 }
 
 .assessment-table thead th {
+  background: #e2e8f0;
+
+  color: #111827;
+
+  font-weight: 700;
   text-align: center;
 }
 
@@ -293,7 +214,8 @@ body {
 .assessment-table tbody td {
   text-align: right;
 
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric:
+    tabular-nums;
 }
 
 .assessment-table tbody tr:nth-child(even):not(
@@ -316,119 +238,85 @@ body {
 
 
 /* =========================================================
-   8. Plot Results
+   Major Species Summary
 ========================================================= */
 
-.plot-table {
+.major-species-table {
+  width: 100%;
+
+  border-collapse: collapse;
+  border-spacing: 0;
+
   table-layout: fixed;
+
+  background: #ffffff;
 }
 
-.plot-table th,
-.plot-table td {
-  padding: 6px 8px;
+.major-species-table th,
+.major-species-table td {
+  padding: 6px 7px;
 
-  font-size: 11px;
-  line-height: 1.25;
-}
+  border: 1px solid #64748b;
 
-.plot-table th:nth-child(1) {
-  width: 25%;
-}
-
-.plot-table th:nth-child(2) {
-  width: 20%;
-}
-
-.plot-table th:nth-child(3),
-.plot-table th:nth-child(4) {
-  width: 27.5%;
-}
-
-.plot-table td:first-child {
-  text-align: left;
-}
-
-.plot-table td:nth-child(2),
-.plot-table td:nth-child(3),
-.plot-table td:nth-child(4) {
-  text-align: right;
-
-  font-variant-numeric: tabular-nums;
-}
-
-.plot-table tbody tr:nth-child(even) {
-  background: #f8fafc;
-}
-
-
-/* =========================================================
-   9. Species Summary
-========================================================= */
-
-.species-table {
-  table-layout: fixed;
-}
-
-.species-table th,
-.species-table td {
-  padding: 5px;
-
-  font-size: 9px;
+  font-size: 10px;
   line-height: 1.25;
 
-  overflow-wrap: anywhere;
+  vertical-align: middle;
 }
 
-.species-table th:nth-child(1) {
-  width: 10%;
-}
+.major-species-table thead th {
+  background: #e2e8f0;
 
-.species-table th:nth-child(2) {
-  width: 22%;
-}
+  color: #111827;
 
-.species-table th:nth-child(3) {
-  width: 16%;
-}
-
-.species-table th:nth-child(4) {
-  width: 16%;
-}
-
-.species-table th:nth-child(5) {
-  width: 9%;
-}
-
-.species-table th:nth-child(6),
-.species-table th:nth-child(7) {
-  width: 13.5%;
-}
-
-.species-table td:first-child {
+  font-weight: 700;
   text-align: center;
 }
 
-.species-table td:nth-child(5),
-.species-table td:nth-child(6),
-.species-table td:nth-child(7) {
-  text-align: right;
-
-  font-variant-numeric: tabular-nums;
+.major-species-table th:nth-child(1) {
+  width: 30%;
 }
 
-.species-table tbody tr:nth-child(even) {
+.major-species-table th:nth-child(2) {
+  width: 10%;
+}
+
+.major-species-table th:nth-child(3),
+.major-species-table th:nth-child(4),
+.major-species-table th:nth-child(5) {
+  width: 14%;
+}
+
+.major-species-table th:nth-child(6) {
+  width: 18%;
+}
+
+.major-species-table td:nth-child(2) {
+  text-align: center;
+}
+
+.major-species-table td:nth-child(3),
+.major-species-table td:nth-child(4),
+.major-species-table td:nth-child(5),
+.major-species-table td:nth-child(6) {
+  text-align: right;
+
+  font-variant-numeric:
+    tabular-nums;
+}
+
+.major-species-table tbody tr:nth-child(even) {
   background: #f8fafc;
 }
 
 
 /* =========================================================
-   10. Loading / Empty Messages
+   Loading / Empty Messages
 ========================================================= */
 
 .message-cell,
 .assessment-table td[colspan],
-.plot-table td[colspan],
-.species-table td[colspan] {
+.major-species-table td[colspan] {
   padding: 12px !important;
 
   color: #64748b;
@@ -439,7 +327,7 @@ body {
 
 
 /* =========================================================
-   11. Report Note
+   Report Note
 ========================================================= */
 
 .note-section {
@@ -457,7 +345,7 @@ body {
 
 
 /* =========================================================
-   12. Buttons
+   Buttons
 ========================================================= */
 
 .report-actions {
@@ -485,10 +373,6 @@ body {
   font-weight: 700;
 
   cursor: pointer;
-
-  transition:
-    background-color 0.15s ease,
-    opacity 0.15s ease;
 }
 
 .primary-button {
@@ -509,14 +393,15 @@ body {
   background: #475569;
 }
 
-.report-actions button:focus-visible {
-  outline: 3px solid rgba(21, 128, 61, 0.25);
-  outline-offset: 2px;
+.report-actions button:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.6;
 }
 
 
 /* =========================================================
-   13. Responsive Screen
+   Responsive
 ========================================================= */
 
 @media screen and (max-width: 900px) {
@@ -533,12 +418,8 @@ body {
     font-size: 20px;
   }
 
-  .summary-cards {
-    grid-template-columns: 1fr;
-  }
-
   .assessment-table,
-  .species-table {
+  .major-species-table {
     min-width: 680px;
   }
 
@@ -546,24 +427,15 @@ body {
 
 
 /* =========================================================
-   14. PDF Page Settings
+   Print
 ========================================================= */
 
 @page {
   size: A4 portrait;
 
-  /*
-   * Old FIPS-like margins.
-   * Top / bottom: 12 mm
-   * Left / right: 14 mm
-   */
   margin: 12mm 14mm;
 }
 
-
-/* =========================================================
-   15. Print / PDF
-========================================================= */
 
 @media print {
 
@@ -581,14 +453,12 @@ body {
     font-size: 10px;
     line-height: 1.3;
 
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+    -webkit-print-color-adjust:
+      exact;
+
+    print-color-adjust:
+      exact;
   }
-
-
-  /* -------------------------------------------------------
-     Main page
-  ------------------------------------------------------- */
 
   .report-page {
     width: auto;
@@ -603,23 +473,15 @@ body {
     box-shadow: none;
   }
 
-
-  /* -------------------------------------------------------
-     Header
-  ------------------------------------------------------- */
-
   .report-header {
     margin: 0 0 10px;
     padding: 0 0 7px;
-
-    border-bottom: 2px solid #166534;
   }
 
   .report-header h1 {
     margin: 0 0 6px;
 
     font-size: 18px;
-    line-height: 1.15;
   }
 
   .report-meta {
@@ -635,85 +497,24 @@ body {
   }
 
   .report-meta div {
-    display: flex;
-
     margin: 0;
   }
 
   .report-meta strong {
-    flex: 0 0 88px;
+    flex: 0 0 94px;
   }
 
-
-  /* -------------------------------------------------------
-     Sections
-  ------------------------------------------------------- */
-
-  .summary-section,
   .assessment-section,
-  .plot-section,
-  .species-section {
+  .major-species-section {
     margin-top: 11px;
   }
 
-  .summary-section h2,
   .assessment-section h2,
-  .plot-section h2,
-  .species-section h2 {
+  .major-species-section h2 {
     margin: 0 0 6px;
     padding: 0 0 4px;
 
     font-size: 13px;
-    line-height: 1.2;
-
-    border-bottom: 1px solid #cbd5e1;
-  }
-
-
-  /* -------------------------------------------------------
-     Executive Summary
-  ------------------------------------------------------- */
-
-  .summary-cards {
-    display: grid;
-
-    grid-template-columns:
-      repeat(2, minmax(0, 1fr));
-
-    gap: 7px;
-  }
-
-  .summary-card {
-    min-height: 48px;
-
-    padding: 7px 9px;
-
-    background: #f8fafc;
-
-    border: 1px solid #cbd5e1;
-    border-radius: 4px;
-  }
-
-  .summary-card .label {
-    margin-bottom: 2px;
-
-    font-size: 8px;
-    line-height: 1.2;
-  }
-
-  .summary-card .value {
-    font-size: 15px;
-    line-height: 1.15;
-  }
-
-
-  /* -------------------------------------------------------
-     Assessment Summary
-  ------------------------------------------------------- */
-
-  .assessment-section {
-    break-inside: auto;
-    page-break-inside: auto;
   }
 
   .assessment-table-block {
@@ -727,15 +528,6 @@ body {
     margin: 0 0 4px;
 
     font-size: 10px;
-    line-height: 1.2;
-  }
-
-  .assessment-table {
-    width: 100%;
-
-    border-collapse: collapse;
-
-    border: 1px solid #475569;
   }
 
   .assessment-table th,
@@ -744,147 +536,37 @@ body {
 
     padding: 3px 6px;
 
-    border: 1px solid #64748b;
-
     font-size: 8px;
-    line-height: 1.15;
   }
 
-  .assessment-table thead {
-    display: table-header-group;
-  }
-
-  .assessment-table thead th {
-    background: #e2e8f0;
-
-    text-align: center;
-  }
-
-  .assessment-table tbody th {
-    background: #f8fafc;
-  }
-
-  .assessment-table tbody td {
-    text-align: right;
-  }
-
-  .assessment-table tr {
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
-
-  .assessment-total-row th,
-  .assessment-total-row td {
-    background: #dbeafe;
-
-    border-top: 2px solid #334155;
-
-    font-weight: 700;
-  }
-
-
-  /* -------------------------------------------------------
-     Start page 2 at Plot Results
-  ------------------------------------------------------- */
-
-  .plot-section {
-    margin-top: 0;
-
+  .major-species-section {
     break-before: page;
     page-break-before: always;
   }
 
-
-  /* -------------------------------------------------------
-     Plot Results
-  ------------------------------------------------------- */
-
-  .plot-table {
-    width: 100%;
-
-    border-collapse: collapse;
-  }
-
-  .plot-table th,
-  .plot-table td {
-    height: 28px;
-
-    padding: 5px 7px;
-
-    border: 1px solid #64748b;
-
-    font-size: 9px;
-    line-height: 1.2;
-  }
-
-  .plot-table thead {
-    display: table-header-group;
-  }
-
-  .plot-table thead th {
-    background: #e2e8f0;
-  }
-
-  .plot-table tr {
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
-
-
-  /* -------------------------------------------------------
-     Species Summary
-  ------------------------------------------------------- */
-
-  .species-section {
-    margin-top: 12px;
-  }
-
-  .species-table {
-    width: 100%;
-
-    border-collapse: collapse;
-  }
-
-  .species-table th,
-  .species-table td {
-    height: 25px;
+  .major-species-table th,
+  .major-species-table td {
+    height: 24px;
 
     padding: 4px 5px;
 
-    border: 1px solid #64748b;
-
-    font-size: 7.5px;
-    line-height: 1.2;
+    font-size: 7.8px;
   }
 
-  .species-table thead {
+  .assessment-table thead,
+  .major-species-table thead {
     display: table-header-group;
   }
 
-  .species-table thead th {
-    background: #e2e8f0;
-  }
-
-  .species-table tr {
+  .assessment-table tr,
+  .major-species-table tr {
     break-inside: avoid;
     page-break-inside: avoid;
   }
 
-
-  /* -------------------------------------------------------
-     Table wrapper
-  ------------------------------------------------------- */
-
   .table-wrapper {
-    width: 100%;
-
     overflow: visible;
   }
-
-
-  /* -------------------------------------------------------
-     Hide Web-only elements
-  ------------------------------------------------------- */
 
   .no-print,
   .report-actions,
@@ -893,30 +575,15 @@ body {
     display: none !important;
   }
 
-
-  /* -------------------------------------------------------
-     Preserve colors
-  ------------------------------------------------------- */
-
-  .summary-card,
   .assessment-table thead th,
   .assessment-total-row th,
   .assessment-total-row td,
-  .plot-table thead th,
-  .species-table thead th {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
-  }
+  .major-species-table thead th {
+    -webkit-print-color-adjust:
+      exact;
 
-
-  /* -------------------------------------------------------
-     Remove unwanted generated content
-  ------------------------------------------------------- */
-
-  body::before,
-  body::after {
-    display: none;
-    content: none;
+    print-color-adjust:
+      exact;
   }
 
 }
