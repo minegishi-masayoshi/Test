@@ -32,7 +32,7 @@ function redirectToResult() {
 
 
 /* =========================================================
-   General Utilities
+   Basic Utilities
 ========================================================= */
 
 function escapeHtml(value) {
@@ -65,21 +65,19 @@ function safeText(value, fallback = "-") {
 function toNumber(value, fallback = 0) {
   const converted = Number(value);
 
-  if (!Number.isFinite(converted)) {
-    return fallback;
-  }
-
-  return converted;
+  return Number.isFinite(converted)
+    ? converted
+    : fallback;
 }
 
 
 function formatNumber(value, digits = 4) {
-  return toNumber(value, 0).toFixed(digits);
+  return toNumber(value).toFixed(digits);
 }
 
 
 function formatAssessmentNumber(value) {
-  return toNumber(value, 0).toFixed(3);
+  return toNumber(value).toFixed(3);
 }
 
 
@@ -123,22 +121,22 @@ function formatDateTime(value = null) {
 
 
 /* =========================================================
-   Survey ID Resolution
+   Survey ID
 ========================================================= */
 
 function getSurveyId() {
-  const urlParameters =
+  const parameters =
     new URLSearchParams(window.location.search);
 
-  const urlSurveyId =
-    urlParameters.get("survey_id") ||
-    urlParameters.get("survey");
+  const querySurveyId =
+    parameters.get("survey_id") ||
+    parameters.get("survey");
 
   const storedSurveyId =
     localStorage.getItem("currentSurveyId");
 
   const candidate =
-    urlSurveyId || storedSurveyId;
+    querySurveyId || storedSurveyId;
 
   const surveyId = Number(candidate);
 
@@ -189,8 +187,30 @@ async function checkAuthentication() {
 
 
 /* =========================================================
-   Loading State
+   Loading Display
 ========================================================= */
+
+function setTableMessage(
+  elementId,
+  colspan,
+  message
+) {
+  const body =
+    document.getElementById(elementId);
+
+  if (!body) {
+    return;
+  }
+
+  body.innerHTML = `
+    <tr>
+      <td colspan="${colspan}" class="message-cell">
+        ${escapeHtml(message)}
+      </td>
+    </tr>
+  `;
+}
+
 
 function setLoadingState() {
   const reportMeta =
@@ -201,29 +221,6 @@ function setLoadingState() {
 
   const surveyInfoBody =
     document.getElementById("surveyInfoBody");
-
-  const stockingBody =
-    document.getElementById(
-      "stockingAssessmentBody"
-    );
-
-  const basalAreaBody =
-    document.getElementById(
-      "basalAreaAssessmentBody"
-    );
-
-  const volumeBody =
-    document.getElementById(
-      "volumeAssessmentBody"
-    );
-
-  const plotResultsBody =
-    document.getElementById("plotResultsBody");
-
-  const speciesSummaryBody =
-    document.getElementById(
-      "speciesSummaryBody"
-    );
 
   if (reportMeta) {
     reportMeta.textContent =
@@ -242,62 +239,42 @@ function setLoadingState() {
   if (surveyInfoBody) {
     surveyInfoBody.innerHTML = `
       <tr>
-        <td colspan="2">
+        <td colspan="2" class="message-cell">
           Loading survey information...
         </td>
       </tr>
     `;
   }
 
-  if (stockingBody) {
-    stockingBody.innerHTML = `
-      <tr>
-        <td colspan="5">
-          Loading stocking assessment...
-        </td>
-      </tr>
-    `;
-  }
+  setTableMessage(
+    "stockingAssessmentBody",
+    5,
+    "Loading stocking assessment..."
+  );
 
-  if (basalAreaBody) {
-    basalAreaBody.innerHTML = `
-      <tr>
-        <td colspan="5">
-          Loading basal area assessment...
-        </td>
-      </tr>
-    `;
-  }
+  setTableMessage(
+    "basalAreaAssessmentBody",
+    5,
+    "Loading basal area assessment..."
+  );
 
-  if (volumeBody) {
-    volumeBody.innerHTML = `
-      <tr>
-        <td colspan="5">
-          Loading volume assessment...
-        </td>
-      </tr>
-    `;
-  }
+  setTableMessage(
+    "volumeAssessmentBody",
+    5,
+    "Loading volume assessment..."
+  );
 
-  if (plotResultsBody) {
-    plotResultsBody.innerHTML = `
-      <tr>
-        <td colspan="4">
-          Loading plot results...
-        </td>
-      </tr>
-    `;
-  }
+  setTableMessage(
+    "plotResultsBody",
+    4,
+    "Loading plot results..."
+  );
 
-  if (speciesSummaryBody) {
-    speciesSummaryBody.innerHTML = `
-      <tr>
-        <td colspan="7">
-          Loading species summary...
-        </td>
-      </tr>
-    `;
-  }
+  setTableMessage(
+    "speciesSummaryBody",
+    7,
+    "Loading species summary..."
+  );
 }
 
 
@@ -332,10 +309,7 @@ async function loadSurvey(surveyId) {
     .single();
 
   if (error || !data) {
-    console.error(
-      "loadSurvey error:",
-      error
-    );
+    console.error("loadSurvey:", error);
 
     throw new Error(
       "Failed to load survey information."
@@ -370,7 +344,7 @@ async function loadSurveySummary(surveyId) {
 
   if (error) {
     console.error(
-      "loadSurveySummary error:",
+      "loadSurveySummary:",
       error
     );
 
@@ -409,7 +383,7 @@ async function loadPlotResults(surveyId) {
 
   if (error) {
     console.error(
-      "loadPlotResults error:",
+      "loadPlotResults:",
       error
     );
 
@@ -437,7 +411,7 @@ async function loadSpeciesSummary(surveyId) {
 
   if (error) {
     console.error(
-      "loadSpeciesSummary error:",
+      "loadSpeciesSummary:",
       error
     );
 
@@ -465,7 +439,7 @@ async function loadAssessmentSummary(surveyId) {
 
   if (error) {
     console.error(
-      "loadAssessmentSummary error:",
+      "loadAssessmentSummary:",
       error
     );
 
@@ -503,29 +477,27 @@ function renderReportHeader(survey) {
     reportMeta.innerHTML = `
       <div>
         <strong>Survey Name:</strong>
-        ${safeText(survey.survey_name)}
+        <span>${safeText(survey.survey_name)}</span>
       </div>
 
       <div>
         <strong>Survey Number:</strong>
-        ${safeText(survey.survey_number)}
+        <span>${safeText(survey.survey_number)}</span>
       </div>
 
       <div>
         <strong>Survey Date:</strong>
-        ${safeText(
-          formatDate(survey.survey_date)
-        )}
+        <span>${safeText(formatDate(survey.survey_date))}</span>
       </div>
 
       <div>
         <strong>Province:</strong>
-        ${safeText(survey.province)}
+        <span>${safeText(survey.province)}</span>
       </div>
 
       <div>
         <strong>Exported At:</strong>
-        ${safeText(formatDateTime())}
+        <span>${safeText(formatDateTime())}</span>
       </div>
     `;
   }
@@ -546,36 +518,21 @@ function renderExecutiveSummary(summary) {
 
   summaryCards.innerHTML = `
     <div class="summary-card">
-      <div class="label">
-        Total Plots
-      </div>
-
+      <div class="label">Total Plots</div>
       <div class="value">
-        ${safeText(
-          summary.total_plots ?? 0,
-          "0"
-        )}
+        ${safeText(summary.total_plots ?? 0, "0")}
       </div>
     </div>
 
     <div class="summary-card">
-      <div class="label">
-        Total Trees
-      </div>
-
+      <div class="label">Total Trees</div>
       <div class="value">
-        ${safeText(
-          summary.total_trees ?? 0,
-          "0"
-        )}
+        ${safeText(summary.total_trees ?? 0, "0")}
       </div>
     </div>
 
     <div class="summary-card">
-      <div class="label">
-        Total Basal Area (m²)
-      </div>
-
+      <div class="label">Total Basal Area (m²)</div>
       <div class="value">
         ${formatNumber(
           summary.total_basal_area_m2,
@@ -585,10 +542,7 @@ function renderExecutiveSummary(summary) {
     </div>
 
     <div class="summary-card">
-      <div class="label">
-        Total Volume (m³)
-      </div>
-
+      <div class="label">Total Volume (m³)</div>
       <div class="value">
         ${formatNumber(
           summary.total_volume_m3,
@@ -613,57 +567,28 @@ function renderSurveyInformation(survey) {
   }
 
   const rows = [
-    [
-      "Survey Type",
-      survey.survey_type
-    ],
-    [
-      "Vegetation",
-      survey.vegetation
-    ],
-    [
-      "Number of Blocks",
-      survey.number_of_blocks
-    ],
-    [
-      "Gross Area (ha)",
-      survey.gross_area_ha
-    ],
+    ["Survey Type", survey.survey_type],
+    ["Vegetation", survey.vegetation],
+    ["Number of Blocks", survey.number_of_blocks],
+    ["Gross Area (ha)", survey.gross_area_ha],
     [
       "Adjusted Net Forest Area",
       survey.adjusted_net_forest_area
     ],
-    [
-      "Slope Min",
-      survey.slope_min
-    ],
-    [
-      "Slope Max",
-      survey.slope_max
-    ],
-    [
-      "Elevation Min",
-      survey.elevation_min
-    ],
-    [
-      "Elevation Max",
-      survey.elevation_max
-    ],
-    [
-      "Plan ID",
-      survey.plan_id
-    ]
+    ["Slope Min", survey.slope_min],
+    ["Slope Max", survey.slope_max],
+    ["Elevation Min", survey.elevation_min],
+    ["Elevation Max", survey.elevation_max],
+    ["Plan ID", survey.plan_id]
   ];
 
   surveyInfoBody.innerHTML = rows
     .map(
       ([label, value]) => `
         <tr>
-          <td>
-            <strong>
-              ${escapeHtml(label)}
-            </strong>
-          </td>
+          <th scope="row">
+            ${escapeHtml(label)}
+          </th>
 
           <td>
             ${safeText(value)}
@@ -676,87 +601,70 @@ function renderSurveyInformation(survey) {
 
 
 /* =========================================================
-   Assessment Summary Totals
+   Assessment Summary
 ========================================================= */
 
+const ASSESSMENT_FIELDS = {
+  stocking: [
+    "stocking_10_19",
+    "stocking_20_49",
+    "stocking_50_plus",
+    "stocking_10_plus"
+  ],
+
+  basalArea: [
+    "basal_area_10_19",
+    "basal_area_20_49",
+    "basal_area_50_plus",
+    "basal_area_10_plus"
+  ],
+
+  volume: [
+    "volume_10_19",
+    "volume_20_49",
+    "volume_50_plus",
+    "volume_10_plus"
+  ]
+};
+
+
 function calculateAssessmentTotals(rows) {
-  const total = {
-    quality_class: "TOTAL",
-
-    stocking_10_19: 0,
-    stocking_20_49: 0,
-    stocking_50_plus: 0,
-    stocking_10_plus: 0,
-
-    basal_area_10_19: 0,
-    basal_area_20_49: 0,
-    basal_area_50_plus: 0,
-    basal_area_10_plus: 0,
-
-    volume_10_19: 0,
-    volume_20_49: 0,
-    volume_50_plus: 0,
-    volume_10_plus: 0
+  const totals = {
+    quality_code: 999,
+    quality_class: "TOTAL"
   };
 
+  Object.values(ASSESSMENT_FIELDS)
+    .flat()
+    .forEach((fieldName) => {
+      totals[fieldName] = 0;
+    });
+
   rows.forEach((row) => {
-    total.stocking_10_19 +=
-      toNumber(row.stocking_10_19);
-
-    total.stocking_20_49 +=
-      toNumber(row.stocking_20_49);
-
-    total.stocking_50_plus +=
-      toNumber(row.stocking_50_plus);
-
-    total.stocking_10_plus +=
-      toNumber(row.stocking_10_plus);
-
-    total.basal_area_10_19 +=
-      toNumber(row.basal_area_10_19);
-
-    total.basal_area_20_49 +=
-      toNumber(row.basal_area_20_49);
-
-    total.basal_area_50_plus +=
-      toNumber(row.basal_area_50_plus);
-
-    total.basal_area_10_plus +=
-      toNumber(row.basal_area_10_plus);
-
-    total.volume_10_19 +=
-      toNumber(row.volume_10_19);
-
-    total.volume_20_49 +=
-      toNumber(row.volume_20_49);
-
-    total.volume_50_plus +=
-      toNumber(row.volume_50_plus);
-
-    total.volume_10_plus +=
-      toNumber(row.volume_10_plus);
+    Object.values(ASSESSMENT_FIELDS)
+      .flat()
+      .forEach((fieldName) => {
+        totals[fieldName] +=
+          toNumber(row[fieldName]);
+      });
   });
 
-  return total;
+  return totals;
 }
 
 
-/* =========================================================
-   Assessment Table Rendering
-========================================================= */
-
-function createAssessmentRows(
+function buildAssessmentTableRows(
   assessmentRows,
   fieldNames
 ) {
-  const total =
+  const totalRow =
     calculateAssessmentTotals(
       assessmentRows
     );
 
   const displayRows = [
     ...assessmentRows,
-    total
+    totalRow
   ];
 
   return displayRows
@@ -770,63 +678,25 @@ function createAssessmentRows(
             ? "assessment-total-row"
             : ""
         }">
-          <td>
+          <th scope="row">
             ${
               isTotal
-                ? "<strong>TOTAL</strong>"
-                : safeText(
-                    row.quality_class
-                  )
+                ? "TOTAL"
+                : safeText(row.quality_class)
             }
-          </td>
+          </th>
 
-          <td>
-            ${
-              isTotal
-                ? `<strong>${formatAssessmentNumber(
-                    row[fieldNames[0]]
-                  )}</strong>`
-                : formatAssessmentNumber(
-                    row[fieldNames[0]]
-                  )
-            }
-          </td>
-
-          <td>
-            ${
-              isTotal
-                ? `<strong>${formatAssessmentNumber(
-                    row[fieldNames[1]]
-                  )}</strong>`
-                : formatAssessmentNumber(
-                    row[fieldNames[1]]
-                  )
-            }
-          </td>
-
-          <td>
-            ${
-              isTotal
-                ? `<strong>${formatAssessmentNumber(
-                    row[fieldNames[2]]
-                  )}</strong>`
-                : formatAssessmentNumber(
-                    row[fieldNames[2]]
-                  )
-            }
-          </td>
-
-          <td>
-            ${
-              isTotal
-                ? `<strong>${formatAssessmentNumber(
-                    row[fieldNames[3]]
-                  )}</strong>`
-                : formatAssessmentNumber(
-                    row[fieldNames[3]]
-                  )
-            }
-          </td>
+          ${fieldNames
+            .map(
+              (fieldName) => `
+                <td>
+                  ${formatAssessmentNumber(
+                    row[fieldName]
+                  )}
+                </td>
+              `
+            )
+            .join("")}
         </tr>
       `;
     })
@@ -834,9 +704,7 @@ function createAssessmentRows(
 }
 
 
-function renderAssessmentSummary(
-  assessmentRows
-) {
+function renderAssessmentSummary(rows) {
   const stockingBody =
     document.getElementById(
       "stockingAssessmentBody"
@@ -853,33 +721,29 @@ function renderAssessmentSummary(
     );
 
   if (
-    !Array.isArray(assessmentRows) ||
-    assessmentRows.length === 0
+    !Array.isArray(rows) ||
+    rows.length === 0
   ) {
-    const emptyRow = `
-      <tr>
-        <td colspan="5">
-          No assessment summary data found.
-        </td>
-      </tr>
-    `;
-
-    if (stockingBody) {
-      stockingBody.innerHTML = emptyRow;
-    }
-
-    if (basalAreaBody) {
-      basalAreaBody.innerHTML = emptyRow;
-    }
-
-    if (volumeBody) {
-      volumeBody.innerHTML = emptyRow;
-    }
+    [
+      stockingBody,
+      basalAreaBody,
+      volumeBody
+    ].forEach((body) => {
+      if (body) {
+        body.innerHTML = `
+          <tr>
+            <td colspan="5" class="message-cell">
+              No assessment summary data found.
+            </td>
+          </tr>
+        `;
+      }
+    });
 
     return;
   }
 
-  const orderedRows = [...assessmentRows]
+  const orderedRows = [...rows]
     .sort(
       (first, second) =>
         toNumber(first.quality_code) -
@@ -888,40 +752,25 @@ function renderAssessmentSummary(
 
   if (stockingBody) {
     stockingBody.innerHTML =
-      createAssessmentRows(
+      buildAssessmentTableRows(
         orderedRows,
-        [
-          "stocking_10_19",
-          "stocking_20_49",
-          "stocking_50_plus",
-          "stocking_10_plus"
-        ]
+        ASSESSMENT_FIELDS.stocking
       );
   }
 
   if (basalAreaBody) {
     basalAreaBody.innerHTML =
-      createAssessmentRows(
+      buildAssessmentTableRows(
         orderedRows,
-        [
-          "basal_area_10_19",
-          "basal_area_20_49",
-          "basal_area_50_plus",
-          "basal_area_10_plus"
-        ]
+        ASSESSMENT_FIELDS.basalArea
       );
   }
 
   if (volumeBody) {
     volumeBody.innerHTML =
-      createAssessmentRows(
+      buildAssessmentTableRows(
         orderedRows,
-        [
-          "volume_10_19",
-          "volume_20_49",
-          "volume_50_plus",
-          "volume_10_plus"
-        ]
+        ASSESSMENT_FIELDS.volume
       );
   }
 }
@@ -931,7 +780,7 @@ function renderAssessmentSummary(
    Plot Results
 ========================================================= */
 
-function renderPlotResults(plotRows) {
+function renderPlotResults(rows) {
   const plotResultsBody =
     document.getElementById(
       "plotResultsBody"
@@ -942,27 +791,23 @@ function renderPlotResults(plotRows) {
   }
 
   if (
-    !Array.isArray(plotRows) ||
-    plotRows.length === 0
+    !Array.isArray(rows) ||
+    rows.length === 0
   ) {
-    plotResultsBody.innerHTML = `
-      <tr>
-        <td colspan="4">
-          No plot results found.
-        </td>
-      </tr>
-    `;
+    setTableMessage(
+      "plotResultsBody",
+      4,
+      "No plot results found."
+    );
 
     return;
   }
 
-  plotResultsBody.innerHTML = plotRows
+  plotResultsBody.innerHTML = rows
     .map(
       (row) => `
         <tr>
-          <td>
-            ${safeText(row.plot_no)}
-          </td>
+          <td>${safeText(row.plot_no)}</td>
 
           <td>
             ${safeText(
@@ -995,7 +840,7 @@ function renderPlotResults(plotRows) {
    Species Summary
 ========================================================= */
 
-function renderSpeciesSummary(speciesRows) {
+function renderSpeciesSummary(rows) {
   const speciesSummaryBody =
     document.getElementById(
       "speciesSummaryBody"
@@ -1006,82 +851,73 @@ function renderSpeciesSummary(speciesRows) {
   }
 
   if (
-    !Array.isArray(speciesRows) ||
-    speciesRows.length === 0
+    !Array.isArray(rows) ||
+    rows.length === 0
   ) {
-    speciesSummaryBody.innerHTML = `
-      <tr>
-        <td colspan="7">
-          No species summary data found.
-        </td>
-      </tr>
-    `;
+    setTableMessage(
+      "speciesSummaryBody",
+      7,
+      "No species summary data found."
+    );
 
     return;
   }
 
-  speciesSummaryBody.innerHTML =
-    speciesRows
-      .map(
-        (row) => `
-          <tr>
-            <td>
-              ${safeText(
-                row.species_code
-              )}
-            </td>
+  speciesSummaryBody.innerHTML = rows
+    .map(
+      (row) => `
+        <tr>
+          <td>
+            ${safeText(row.species_code)}
+          </td>
 
-            <td>
-              ${safeText(
-                row.species_name,
-                "Unknown species"
-              )}
-            </td>
+          <td>
+            ${safeText(
+              row.species_name,
+              "Unknown species"
+            )}
+          </td>
 
-            <td>
-              ${safeText(
-                row.trade_name
-              )}
-            </td>
+          <td>
+            ${safeText(row.trade_name)}
+          </td>
 
-            <td>
-              ${safeText(
-                row.common_name
-              )}
-            </td>
+          <td>
+            ${safeText(row.common_name)}
+          </td>
 
-            <td>
-              ${safeText(
-                row.tree_count ?? 0,
-                "0"
-              )}
-            </td>
+          <td>
+            ${safeText(
+              row.tree_count ?? 0,
+              "0"
+            )}
+          </td>
 
-            <td>
-              ${formatNumber(
-                row.basal_area_m2,
-                4
-              )}
-            </td>
+          <td>
+            ${formatNumber(
+              row.basal_area_m2,
+              4
+            )}
+          </td>
 
-            <td>
-              ${formatNumber(
-                row.volume_m3,
-                4
-              )}
-            </td>
-          </tr>
-        `
-      )
-      .join("");
+          <td>
+            ${formatNumber(
+              row.volume_m3,
+              4
+            )}
+          </td>
+        </tr>
+      `
+    )
+    .join("");
 }
 
 
 /* =========================================================
-   Cross-check Totals
+   Validation
 ========================================================= */
 
-function validateReportTotals(
+function validateSpeciesTotals(
   surveySummary,
   speciesRows
 ) {
@@ -1095,76 +931,52 @@ function validateReportTotals(
   const speciesTreeTotal =
     speciesRows.reduce(
       (sum, row) =>
-        sum +
-        toNumber(row.tree_count),
+        sum + toNumber(row.tree_count),
       0
     );
 
-  const speciesBasalTotal =
+  const speciesBasalAreaTotal =
     speciesRows.reduce(
       (sum, row) =>
-        sum +
-        toNumber(row.basal_area_m2),
+        sum + toNumber(row.basal_area_m2),
       0
     );
 
   const speciesVolumeTotal =
     speciesRows.reduce(
       (sum, row) =>
-        sum +
-        toNumber(row.volume_m3),
+        sum + toNumber(row.volume_m3),
       0
     );
 
-  const surveyTreeTotal =
-    toNumber(
-      surveySummary.total_trees
-    );
+  const tolerance = 0.0001;
 
-  const surveyBasalTotal =
-    toNumber(
-      surveySummary.total_basal_area_m2
-    );
-
-  const surveyVolumeTotal =
-    toNumber(
-      surveySummary.total_volume_m3
-    );
-
-  const tolerance = 0.00001;
-
-  if (
+  const mismatch =
     speciesTreeTotal !==
-      surveyTreeTotal ||
+      toNumber(surveySummary.total_trees) ||
+
     Math.abs(
-      speciesBasalTotal -
-      surveyBasalTotal
+      speciesBasalAreaTotal -
+      toNumber(
+        surveySummary.total_basal_area_m2
+      )
     ) > tolerance ||
+
     Math.abs(
       speciesVolumeTotal -
-      surveyVolumeTotal
-    ) > tolerance
-  ) {
-    console.warn(
-      "Report totals mismatch.",
-      {
-        surveySummary: {
-          treeTotal:
-            surveyTreeTotal,
-          basalAreaTotal:
-            surveyBasalTotal,
-          volumeTotal:
-            surveyVolumeTotal
-        },
+      toNumber(
+        surveySummary.total_volume_m3
+      )
+    ) > tolerance;
 
-        speciesSummary: {
-          treeTotal:
-            speciesTreeTotal,
-          basalAreaTotal:
-            speciesBasalTotal,
-          volumeTotal:
-            speciesVolumeTotal
-        }
+  if (mismatch) {
+    console.warn(
+      "Species totals do not match survey totals.",
+      {
+        surveySummary,
+        speciesTreeTotal,
+        speciesBasalAreaTotal,
+        speciesVolumeTotal
       }
     );
   }
@@ -1176,52 +988,28 @@ function validateReportTotals(
 ========================================================= */
 
 function renderAssessmentError(message) {
-  const elementIds = [
+  [
     "stockingAssessmentBody",
     "basalAreaAssessmentBody",
     "volumeAssessmentBody"
-  ];
-
-  elementIds.forEach((elementId) => {
-    const element =
-      document.getElementById(elementId);
-
-    if (element) {
-      element.innerHTML = `
-        <tr>
-          <td colspan="5">
-            ${safeText(
-              message,
-              "Failed to load assessment summary."
-            )}
-          </td>
-        </tr>
-      `;
-    }
+  ].forEach((elementId) => {
+    setTableMessage(
+      elementId,
+      5,
+      message ||
+      "Failed to load assessment summary."
+    );
   });
 }
 
 
 function renderSpeciesError(message) {
-  const speciesSummaryBody =
-    document.getElementById(
-      "speciesSummaryBody"
-    );
-
-  if (!speciesSummaryBody) {
-    return;
-  }
-
-  speciesSummaryBody.innerHTML = `
-    <tr>
-      <td colspan="7">
-        ${safeText(
-          message,
-          "Failed to load species summary."
-        )}
-      </td>
-    </tr>
-  `;
+  setTableMessage(
+    "speciesSummaryBody",
+    7,
+    message ||
+    "Failed to load species summary."
+  );
 }
 
 
@@ -1243,25 +1031,21 @@ function attachButtonEvents() {
   if (printButton) {
     printButton.addEventListener(
       "click",
-      () => {
-        window.print();
-      }
+      () => window.print()
     );
   }
 
   if (backButton) {
     backButton.addEventListener(
       "click",
-      () => {
-        redirectToResult();
-      }
+      redirectToResult
     );
   }
 }
 
 
 /* =========================================================
-   Main Initialization
+   Initialization
 ========================================================= */
 
 async function initializeReport() {
@@ -1291,82 +1075,91 @@ async function initializeReport() {
   );
 
   try {
-    /*
-     * These datasets are required for
-     * the main report.
-     */
     const [
       survey,
       surveySummary,
-      plotResults
-    ] = await Promise.all([
+      plotResults,
+      assessmentResult,
+      speciesResult
+    ] = await Promise.allSettled([
       loadSurvey(surveyId),
       loadSurveySummary(surveyId),
-      loadPlotResults(surveyId)
+      loadPlotResults(surveyId),
+      loadAssessmentSummary(surveyId),
+      loadSpeciesSummary(surveyId)
     ]);
 
-    renderReportHeader(survey);
+    if (
+      survey.status === "rejected"
+    ) {
+      throw survey.reason;
+    }
+
+    if (
+      surveySummary.status === "rejected"
+    ) {
+      throw surveySummary.reason;
+    }
+
+    renderReportHeader(survey.value);
 
     renderExecutiveSummary(
-      surveySummary
+      surveySummary.value
     );
 
-    renderSurveyInformation(survey);
+    renderSurveyInformation(
+      survey.value
+    );
 
-    renderPlotResults(plotResults);
-
-    /*
-     * Assessment Summary is loaded
-     * independently.
-     */
-    try {
-      const assessmentRows =
-        await loadAssessmentSummary(
-          surveyId
-        );
-
-      renderAssessmentSummary(
-        assessmentRows
-      );
-
-    } catch (assessmentError) {
-      console.error(
-        "Assessment Summary error:",
-        assessmentError
-      );
-
-      renderAssessmentError(
-        assessmentError.message
+    if (plotResults.status === "fulfilled") {
+      renderPlotResults(plotResults.value);
+    } else {
+      setTableMessage(
+        "plotResultsBody",
+        4,
+        plotResults.reason?.message ||
+        "Failed to load plot results."
       );
     }
 
-    /*
-     * Species Summary is loaded
-     * independently.
-     */
-    try {
-      const speciesRows =
-        await loadSpeciesSummary(
-          surveyId
-        );
-
-      renderSpeciesSummary(
-        speciesRows
+    if (
+      assessmentResult.status ===
+      "fulfilled"
+    ) {
+      renderAssessmentSummary(
+        assessmentResult.value
       );
-
-      validateReportTotals(
-        surveySummary,
-        speciesRows
-      );
-
-    } catch (speciesError) {
+    } else {
       console.error(
-        "Species Summary error:",
-        speciesError
+        "Assessment Summary:",
+        assessmentResult.reason
+      );
+
+      renderAssessmentError(
+        assessmentResult.reason?.message
+      );
+    }
+
+    if (
+      speciesResult.status ===
+      "fulfilled"
+    ) {
+      renderSpeciesSummary(
+        speciesResult.value
+      );
+
+      validateSpeciesTotals(
+        surveySummary.value,
+        speciesResult.value
+      );
+    } else {
+      console.error(
+        "Species Summary:",
+        speciesResult.reason
       );
 
       renderSpeciesError(
-        speciesError.message
+        speciesResult.reason?.message
       );
     }
 
@@ -1379,7 +1172,7 @@ async function initializeReport() {
     );
 
     alert(
-      error.message ||
+      error?.message ||
       "Failed to generate the report."
     );
 
@@ -1389,7 +1182,7 @@ async function initializeReport() {
 
 
 /* =========================================================
-   Start Application
+   Start
 ========================================================= */
 
 initializeReport();
