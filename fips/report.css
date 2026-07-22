@@ -1,11 +1,6 @@
 /* =========================================================
    FIPS Assessment Summary Report
-   report.css - Complete Replacement Version
-========================================================= */
-
-
-/* =========================================================
-   Reset
+   Modern cloud layout with legacy FIPS content
 ========================================================= */
 
 * {
@@ -16,180 +11,208 @@ html,
 body {
   margin: 0;
   padding: 0;
-}
-
-html,
-body {
   background: #e5e7eb;
 }
 
 body {
   color: #111827;
-
-  font-family:
-    Arial,
-    Helvetica,
-    sans-serif;
-
+  font-family: Arial, Helvetica, sans-serif;
   font-size: 13px;
   line-height: 1.4;
 }
 
-
-/* =========================================================
-   Report Page
-========================================================= */
-
 .report-page {
   width: 210mm;
   min-height: 297mm;
-
   margin: 16px auto;
   padding: 14mm 16mm;
-
   background: #ffffff;
-
   border: 1px solid #cbd5e1;
-
   box-shadow:
     0 2px 5px rgba(0, 0, 0, 0.08),
     0 10px 30px rgba(0, 0, 0, 0.08);
 }
 
-
-/* =========================================================
-   Header
-========================================================= */
-
 .report-header {
-  margin: 0 0 16px;
+  margin: 0 0 14px;
   padding: 0 0 10px;
-
   border-bottom: 2px solid #166534;
 }
 
+.report-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
 .report-header h1 {
-  margin: 0 0 8px;
-
+  margin: 0;
   color: #14532d;
-
-  font-size: 22px;
+  font-size: 21px;
   font-weight: 700;
   line-height: 1.2;
+  letter-spacing: 0.15px;
+}
+
+.report-subtitle {
+  margin: 4px 0 0;
+  color: #475569;
+  font-size: 11px;
+}
+
+.version-badge {
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  border: 1px solid #94a3b8;
+  border-radius: 3px;
+  color: #334155;
+  background: #f8fafc;
+  font-size: 10px;
+  white-space: nowrap;
 }
 
 .report-meta {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2px 20px;
+  margin-top: 12px;
   color: #111827;
-
-  font-size: 12px;
-  line-height: 1.55;
+  font-size: 11px;
+  line-height: 1.45;
 }
 
 .report-meta div {
   display: flex;
-
-  margin: 0 0 2px;
+  min-width: 0;
 }
 
 .report-meta strong {
-  flex: 0 0 120px;
+  flex: 0 0 112px;
 }
 
 .report-meta span {
-  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
-
-/* =========================================================
-   Sections
-========================================================= */
-
+.survey-information-section,
 .assessment-section,
 .major-species-section,
 .note-section {
-  margin-top: 17px;
+  margin-top: 16px;
 }
 
+.survey-information-section h2,
 .assessment-section h2,
 .major-species-section h2 {
   margin: 0 0 8px;
   padding: 0 0 5px;
-
   color: #14532d;
-
   font-size: 16px;
   font-weight: 700;
   line-height: 1.25;
-
   border-bottom: 1px solid #cbd5e1;
 }
 
+.legacy-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid #94a3b8;
+  border-left: 1px solid #94a3b8;
+}
 
-/* =========================================================
-   Table Wrapper
-========================================================= */
+.legacy-info-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(80px, 0.7fr);
+  min-height: 31px;
+  border-right: 1px solid #94a3b8;
+  border-bottom: 1px solid #94a3b8;
+  background: #ffffff;
+}
+
+.legacy-info-label,
+.legacy-info-value {
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+}
+
+.legacy-info-label {
+  background: #f1f5f9;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.legacy-info-value {
+  justify-content: flex-end;
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+}
 
 .table-wrapper {
   width: 100%;
-
   overflow-x: auto;
 }
-
-
-/* =========================================================
-   Assessment Summary
-========================================================= */
 
 .assessment-table-block {
   margin: 0 0 12px;
 }
 
-.assessment-table-block:last-child {
+.assessment-table-block:last-of-type {
   margin-bottom: 0;
 }
 
 .assessment-table-block h3 {
-  margin: 0 0 5px;
-
+  margin: 0;
   color: #111827;
-
   font-size: 13px;
   font-weight: 700;
   line-height: 1.25;
 }
 
-.assessment-table {
-  width: 100%;
+.diameter-caption {
+  margin: 3px 0 4px;
+  color: #475569;
+  font-size: 9.5px;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
 
+.assessment-table,
+.major-species-table {
+  width: 100%;
   border-collapse: collapse;
   border-spacing: 0;
-
   table-layout: fixed;
-
   background: #ffffff;
+}
 
+.assessment-table {
   border: 1px solid #475569;
+}
+
+.assessment-table th,
+.assessment-table td,
+.major-species-table th,
+.major-species-table td {
+  border: 1px solid #64748b;
+  vertical-align: middle;
 }
 
 .assessment-table th,
 .assessment-table td {
   height: 27px;
-
   padding: 4px 7px;
-
-  border: 1px solid #64748b;
-
   font-size: 10.5px;
   line-height: 1.2;
-
-  vertical-align: middle;
 }
 
-.assessment-table thead th {
+.assessment-table thead th,
+.major-species-table thead th {
   background: #e2e8f0;
-
   color: #111827;
-
   font-weight: 700;
   text-align: center;
 }
@@ -206,71 +229,47 @@ body {
 
 .assessment-table tbody th {
   background: #f8fafc;
-
   font-weight: 400;
   text-align: left;
 }
 
 .assessment-table tbody td {
   text-align: right;
-
-  font-variant-numeric:
-    tabular-nums;
+  font-variant-numeric: tabular-nums;
 }
 
-.assessment-table tbody tr:nth-child(even):not(
-  .assessment-total-row
-) th,
-.assessment-table tbody tr:nth-child(even):not(
-  .assessment-total-row
-) td {
+.assessment-table tbody tr:nth-child(even):not(.assessment-total-row) th,
+.assessment-table tbody tr:nth-child(even):not(.assessment-total-row) td {
   background: #f8fafc;
 }
 
 .assessment-total-row th,
 .assessment-total-row td {
   background: #dbeafe;
-
   border-top: 2px solid #334155;
-
   font-weight: 700;
 }
 
+.legacy-note {
+  margin: 9px 0 0;
+  padding-top: 6px;
+  border-top: 1px dashed #64748b;
+  color: #475569;
+  font-size: 9.5px;
+}
 
-/* =========================================================
-   Major Species Summary
-========================================================= */
-
-.major-species-table {
-  width: 100%;
-
-  border-collapse: collapse;
-  border-spacing: 0;
-
-  table-layout: fixed;
-
-  background: #ffffff;
+.major-species-description {
+  margin: -2px 0 8px;
+  color: #475569;
+  font-size: 10px;
+  line-height: 1.35;
 }
 
 .major-species-table th,
 .major-species-table td {
   padding: 6px 7px;
-
-  border: 1px solid #64748b;
-
   font-size: 10px;
   line-height: 1.25;
-
-  vertical-align: middle;
-}
-
-.major-species-table thead th {
-  background: #e2e8f0;
-
-  color: #111827;
-
-  font-weight: 700;
-  text-align: center;
 }
 
 .major-species-table th:nth-child(1) {
@@ -300,35 +299,21 @@ body {
 .major-species-table td:nth-child(5),
 .major-species-table td:nth-child(6) {
   text-align: right;
-
-  font-variant-numeric:
-    tabular-nums;
+  font-variant-numeric: tabular-nums;
 }
 
 .major-species-table tbody tr:nth-child(even) {
   background: #f8fafc;
 }
 
-
-/* =========================================================
-   Loading / Empty Messages
-========================================================= */
-
 .message-cell,
 .assessment-table td[colspan],
 .major-species-table td[colspan] {
   padding: 12px !important;
-
   color: #64748b;
-
   font-style: italic;
   text-align: center !important;
 }
-
-
-/* =========================================================
-   Report Note
-========================================================= */
 
 .note-section {
   margin-top: 16px;
@@ -336,42 +321,28 @@ body {
 
 .report-note {
   margin: 0;
-
   color: #64748b;
-
   font-size: 10px;
   line-height: 1.4;
 }
 
-
-/* =========================================================
-   Buttons
-========================================================= */
-
 .report-actions {
   display: flex;
   flex-wrap: wrap;
-
   gap: 10px;
-
   margin-top: 18px;
   padding-top: 13px;
-
   border-top: 1px solid #cbd5e1;
 }
 
 .report-actions button {
   min-width: 105px;
-
   padding: 9px 15px;
-
   border: 0;
   border-radius: 4px;
-
   font-family: inherit;
   font-size: 12px;
   font-weight: 700;
-
   cursor: pointer;
 }
 
@@ -395,148 +366,135 @@ body {
 
 .report-actions button:disabled {
   cursor: not-allowed;
-
   opacity: 0.6;
 }
 
-
-/* =========================================================
-   Responsive
-========================================================= */
-
 @media screen and (max-width: 900px) {
-
   .report-page {
     width: calc(100% - 20px);
     min-height: auto;
-
     margin: 10px;
     padding: 18px 14px;
   }
 
-  .report-header h1 {
-    font-size: 20px;
+  .report-title-row {
+    display: block;
+  }
+
+  .version-badge {
+    display: inline-block;
+    margin-top: 8px;
+  }
+
+  .report-meta,
+  .legacy-info-grid {
+    grid-template-columns: 1fr;
   }
 
   .assessment-table,
   .major-species-table {
     min-width: 680px;
   }
-
 }
-
-
-/* =========================================================
-   Print
-========================================================= */
 
 @page {
   size: A4 portrait;
-
   margin: 12mm 14mm;
 }
 
-
 @media print {
-
   html,
   body {
     width: 100%;
-
     margin: 0;
     padding: 0;
-
     background: #ffffff;
-
     color: #111827;
-
     font-size: 10px;
     line-height: 1.3;
-
-    -webkit-print-color-adjust:
-      exact;
-
-    print-color-adjust:
-      exact;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
   .report-page {
     width: auto;
     min-height: 0;
-
     margin: 0;
     padding: 0;
-
     background: #ffffff;
-
     border: 0;
     box-shadow: none;
   }
 
   .report-header {
-    margin: 0 0 10px;
-    padding: 0 0 7px;
+    margin: 0 0 8px;
+    padding: 0 0 6px;
   }
 
   .report-header h1 {
-    margin: 0 0 6px;
-
-    font-size: 18px;
+    font-size: 16px;
   }
 
   .report-meta {
-    display: grid;
-
-    grid-template-columns:
-      repeat(2, minmax(0, 1fr));
-
-    gap: 1px 16px;
-
-    font-size: 9px;
-    line-height: 1.3;
-  }
-
-  .report-meta div {
-    margin: 0;
+    margin-top: 8px;
+    font-size: 8.5px;
+    gap: 1px 14px;
   }
 
   .report-meta strong {
-    flex: 0 0 94px;
+    flex-basis: 90px;
   }
 
+  .survey-information-section,
   .assessment-section,
   .major-species-section {
-    margin-top: 11px;
+    margin-top: 9px;
   }
 
+  .survey-information-section h2,
   .assessment-section h2,
   .major-species-section h2 {
-    margin: 0 0 6px;
-    padding: 0 0 4px;
+    margin-bottom: 5px;
+    padding-bottom: 3px;
+    font-size: 12px;
+  }
 
-    font-size: 13px;
+  .legacy-info-item {
+    min-height: 24px;
+  }
+
+  .legacy-info-label,
+  .legacy-info-value {
+    padding: 3px 5px;
+    font-size: 7.8px;
   }
 
   .assessment-table-block {
-    margin: 0 0 8px;
-
+    margin-bottom: 7px;
     break-inside: avoid;
     page-break-inside: avoid;
   }
 
   .assessment-table-block h3 {
-    margin: 0 0 4px;
+    font-size: 9px;
+  }
 
-    font-size: 10px;
+  .diameter-caption {
+    margin: 2px 0 3px;
+    font-size: 7px;
   }
 
   .assessment-table th,
   .assessment-table td {
-    height: 22px;
+    height: 20px;
+    padding: 2.5px 5px;
+    font-size: 7.5px;
+  }
 
-    padding: 3px 6px;
-
-    font-size: 8px;
+  .legacy-note {
+    margin-top: 6px;
+    padding-top: 4px;
+    font-size: 7px;
   }
 
   .major-species-section {
@@ -544,13 +502,15 @@ body {
     page-break-before: always;
   }
 
+  .major-species-description {
+    font-size: 8px;
+  }
+
   .major-species-table th,
   .major-species-table td {
-    height: 24px;
-
-    padding: 4px 5px;
-
-    font-size: 7.8px;
+    height: 22px;
+    padding: 3px 5px;
+    font-size: 7.5px;
   }
 
   .assessment-table thead,
@@ -574,16 +534,4 @@ body {
   .report-note {
     display: none !important;
   }
-
-  .assessment-table thead th,
-  .assessment-total-row th,
-  .assessment-total-row td,
-  .major-species-table thead th {
-    -webkit-print-color-adjust:
-      exact;
-
-    print-color-adjust:
-      exact;
-  }
-
 }
