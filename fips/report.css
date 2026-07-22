@@ -1,29 +1,29 @@
 /* =========================================================
-   FIPS Assessment Summary Report
-   report.css - Complete Replacement Version
+   FIPS Legacy Assessment Report
+   Complete Replacement CSS
 ========================================================= */
 
 
 /* =========================================================
-   1. Reset / Base
+   1. Reset
 ========================================================= */
 
 * {
   box-sizing: border-box;
 }
 
-html {
+html,
+body {
   margin: 0;
   padding: 0;
+}
+
+html {
   background: #e5e7eb;
 }
 
 body {
-  margin: 0;
-  padding: 0;
-
   background: #e5e7eb;
-
   color: #111827;
 
   font-family:
@@ -32,12 +32,12 @@ body {
     sans-serif;
 
   font-size: 13px;
-  line-height: 1.4;
+  line-height: 1.35;
 }
 
 
 /* =========================================================
-   2. Main Report Page
+   2. Report Page
 ========================================================= */
 
 .report-page {
@@ -45,60 +45,60 @@ body {
   min-height: 297mm;
 
   margin: 16px auto;
-  padding: 14mm 14mm 12mm;
+  padding: 12mm 13mm;
 
   background: #ffffff;
 
-  border: 1px solid #d1d5db;
+  border: 1px solid #cbd5e1;
 
   box-shadow:
-    0 2px 4px rgba(0, 0, 0, 0.08),
-    0 8px 24px rgba(0, 0, 0, 0.08);
+    0 2px 5px rgba(0, 0, 0, 0.08),
+    0 10px 30px rgba(0, 0, 0, 0.08);
 }
 
 
 /* =========================================================
-   3. Report Header
+   3. Header
 ========================================================= */
 
 .report-header {
-  margin: 0 0 18px;
-  padding: 0 0 12px;
+  margin: 0 0 16px;
+  padding: 0 0 10px;
 
   border-bottom: 2px solid #166534;
 }
 
 .report-header h1 {
-  margin: 0 0 10px;
+  margin: 0 0 8px;
 
   color: #14532d;
 
-  font-size: 23px;
+  font-size: 22px;
   font-weight: 700;
   line-height: 1.2;
 }
 
 .report-meta {
-  color: #1f2937;
-
   font-size: 12px;
-  line-height: 1.65;
+  line-height: 1.55;
 }
 
 .report-meta div {
-  margin: 0;
+  display: flex;
+  margin: 0 0 2px;
 }
 
 .report-meta strong {
-  display: inline-block;
-  min-width: 110px;
+  flex: 0 0 112px;
+}
 
-  color: #111827;
+.report-meta span {
+  flex: 1 1 auto;
 }
 
 
 /* =========================================================
-   4. Common Section Settings
+   4. Sections
 ========================================================= */
 
 .summary-section,
@@ -107,7 +107,7 @@ body {
 .plot-section,
 .species-section,
 .note-section {
-  margin-top: 20px;
+  margin: 17px 0 0;
 }
 
 .summary-section h2,
@@ -115,21 +115,20 @@ body {
 .assessment-section h2,
 .plot-section h2,
 .species-section h2 {
-  margin: 0 0 10px;
-  padding: 0 0 6px;
+  margin: 0 0 8px;
+  padding: 0 0 5px;
 
   color: #14532d;
 
   font-size: 16px;
   font-weight: 700;
-  line-height: 1.25;
 
   border-bottom: 1px solid #cbd5e1;
 }
 
 
 /* =========================================================
-   5. Executive Summary Cards
+   5. Executive Summary
 ========================================================= */
 
 .summary-cards {
@@ -138,13 +137,13 @@ body {
   grid-template-columns:
     repeat(2, minmax(0, 1fr));
 
-  gap: 10px;
+  gap: 9px;
 }
 
 .summary-card {
-  min-height: 68px;
+  min-height: 64px;
 
-  padding: 10px 12px;
+  padding: 9px 11px;
 
   background: #f8fafc;
 
@@ -153,27 +152,23 @@ body {
 }
 
 .summary-card .label {
-  margin-bottom: 4px;
+  margin-bottom: 3px;
 
   color: #64748b;
 
   font-size: 11px;
-  font-weight: 400;
 }
 
 .summary-card .value {
-  color: #111827;
-
   font-size: 19px;
   font-weight: 700;
-  line-height: 1.2;
 
   font-variant-numeric: tabular-nums;
 }
 
 
 /* =========================================================
-   6. General Table Settings
+   6. General Tables
 ========================================================= */
 
 .table-wrapper {
@@ -193,6 +188,7 @@ body {
   background: #ffffff;
 }
 
+.info-table th,
 .info-table td,
 .assessment-table th,
 .assessment-table td,
@@ -200,20 +196,17 @@ body {
 .plot-table td,
 .species-table th,
 .species-table td {
-  border: 1px solid #cbd5e1;
-
-  vertical-align: middle;
+  border: 1px solid #94a3b8;
 }
 
-.assessment-table th,
-.plot-table th,
-.species-table th {
-  background: #f1f5f9;
+.assessment-table thead th,
+.plot-table thead th,
+.species-table thead th {
+  background: #e2e8f0;
 
   color: #111827;
 
   font-weight: 700;
-  text-align: center;
 }
 
 
@@ -225,26 +218,25 @@ body {
   table-layout: fixed;
 }
 
+.info-table th,
 .info-table td {
-  padding: 6px 8px;
+  padding: 5px 8px;
 
-  font-size: 11.5px;
+  font-size: 11px;
+  text-align: left;
+  vertical-align: middle;
 }
 
-.info-table td:first-child {
+.info-table th {
   width: 38%;
 
-  background: #f8fafc;
-
-  color: #1f2937;
+  background: #f1f5f9;
 
   font-weight: 700;
 }
 
-.info-table td:last-child {
+.info-table td {
   width: 62%;
-
-  color: #111827;
 }
 
 
@@ -253,11 +245,11 @@ body {
 ========================================================= */
 
 .assessment-section {
-  margin-top: 20px;
+  margin-top: 18px;
 }
 
 .assessment-table-block {
-  margin: 0 0 14px;
+  margin: 0 0 12px;
 }
 
 .assessment-table-block:last-child {
@@ -265,38 +257,53 @@ body {
 }
 
 .assessment-table-block h3 {
-  margin: 0 0 6px;
-
-  color: #111827;
+  margin: 0 0 5px;
 
   font-size: 13px;
   font-weight: 700;
-  line-height: 1.3;
 }
 
 .assessment-table {
   table-layout: fixed;
+
+  border: 1px solid #475569;
 }
 
 .assessment-table th,
 .assessment-table td {
-  padding: 5px 7px;
+  height: 27px;
+
+  padding: 4px 7px;
+
+  border: 1px solid #64748b;
 
   font-size: 10.5px;
-  line-height: 1.25;
+  line-height: 1.15;
+  vertical-align: middle;
 }
 
-.assessment-table th:first-child,
-.assessment-table td:first-child {
-  width: 24%;
+.assessment-table thead th {
+  text-align: center;
+}
 
+.assessment-table thead th:first-child,
+.assessment-table tbody th {
+  width: 24%;
+}
+
+.assessment-table thead th:not(:first-child),
+.assessment-table tbody td {
+  width: 19%;
+}
+
+.assessment-table tbody th {
+  background: #f8fafc;
+
+  font-weight: 400;
   text-align: left;
 }
 
-.assessment-table th:not(:first-child),
-.assessment-table td:not(:first-child) {
-  width: 19%;
-
+.assessment-table tbody td {
   text-align: right;
 
   font-variant-numeric: tabular-nums;
@@ -304,38 +311,26 @@ body {
 
 .assessment-table tbody tr:nth-child(even):not(
   .assessment-total-row
-) {
-  background: #fafafa;
+) th,
+.assessment-table tbody tr:nth-child(even):not(
+  .assessment-total-row
+) td {
+  background: #f8fafc;
 }
 
-.assessment-total-row {
-  background: #e2e8f0;
-}
-
+.assessment-total-row th,
 .assessment-total-row td {
-  border-top: 2px solid #475569;
+  background: #dbeafe;
+
+  border-top: 2px solid #334155;
 
   font-weight: 700;
-}
-
-.assessment-table td[colspan] {
-  padding: 12px;
-
-  color: #64748b;
-
-  text-align: center;
-
-  font-style: italic;
 }
 
 
 /* =========================================================
    9. Plot Results
 ========================================================= */
-
-.plot-section {
-  margin-top: 22px;
-}
 
 .plot-table {
   table-layout: fixed;
@@ -350,8 +345,6 @@ body {
 
 .plot-table th:nth-child(1) {
   width: 25%;
-
-  text-align: left;
 }
 
 .plot-table th:nth-child(2) {
@@ -363,10 +356,6 @@ body {
   width: 27.5%;
 }
 
-.plot-table td:first-child {
-  text-align: left;
-}
-
 .plot-table td:nth-child(2),
 .plot-table td:nth-child(3),
 .plot-table td:nth-child(4) {
@@ -376,7 +365,7 @@ body {
 }
 
 .plot-table tbody tr:nth-child(even) {
-  background: #fafafa;
+  background: #f8fafc;
 }
 
 
@@ -384,22 +373,19 @@ body {
    10. Species Summary
 ========================================================= */
 
-.species-section {
-  margin-top: 20px;
-}
-
 .species-table {
   table-layout: fixed;
 }
 
 .species-table th,
 .species-table td {
-  padding: 5px 6px;
+  padding: 5px 5px;
 
-  font-size: 9.5px;
-  line-height: 1.25;
+  font-size: 9px;
+  line-height: 1.2;
 
   overflow-wrap: anywhere;
+  vertical-align: middle;
 }
 
 .species-table th:nth-child(1) {
@@ -422,15 +408,12 @@ body {
   width: 9%;
 }
 
-.species-table th:nth-child(6) {
-  width: 13.5%;
-}
-
+.species-table th:nth-child(6),
 .species-table th:nth-child(7) {
   width: 13.5%;
 }
 
-.species-table td:nth-child(1) {
+.species-table td:first-child {
   text-align: center;
 }
 
@@ -443,34 +426,27 @@ body {
 }
 
 .species-table tbody tr:nth-child(even) {
-  background: #fafafa;
+  background: #f8fafc;
 }
 
 
 /* =========================================================
-   11. Loading / Empty Table Rows
+   11. Messages
 ========================================================= */
 
-.info-table td[colspan],
-.plot-table td[colspan],
-.species-table td[colspan] {
-  padding: 14px;
+.message-cell {
+  padding: 12px !important;
 
   color: #64748b;
 
-  text-align: center;
-
   font-style: italic;
+  text-align: center !important;
 }
 
 
 /* =========================================================
-   12. Report Note
+   12. Note
 ========================================================= */
-
-.note-section {
-  margin-top: 16px;
-}
 
 .report-note {
   margin: 0;
@@ -478,7 +454,6 @@ body {
   color: #64748b;
 
   font-size: 10px;
-  line-height: 1.4;
 }
 
 
@@ -488,18 +463,16 @@ body {
 
 .report-actions {
   display: flex;
-  flex-wrap: wrap;
-
   gap: 10px;
 
-  margin-top: 20px;
-  padding-top: 14px;
+  margin-top: 18px;
+  padding-top: 13px;
 
-  border-top: 1px solid #d1d5db;
+  border-top: 1px solid #cbd5e1;
 }
 
 .report-actions button {
-  min-width: 100px;
+  min-width: 105px;
 
   padding: 9px 15px;
 
@@ -511,10 +484,6 @@ body {
   font-weight: 700;
 
   cursor: pointer;
-
-  transition:
-    background-color 0.15s ease,
-    opacity 0.15s ease;
 }
 
 .primary-button {
@@ -535,40 +504,23 @@ body {
   background: #475569;
 }
 
-.report-actions button:focus-visible {
-  outline: 3px solid rgba(21, 128, 61, 0.25);
-  outline-offset: 2px;
-}
-
 
 /* =========================================================
-   14. Screen Responsive
+   14. Responsive Screen
 ========================================================= */
 
 @media screen and (max-width: 900px) {
-
-  body {
-    font-size: 12px;
-  }
 
   .report-page {
     width: calc(100% - 20px);
     min-height: auto;
 
     margin: 10px;
-    padding: 20px 14px;
-  }
-
-  .report-header h1 {
-    font-size: 20px;
+    padding: 18px 13px;
   }
 
   .summary-cards {
     grid-template-columns: 1fr;
-  }
-
-  .report-meta strong {
-    min-width: 100px;
   }
 
   .assessment-table,
@@ -580,80 +532,99 @@ body {
 
 
 /* =========================================================
-   15. Print Page Settings
+   15. PDF Page
 ========================================================= */
 
 @page {
   size: A4 portrait;
-  margin: 8mm;
+  margin: 6mm;
 }
 
 
 /* =========================================================
-   16. Print / PDF Output
+   16. Print / PDF
 ========================================================= */
 
 @media print {
 
   html,
   body {
-    width: 100%;
+    width: 100% !important;
 
-    margin: 0;
-    padding: 0;
+    margin: 0 !important;
+    padding: 0 !important;
 
-    background: #ffffff;
+    background: #ffffff !important;
 
-    color: #000000;
+    color: #000000 !important;
 
-    font-size: 8.5pt;
+    font-size: 7pt !important;
+    line-height: 1.1 !important;
 
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   .report-page {
-    width: auto;
-    min-height: auto;
+    width: auto !important;
+    min-height: 0 !important;
 
-    margin: 0;
-    padding: 0;
+    margin: 0 !important;
+    padding: 0 !important;
 
-    border: 0;
-    box-shadow: none;
+    border: 0 !important;
+    box-shadow: none !important;
   }
 
+
+  /* Header */
+
   .report-header {
-    margin-bottom: 5mm;
-    padding-bottom: 2.5mm;
+    margin: 0 0 2.5mm !important;
+    padding: 0 0 1.5mm !important;
+
+    border-bottom:
+      0.5mm solid #166534 !important;
   }
 
   .report-header h1 {
-    margin-bottom: 2mm;
+    margin: 0 0 1.5mm !important;
 
-    font-size: 16pt;
+    font-size: 12pt !important;
+    line-height: 1.05 !important;
   }
 
   .report-meta {
-    font-size: 8pt;
-    line-height: 1.4;
+    display: grid !important;
+
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr)) !important;
+
+    gap: 0.4mm 5mm !important;
+
+    font-size: 6.5pt !important;
+    line-height: 1.1 !important;
+  }
+
+  .report-meta div {
+    display: flex !important;
+
+    margin: 0 !important;
   }
 
   .report-meta strong {
-    min-width: 26mm;
+    flex: 0 0 23mm !important;
   }
 
 
-  /* -------------------------------------------------------
-     Compact section spacing
-  ------------------------------------------------------- */
+  /* Sections */
 
   .summary-section,
   .info-section,
   .assessment-section,
   .plot-section,
   .species-section {
-    margin-top: 4mm;
+    margin-top: 2.5mm !important;
   }
 
   .summary-section h2,
@@ -661,203 +632,235 @@ body {
   .assessment-section h2,
   .plot-section h2,
   .species-section h2 {
-    margin-bottom: 2mm;
-    padding-bottom: 1mm;
+    margin: 0 0 1.2mm !important;
+    padding: 0 0 0.8mm !important;
 
-    font-size: 11pt;
+    font-size: 8.5pt !important;
+    line-height: 1.05 !important;
   }
 
 
-  /* -------------------------------------------------------
-     Executive Summary
-  ------------------------------------------------------- */
+  /* Executive Summary */
 
   .summary-cards {
-    gap: 2mm;
+    grid-template-columns:
+      repeat(4, minmax(0, 1fr)) !important;
+
+    gap: 1.5mm !important;
   }
 
   .summary-card {
-    min-height: 15mm;
+    min-height: 11mm !important;
 
-    padding: 2mm 3mm;
+    padding: 1.3mm 1.8mm !important;
 
-    border-radius: 2px;
+    border:
+      0.2mm solid #94a3b8 !important;
+
+    border-radius: 1mm !important;
   }
 
   .summary-card .label {
-    margin-bottom: 1mm;
+    margin-bottom: 0.5mm !important;
 
-    font-size: 7pt;
+    font-size: 5.8pt !important;
   }
 
   .summary-card .value {
-    font-size: 12pt;
+    font-size: 9pt !important;
+    line-height: 1 !important;
   }
 
 
-  /* -------------------------------------------------------
-     Survey Information
-  ------------------------------------------------------- */
+  /* Survey Information */
 
+  .info-table th,
   .info-table td {
-    padding: 1.2mm 2mm;
+    height: 4.3mm !important;
 
-    font-size: 7.5pt;
-    line-height: 1.15;
+    padding: 0.5mm 1.2mm !important;
+
+    border:
+      0.2mm solid #64748b !important;
+
+    font-size: 6pt !important;
+    line-height: 1 !important;
   }
 
 
-  /* -------------------------------------------------------
-     Assessment Summary
-  ------------------------------------------------------- */
+  /* Assessment */
 
   .assessment-section {
-    break-inside: auto;
-    page-break-inside: auto;
+    break-inside: auto !important;
+    page-break-inside: auto !important;
   }
 
   .assessment-table-block {
-    margin-bottom: 3mm;
+    margin: 0 0 1.7mm !important;
 
-    break-inside: avoid;
-    page-break-inside: avoid;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
 
   .assessment-table-block h3 {
-    margin-bottom: 1.2mm;
+    margin: 0 0 0.7mm !important;
 
-    font-size: 8.5pt;
+    font-size: 7pt !important;
+    line-height: 1 !important;
+  }
+
+  .assessment-table {
+    width: 100% !important;
+
+    border-collapse: collapse !important;
+
+    border:
+      0.25mm solid #334155 !important;
   }
 
   .assessment-table th,
   .assessment-table td {
-    padding: 1mm 1.5mm;
+    height: 3.8mm !important;
 
-    font-size: 7.2pt;
-    line-height: 1.1;
+    padding: 0.35mm 1mm !important;
+
+    border:
+      0.2mm solid #475569 !important;
+
+    font-size: 5.8pt !important;
+    line-height: 1 !important;
   }
 
   .assessment-table thead {
-    display: table-header-group;
+    display: table-header-group !important;
+  }
+
+  .assessment-table thead th {
+    background: #dbe3ec !important;
+
+    text-align: center !important;
+  }
+
+  .assessment-table tbody th {
+    background: #ffffff !important;
+  }
+
+  .assessment-table tbody td {
+    text-align: right !important;
   }
 
   .assessment-table tr {
-    break-inside: avoid;
-    page-break-inside: avoid;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .assessment-total-row th,
+  .assessment-total-row td {
+    background: #dbeafe !important;
+
+    border-top:
+      0.4mm solid #334155 !important;
+
+    font-weight: 700 !important;
   }
 
 
-  /* -------------------------------------------------------
-     Force report result details onto page 2
-  ------------------------------------------------------- */
+  /* Page 2 starts at Plot Results */
 
   .plot-section {
-    break-before: page;
-    page-break-before: always;
+    margin-top: 0 !important;
 
-    margin-top: 0;
+    break-before: page !important;
+    page-break-before: always !important;
   }
 
 
-  /* -------------------------------------------------------
-     Plot Results
-  ------------------------------------------------------- */
+  /* Plot Results */
 
   .plot-table th,
   .plot-table td {
-    padding: 1.5mm 2mm;
+    height: 5mm !important;
 
-    font-size: 7.5pt;
-    line-height: 1.15;
+    padding: 0.7mm 1.3mm !important;
+
+    border:
+      0.2mm solid #64748b !important;
+
+    font-size: 6.5pt !important;
+    line-height: 1 !important;
   }
 
   .plot-table thead {
-    display: table-header-group;
+    display: table-header-group !important;
   }
 
   .plot-table tr {
-    break-inside: avoid;
-    page-break-inside: avoid;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
 
 
-  /* -------------------------------------------------------
-     Species Summary
-  ------------------------------------------------------- */
+  /* Species Summary */
 
   .species-section {
-    margin-top: 4mm;
-
-    break-inside: auto;
-    page-break-inside: auto;
+    margin-top: 3mm !important;
   }
 
   .species-table th,
   .species-table td {
-    padding: 1.2mm 1.4mm;
+    height: 4.5mm !important;
 
-    font-size: 6.5pt;
-    line-height: 1.1;
+    padding: 0.5mm 0.8mm !important;
+
+    border:
+      0.2mm solid #64748b !important;
+
+    font-size: 5.5pt !important;
+    line-height: 1 !important;
   }
 
   .species-table thead {
-    display: table-header-group;
+    display: table-header-group !important;
   }
 
   .species-table tr {
-    break-inside: avoid;
-    page-break-inside: avoid;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
 
 
-  /* -------------------------------------------------------
-     Prevent horizontal scrolling in PDF
-  ------------------------------------------------------- */
+  /* Common */
 
   .table-wrapper {
-    width: 100%;
+    width: 100% !important;
 
-    overflow: visible;
+    overflow: visible !important;
   }
-
-
-  /* -------------------------------------------------------
-     Hide interactive elements and note in PDF
-  ------------------------------------------------------- */
 
   .no-print,
   .report-actions,
-  .note-section {
+  .note-section,
+  .report-note {
     display: none !important;
   }
 
-
-  /* -------------------------------------------------------
-     Preserve table background colors
-  ------------------------------------------------------- */
-
   .summary-card,
-  .info-table td:first-child,
-  .assessment-table th,
-  .assessment-total-row,
-  .plot-table th,
-  .species-table th {
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
+  .info-table th,
+  .assessment-table thead th,
+  .assessment-total-row th,
+  .assessment-total-row td,
+  .plot-table thead th,
+  .species-table thead th {
+    -webkit-print-color-adjust:
+      exact !important;
+
+    print-color-adjust:
+      exact !important;
   }
 
-
-  /* -------------------------------------------------------
-     Avoid unwanted final blank page
-  ------------------------------------------------------- */
-
-  .species-section,
-  .species-table,
-  .species-table tbody,
-  .species-table tr:last-child,
-  .species-table td {
-    margin-bottom: 0;
-    padding-bottom: 0;
+  body::after {
+    display: none !important;
+    content: none !important;
   }
 
 }
