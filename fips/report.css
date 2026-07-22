@@ -1,7 +1,13 @@
 /* =========================================================
-   FIPS Legacy Assessment Report
-   Survey Information Removed
-   A4 Side Margins Added
+   FIPS Survey Summary Report
+   report.css - Complete Replacement Version
+
+   Policy:
+   - Keep PDF appearance close to the Web view
+   - A4 portrait
+   - Page 1: Header / Executive Summary / Assessment Summary
+   - Page 2: Plot Results / Species Summary
+   - Preserve readable font sizes and table spacing
 ========================================================= */
 
 
@@ -33,7 +39,7 @@ body {
     sans-serif;
 
   font-size: 13px;
-  line-height: 1.35;
+  line-height: 1.4;
 }
 
 
@@ -59,7 +65,7 @@ body {
 
 
 /* =========================================================
-   3. Header
+   3. Report Header
 ========================================================= */
 
 .report-header {
@@ -80,17 +86,22 @@ body {
 }
 
 .report-meta {
+  color: #111827;
+
   font-size: 12px;
   line-height: 1.55;
 }
 
 .report-meta div {
   display: flex;
+
   margin: 0 0 2px;
 }
 
 .report-meta strong {
   flex: 0 0 112px;
+
+  color: #111827;
 }
 
 .report-meta span {
@@ -99,7 +110,7 @@ body {
 
 
 /* =========================================================
-   4. Sections
+   4. Common Sections
 ========================================================= */
 
 .summary-section,
@@ -121,6 +132,7 @@ body {
 
   font-size: 16px;
   font-weight: 700;
+  line-height: 1.25;
 
   border-bottom: 1px solid #cbd5e1;
 }
@@ -134,20 +146,20 @@ body {
   display: grid;
 
   grid-template-columns:
-    repeat(4, minmax(0, 1fr));
+    repeat(2, minmax(0, 1fr));
 
-  gap: 8px;
+  gap: 9px;
 }
 
 .summary-card {
-  min-height: 58px;
+  min-height: 64px;
 
-  padding: 8px 10px;
+  padding: 9px 11px;
 
   background: #f8fafc;
 
   border: 1px solid #cbd5e1;
-  border-radius: 4px;
+  border-radius: 5px;
 }
 
 .summary-card .label {
@@ -155,23 +167,28 @@ body {
 
   color: #64748b;
 
-  font-size: 10px;
+  font-size: 11px;
+  line-height: 1.2;
 }
 
 .summary-card .value {
-  font-size: 18px;
+  color: #111827;
+
+  font-size: 19px;
   font-weight: 700;
+  line-height: 1.2;
 
   font-variant-numeric: tabular-nums;
 }
 
 
 /* =========================================================
-   6. General Tables
+   6. General Table Settings
 ========================================================= */
 
 .table-wrapper {
   width: 100%;
+
   overflow-x: auto;
 }
 
@@ -193,6 +210,8 @@ body {
 .species-table th,
 .species-table td {
   border: 1px solid #94a3b8;
+
+  vertical-align: middle;
 }
 
 .assessment-table thead th,
@@ -225,8 +244,11 @@ body {
 .assessment-table-block h3 {
   margin: 0 0 5px;
 
+  color: #111827;
+
   font-size: 13px;
   font-weight: 700;
+  line-height: 1.25;
 }
 
 .assessment-table {
@@ -244,8 +266,7 @@ body {
   border: 1px solid #64748b;
 
   font-size: 10.5px;
-  line-height: 1.15;
-  vertical-align: middle;
+  line-height: 1.2;
 }
 
 .assessment-table thead th {
@@ -307,6 +328,7 @@ body {
   padding: 6px 8px;
 
   font-size: 11px;
+  line-height: 1.25;
 }
 
 .plot-table th:nth-child(1) {
@@ -320,6 +342,10 @@ body {
 .plot-table th:nth-child(3),
 .plot-table th:nth-child(4) {
   width: 27.5%;
+}
+
+.plot-table td:first-child {
+  text-align: left;
 }
 
 .plot-table td:nth-child(2),
@@ -348,10 +374,9 @@ body {
   padding: 5px;
 
   font-size: 9px;
-  line-height: 1.2;
+  line-height: 1.25;
 
   overflow-wrap: anywhere;
-  vertical-align: middle;
 }
 
 .species-table th:nth-child(1) {
@@ -397,7 +422,7 @@ body {
 
 
 /* =========================================================
-   10. Messages
+   10. Loading / Empty Messages
 ========================================================= */
 
 .message-cell,
@@ -414,8 +439,12 @@ body {
 
 
 /* =========================================================
-   11. Note
+   11. Report Note
 ========================================================= */
+
+.note-section {
+  margin-top: 16px;
+}
 
 .report-note {
   margin: 0;
@@ -423,6 +452,7 @@ body {
   color: #64748b;
 
   font-size: 10px;
+  line-height: 1.4;
 }
 
 
@@ -432,6 +462,8 @@ body {
 
 .report-actions {
   display: flex;
+  flex-wrap: wrap;
+
   gap: 10px;
 
   margin-top: 18px;
@@ -453,6 +485,10 @@ body {
   font-weight: 700;
 
   cursor: pointer;
+
+  transition:
+    background-color 0.15s ease,
+    opacity 0.15s ease;
 }
 
 .primary-button {
@@ -473,6 +509,11 @@ body {
   background: #475569;
 }
 
+.report-actions button:focus-visible {
+  outline: 3px solid rgba(21, 128, 61, 0.25);
+  outline-offset: 2px;
+}
+
 
 /* =========================================================
    13. Responsive Screen
@@ -488,9 +529,12 @@ body {
     padding: 18px 14px;
   }
 
+  .report-header h1 {
+    font-size: 20px;
+  }
+
   .summary-cards {
-    grid-template-columns:
-      repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
   }
 
   .assessment-table,
@@ -502,17 +546,18 @@ body {
 
 
 /* =========================================================
-   14. PDF Page
+   14. PDF Page Settings
 ========================================================= */
 
 @page {
   size: A4 portrait;
 
   /*
-   * 上下10mm、左右14mm。
-   * 旧FIPS帳票に近い左右余白を確保する。
+   * Old FIPS-like margins.
+   * Top / bottom: 12 mm
+   * Left / right: 14 mm
    */
-  margin: 10mm 14mm;
+  margin: 12mm 14mm;
 }
 
 
@@ -524,36 +569,38 @@ body {
 
   html,
   body {
-    width: 100% !important;
+    width: 100%;
 
-    margin: 0 !important;
-    padding: 0 !important;
+    margin: 0;
+    padding: 0;
 
-    background: #ffffff !important;
+    background: #ffffff;
 
-    color: #000000 !important;
+    color: #111827;
 
-    font-size: 7pt !important;
-    line-height: 1.05 !important;
+    font-size: 10px;
+    line-height: 1.3;
 
-    -webkit-print-color-adjust: exact !important;
-    print-color-adjust: exact !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
+
+  /* -------------------------------------------------------
+     Main page
+  ------------------------------------------------------- */
+
   .report-page {
-    width: auto !important;
-    min-height: 0 !important;
+    width: auto;
+    min-height: 0;
 
-    margin: 0 !important;
+    margin: 0;
+    padding: 0;
 
-    /*
-     * @page側で左右14mmを確保しているため、
-     * report-pageには大きな余白を追加しない。
-     */
-    padding: 0 1mm !important;
+    background: #ffffff;
 
-    border: 0 !important;
-    box-shadow: none !important;
+    border: 0;
+    box-shadow: none;
   }
 
 
@@ -562,39 +609,39 @@ body {
   ------------------------------------------------------- */
 
   .report-header {
-    margin: 0 0 2mm !important;
-    padding: 0 0 1mm !important;
+    margin: 0 0 10px;
+    padding: 0 0 7px;
 
-    border-bottom:
-      0.4mm solid #166534 !important;
+    border-bottom: 2px solid #166534;
   }
 
   .report-header h1 {
-    margin: 0 0 1mm !important;
+    margin: 0 0 6px;
 
-    font-size: 11pt !important;
-    line-height: 1 !important;
+    font-size: 18px;
+    line-height: 1.15;
   }
 
   .report-meta {
-    display: grid !important;
+    display: grid;
 
     grid-template-columns:
-      repeat(2, minmax(0, 1fr)) !important;
+      repeat(2, minmax(0, 1fr));
 
-    gap: 0.3mm 4mm !important;
+    gap: 1px 16px;
 
-    font-size: 5.8pt !important;
-    line-height: 1.05 !important;
+    font-size: 9px;
+    line-height: 1.3;
   }
 
   .report-meta div {
-    display: flex !important;
-    margin: 0 !important;
+    display: flex;
+
+    margin: 0;
   }
 
   .report-meta strong {
-    flex: 0 0 21mm !important;
+    flex: 0 0 88px;
   }
 
 
@@ -606,18 +653,20 @@ body {
   .assessment-section,
   .plot-section,
   .species-section {
-    margin-top: 2mm !important;
+    margin-top: 11px;
   }
 
   .summary-section h2,
   .assessment-section h2,
   .plot-section h2,
   .species-section h2 {
-    margin: 0 0 1mm !important;
-    padding: 0 0 0.6mm !important;
+    margin: 0 0 6px;
+    padding: 0 0 4px;
 
-    font-size: 8pt !important;
-    line-height: 1 !important;
+    font-size: 13px;
+    line-height: 1.2;
+
+    border-bottom: 1px solid #cbd5e1;
   }
 
 
@@ -626,33 +675,35 @@ body {
   ------------------------------------------------------- */
 
   .summary-cards {
-    grid-template-columns:
-      repeat(4, minmax(0, 1fr)) !important;
+    display: grid;
 
-    gap: 1.2mm !important;
+    grid-template-columns:
+      repeat(2, minmax(0, 1fr));
+
+    gap: 7px;
   }
 
   .summary-card {
-    min-height: 10mm !important;
+    min-height: 48px;
 
-    padding: 1.1mm 1.5mm !important;
+    padding: 7px 9px;
 
-    border:
-      0.2mm solid #94a3b8 !important;
+    background: #f8fafc;
 
-    border-radius: 0.8mm !important;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
   }
 
   .summary-card .label {
-    margin-bottom: 0.3mm !important;
+    margin-bottom: 2px;
 
-    font-size: 5.2pt !important;
-    line-height: 1 !important;
+    font-size: 8px;
+    line-height: 1.2;
   }
 
   .summary-card .value {
-    font-size: 8.2pt !important;
-    line-height: 1 !important;
+    font-size: 15px;
+    line-height: 1.15;
   }
 
 
@@ -661,89 +712,86 @@ body {
   ------------------------------------------------------- */
 
   .assessment-section {
-    break-inside: auto !important;
-    page-break-inside: auto !important;
+    break-inside: auto;
+    page-break-inside: auto;
   }
 
   .assessment-table-block {
-    margin: 0 0 1.2mm !important;
+    margin: 0 0 8px;
 
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   .assessment-table-block h3 {
-    margin: 0 0 0.5mm !important;
+    margin: 0 0 4px;
 
-    font-size: 6.5pt !important;
-    line-height: 1 !important;
+    font-size: 10px;
+    line-height: 1.2;
   }
 
   .assessment-table {
-    width: 100% !important;
+    width: 100%;
 
-    border-collapse: collapse !important;
+    border-collapse: collapse;
 
-    border:
-      0.2mm solid #334155 !important;
+    border: 1px solid #475569;
   }
 
   .assessment-table th,
   .assessment-table td {
-    height: 3.2mm !important;
+    height: 22px;
 
-    padding: 0.25mm 0.8mm !important;
+    padding: 3px 6px;
 
-    border:
-      0.18mm solid #475569 !important;
+    border: 1px solid #64748b;
 
-    font-size: 5.2pt !important;
-    line-height: 1 !important;
+    font-size: 8px;
+    line-height: 1.15;
   }
 
   .assessment-table thead {
-    display: table-header-group !important;
+    display: table-header-group;
   }
 
   .assessment-table thead th {
-    background: #dbe3ec !important;
+    background: #e2e8f0;
 
-    text-align: center !important;
+    text-align: center;
   }
 
   .assessment-table tbody th {
-    background: #ffffff !important;
+    background: #f8fafc;
   }
 
   .assessment-table tbody td {
-    text-align: right !important;
+    text-align: right;
   }
 
   .assessment-table tr {
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   .assessment-total-row th,
   .assessment-total-row td {
-    background: #dbeafe !important;
+    background: #dbeafe;
 
-    border-top:
-      0.35mm solid #334155 !important;
+    border-top: 2px solid #334155;
 
-    font-weight: 700 !important;
+    font-weight: 700;
   }
 
 
   /* -------------------------------------------------------
-     Page 2 starts at Plot Results
+     Start page 2 at Plot Results
   ------------------------------------------------------- */
 
   .plot-section {
-    margin-top: 0 !important;
+    margin-top: 0;
 
-    break-before: page !important;
-    page-break-before: always !important;
+    break-before: page;
+    page-break-before: always;
   }
 
 
@@ -751,26 +799,35 @@ body {
      Plot Results
   ------------------------------------------------------- */
 
+  .plot-table {
+    width: 100%;
+
+    border-collapse: collapse;
+  }
+
   .plot-table th,
   .plot-table td {
-    height: 4.5mm !important;
+    height: 28px;
 
-    padding: 0.6mm 1mm !important;
+    padding: 5px 7px;
 
-    border:
-      0.18mm solid #64748b !important;
+    border: 1px solid #64748b;
 
-    font-size: 6pt !important;
-    line-height: 1 !important;
+    font-size: 9px;
+    line-height: 1.2;
   }
 
   .plot-table thead {
-    display: table-header-group !important;
+    display: table-header-group;
+  }
+
+  .plot-table thead th {
+    background: #e2e8f0;
   }
 
   .plot-table tr {
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
 
@@ -779,40 +836,55 @@ body {
   ------------------------------------------------------- */
 
   .species-section {
-    margin-top: 3mm !important;
+    margin-top: 12px;
+  }
+
+  .species-table {
+    width: 100%;
+
+    border-collapse: collapse;
   }
 
   .species-table th,
   .species-table td {
-    height: 4mm !important;
+    height: 25px;
 
-    padding: 0.4mm 0.7mm !important;
+    padding: 4px 5px;
 
-    border:
-      0.18mm solid #64748b !important;
+    border: 1px solid #64748b;
 
-    font-size: 5pt !important;
-    line-height: 1 !important;
+    font-size: 7.5px;
+    line-height: 1.2;
   }
 
   .species-table thead {
-    display: table-header-group !important;
+    display: table-header-group;
+  }
+
+  .species-table thead th {
+    background: #e2e8f0;
   }
 
   .species-table tr {
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
 
   /* -------------------------------------------------------
-     Common Print Settings
+     Table wrapper
   ------------------------------------------------------- */
 
   .table-wrapper {
-    width: 100% !important;
-    overflow: visible !important;
+    width: 100%;
+
+    overflow: visible;
   }
+
+
+  /* -------------------------------------------------------
+     Hide Web-only elements
+  ------------------------------------------------------- */
 
   .no-print,
   .report-actions,
@@ -821,22 +893,30 @@ body {
     display: none !important;
   }
 
+
+  /* -------------------------------------------------------
+     Preserve colors
+  ------------------------------------------------------- */
+
   .summary-card,
   .assessment-table thead th,
   .assessment-total-row th,
   .assessment-total-row td,
   .plot-table thead th,
   .species-table thead th {
-    -webkit-print-color-adjust:
-      exact !important;
-
-    print-color-adjust:
-      exact !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
+
+  /* -------------------------------------------------------
+     Remove unwanted generated content
+  ------------------------------------------------------- */
+
+  body::before,
   body::after {
-    display: none !important;
-    content: none !important;
+    display: none;
+    content: none;
   }
 
 }
