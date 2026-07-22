@@ -46,18 +46,49 @@
     "
   />
 
+  <!-- ==================================================
+       Report stylesheet
+  =================================================== -->
   <link
     rel="stylesheet"
     href="./report.css"
   />
 
+  <!-- ==================================================
+       Supabase JavaScript Client
+  =================================================== -->
   <script
     src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
   ></script>
 
+  <!-- ==================================================
+       jsPDF
+  =================================================== -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"
+  ></script>
+
+  <!-- ==================================================
+       jsPDF AutoTable
+  =================================================== -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"
+  ></script>
+
+  <!-- ==================================================
+       Web report rendering
+  =================================================== -->
   <script
     type="module"
     src="./report.js"
+  ></script>
+
+  <!-- ==================================================
+       Direct PDF generation
+  =================================================== -->
+  <script
+    type="module"
+    src="./pdf-report.js"
   ></script>
 </head>
 
@@ -96,6 +127,7 @@
         class="summary-cards"
       >
         <div class="summary-card">
+
           <div class="label">
             Loading
           </div>
@@ -103,6 +135,7 @@
           <div class="value">
             -
           </div>
+
         </div>
       </div>
 
@@ -128,7 +161,10 @@
 
         <div class="table-wrapper">
 
-          <table class="assessment-table">
+          <table
+            id="stockingAssessmentTable"
+            class="assessment-table"
+          >
 
             <thead>
               <tr>
@@ -166,7 +202,10 @@
 
         <div class="table-wrapper">
 
-          <table class="assessment-table">
+          <table
+            id="basalAreaAssessmentTable"
+            class="assessment-table"
+          >
 
             <thead>
               <tr>
@@ -204,7 +243,10 @@
 
         <div class="table-wrapper">
 
-          <table class="assessment-table">
+          <table
+            id="volumeAssessmentTable"
+            class="assessment-table"
+          >
 
             <thead>
               <tr>
@@ -242,7 +284,10 @@
 
       <div class="table-wrapper">
 
-        <table class="plot-table">
+        <table
+          id="plotResultsTable"
+          class="plot-table"
+        >
 
           <thead>
             <tr>
@@ -277,7 +322,10 @@
 
       <div class="table-wrapper">
 
-        <table class="species-table">
+        <table
+          id="speciesSummaryTable"
+          class="species-table"
+        >
 
           <thead>
             <tr>
@@ -328,8 +376,9 @@
         id="printReportBtn"
         type="button"
         class="primary-button"
+        disabled
       >
-        Print / Save as PDF
+        Preparing PDF...
       </button>
 
       <button
