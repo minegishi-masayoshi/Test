@@ -2,66 +2,110 @@
    FIPS PDF Report Generator
    pdf-report.js - Complete Replacement Version
 
-   Required libraries:
-   - jsPDF 2.5.2
-   - jsPDF AutoTable 3.8.4
+   Page 1:
+   - Report header
+   - Assessment Summary
+   - (A) Stocking per hectare
+   - (B) Basal area per hectare
+   - (C) Gross volume per hectare
 
-   PDF structure:
-   Page 1
-     - Report header
-     - Executive Summary
-     - Assessment Summary
-
-   Page 2
-     - Plot Results
-     - Species Summary
+   Page 2:
+   - Report header
+   - (D) Major species summary
 ========================================================= */
 
 
 /* =========================================================
-   1. Constants
+   Constants
 ========================================================= */
 
-const PDF_BUTTON_ID = "printReportBtn";
+const PDF_BUTTON_ID =
+  "printReportBtn";
+
 
 const PDF_PAGE = {
   width: 210,
   height: 297,
+
   marginLeft: 14,
   marginRight: 14,
   marginTop: 12,
   marginBottom: 12
 };
 
+
 const PDF_CONTENT_WIDTH =
   PDF_PAGE.width -
   PDF_PAGE.marginLeft -
   PDF_PAGE.marginRight;
 
+
 const COLORS = {
   darkGreen: [20, 83, 45],
   green: [22, 101, 52],
-  headerFill: [226, 232, 240],
-  lightFill: [248, 250, 252],
-  totalFill: [219, 234, 254],
-  border: [100, 116, 139],
-  darkText: [17, 24, 39],
-  mutedText: [100, 116, 139],
-  white: [255, 255, 255]
+
+  headerFill: [
+    226,
+    232,
+    240
+  ],
+
+  lightFill: [
+    248,
+    250,
+    252
+  ],
+
+  totalFill: [
+    219,
+    234,
+    254
+  ],
+
+  border: [
+    100,
+    116,
+    139
+  ],
+
+  darkText: [
+    17,
+    24,
+    39
+  ],
+
+  mutedText: [
+    100,
+    116,
+    139
+  ],
+
+  white: [
+    255,
+    255,
+    255
+  ]
 };
 
 
 /* =========================================================
-   2. Basic Utilities
+   Utilities
 ========================================================= */
 
-function getElement(elementId) {
-  return document.getElementById(elementId);
+function getElement(
+  elementId
+) {
+  return document.getElementById(
+    elementId
+  );
 }
 
 
 function cleanText(value) {
-  if (value === null || value === undefined) {
+  if (
+    value === null ||
+    value === undefined
+  ) {
     return "";
   }
 
@@ -75,6 +119,8 @@ function cleanText(value) {
 function normalizePdfText(value) {
   return cleanText(value)
     .replace(/[–—]/g, "-")
+    .replace(/²/g, "2")
+    .replace(/³/g, "3")
     .replace(/㎡/g, "m2")
     .replace(/㎥/g, "m3");
 }
@@ -82,86 +128,112 @@ function normalizePdfText(value) {
 
 function sanitizeFileName(value) {
   const normalized =
-    normalizePdfText(value || "FIPS_Report");
+    normalizePdfText(
+      value ||
+      "FIPS_Report"
+    );
 
-  const safeName = normalized
-    .replace(/[\\/:*?"<>|]/g, "_")
-    .replace(/\s+/g, "_")
-    .replace(/_+/g, "_")
-    .replace(/^_+|_+$/g, "");
+  const safeName =
+    normalized
+      .replace(
+        /[\\/:*?"<>|]/g,
+        "_"
+      )
+      .replace(/\s+/g, "_")
+      .replace(/_+/g, "_")
+      .replace(
+        /^_+|_+$/g,
+        ""
+      );
 
-  return safeName || "FIPS_Report";
+  return (
+    safeName ||
+    "FIPS_Report"
+  );
 }
 
 
-function formatDateForFileName(date = new Date()) {
-  const year = String(date.getFullYear());
+function formatDateForFileName(
+  date = new Date()
+) {
+  const year =
+    String(date.getFullYear());
 
-  const month = String(
-    date.getMonth() + 1
-  ).padStart(2, "0");
+  const month =
+    String(
+      date.getMonth() + 1
+    ).padStart(2, "0");
 
-  const day = String(
-    date.getDate()
-  ).padStart(2, "0");
+  const day =
+    String(
+      date.getDate()
+    ).padStart(2, "0");
 
-  const hour = String(
-    date.getHours()
-  ).padStart(2, "0");
+  const hour =
+    String(
+      date.getHours()
+    ).padStart(2, "0");
 
-  const minute = String(
-    date.getMinutes()
-  ).padStart(2, "0");
+  const minute =
+    String(
+      date.getMinutes()
+    ).padStart(2, "0");
 
-  return `${year}${month}${day}_${hour}${minute}`;
+  return (
+    `${year}${month}${day}` +
+    `_${hour}${minute}`
+  );
 }
 
 
 function isLoadingText(value) {
   const text =
-    cleanText(value).toLowerCase();
+    cleanText(value)
+      .toLowerCase();
 
   return (
     text.includes("loading") ||
     text.includes("preparing") ||
-    text.includes("failed to load")
+    text.includes(
+      "failed to load"
+    )
   );
 }
 
 
 /* =========================================================
-   3. Library Validation
+   Library Validation
 ========================================================= */
 
 function getJsPdfConstructor() {
-  return window.jspdf?.jsPDF || null;
+  return (
+    window.jspdf?.jsPDF ||
+    null
+  );
 }
 
 
 function librariesAvailable() {
-  const JsPDF = getJsPdfConstructor();
-
-  if (!JsPDF) {
-    return false;
-  }
+  const JsPDF =
+    getJsPdfConstructor();
 
   return Boolean(
+    JsPDF &&
     JsPDF.API?.autoTable
   );
 }
 
 
 /* =========================================================
-   4. DOM Data Extraction
+   DOM Data Extraction
 ========================================================= */
 
 function extractReportTitle() {
-  const titleElement =
-    getElement("reportTitle");
-
   return normalizePdfText(
-    titleElement?.textContent ||
-    "FIPS Survey Summary Report"
+    getElement(
+      "reportTitle"
+    )?.textContent ||
+    "FIPS Assessment Summary Report"
   );
 }
 
@@ -174,94 +246,51 @@ function extractReportMeta() {
     return [];
   }
 
-  const rows = [];
-
-  metaContainer
-    .querySelectorAll("div")
-    .forEach((rowElement) => {
+  return Array.from(
+    metaContainer.querySelectorAll(
+      "div"
+    )
+  )
+    .map((rowElement) => {
       const strongElement =
-        rowElement.querySelector("strong");
+        rowElement.querySelector(
+          "strong"
+        );
 
       const spanElement =
-        rowElement.querySelector("span");
-
-      let label = "";
-      let value = "";
-
-      if (strongElement) {
-        label = normalizePdfText(
-          strongElement.textContent
+        rowElement.querySelector(
+          "span"
         );
 
-        value = normalizePdfText(
-          spanElement?.textContent ||
-          rowElement.textContent
-            .replace(
-              strongElement.textContent,
-              ""
-            )
-        );
-      } else {
-        const fullText =
+      return {
+        label:
           normalizePdfText(
-            rowElement.textContent
-          );
+            strongElement
+              ?.textContent ||
+            ""
+          ),
 
-        const separatorIndex =
-          fullText.indexOf(":");
-
-        if (separatorIndex >= 0) {
-          label = fullText
-            .slice(0, separatorIndex + 1)
-            .trim();
-
-          value = fullText
-            .slice(separatorIndex + 1)
-            .trim();
-        } else {
-          value = fullText;
-        }
-      }
-
-      if (label || value) {
-        rows.push({
-          label,
-          value
-        });
-      }
-    });
-
-  return rows;
+        value:
+          normalizePdfText(
+            spanElement
+              ?.textContent ||
+            ""
+          )
+      };
+    })
+    .filter(
+      (row) =>
+        row.label ||
+        row.value
+    );
 }
 
 
-function extractSummaryCards() {
-  const summaryContainer =
-    getElement("summaryCards");
-
-  if (!summaryContainer) {
-    return [];
-  }
-
-  return Array.from(
-    summaryContainer.querySelectorAll(
-      ".summary-card"
-    )
-  ).map((card) => ({
-    label: normalizePdfText(
-      card.querySelector(".label")
-        ?.textContent
-    ),
-    value: normalizePdfText(
-      card.querySelector(".value")
-        ?.textContent
-    )
-  }));
-}
-
-
-function extractHtmlTable(tableId) {
-  const table = getElement(tableId);
+function extractHtmlTable(
+  tableId
+) {
+  const table =
+    getElement(tableId);
 
   if (!table) {
     return {
@@ -270,47 +299,62 @@ function extractHtmlTable(tableId) {
     };
   }
 
-  const head = Array.from(
-    table.querySelectorAll("thead tr")
-  ).map((row) =>
+  const head =
     Array.from(
-      row.querySelectorAll("th, td")
-    ).map((cell) =>
-      normalizePdfText(cell.textContent)
-    )
-  );
-
-  const body = Array.from(
-    table.querySelectorAll("tbody tr")
-  )
-    .map((row) =>
+      table.querySelectorAll(
+        "thead tr"
+      )
+    ).map((row) =>
       Array.from(
-        row.querySelectorAll("th, td")
+        row.querySelectorAll(
+          "th, td"
+        )
       ).map((cell) =>
-        normalizePdfText(cell.textContent)
+        normalizePdfText(
+          cell.textContent
+        )
+      )
+    );
+
+  const body =
+    Array.from(
+      table.querySelectorAll(
+        "tbody tr"
       )
     )
-    .filter((row) => {
-      const combined =
-        row.join(" ").toLowerCase();
-
-      return (
-        row.length > 1 &&
-        !combined.includes("loading") &&
-        !combined.includes(
-          "no assessment summary"
-        ) &&
-        !combined.includes(
-          "no plot results"
-        ) &&
-        !combined.includes(
-          "no species summary"
-        ) &&
-        !combined.includes(
-          "failed to load"
+      .map((row) =>
+        Array.from(
+          row.querySelectorAll(
+            "th, td"
+          )
+        ).map((cell) =>
+          normalizePdfText(
+            cell.textContent
+          )
         )
-      );
-    });
+      )
+      .filter((row) => {
+        const combined =
+          row
+            .join(" ")
+            .toLowerCase();
+
+        return (
+          row.length > 1 &&
+          !combined.includes(
+            "loading"
+          ) &&
+          !combined.includes(
+            "no assessment"
+          ) &&
+          !combined.includes(
+            "no major species"
+          ) &&
+          !combined.includes(
+            "failed to load"
+          )
+        );
+      });
 
   return {
     head,
@@ -321,9 +365,11 @@ function extractHtmlTable(tableId) {
 
 function extractAllReportData() {
   return {
-    title: extractReportTitle(),
-    meta: extractReportMeta(),
-    summary: extractSummaryCards(),
+    title:
+      extractReportTitle(),
+
+    meta:
+      extractReportMeta(),
 
     stocking:
       extractHtmlTable(
@@ -340,21 +386,16 @@ function extractAllReportData() {
         "volumeAssessmentTable"
       ),
 
-    plots:
+    majorSpecies:
       extractHtmlTable(
-        "plotResultsTable"
-      ),
-
-    species:
-      extractHtmlTable(
-        "speciesSummaryTable"
+        "majorSpeciesTable"
       )
   };
 }
 
 
 /* =========================================================
-   5. Data Readiness
+   Data Readiness
 ========================================================= */
 
 function reportDataReady() {
@@ -364,18 +405,18 @@ function reportDataReady() {
 
   const requiredElementIds = [
     "reportTitle",
-    "summaryCards",
     "stockingAssessmentTable",
     "basalAreaAssessmentTable",
     "volumeAssessmentTable",
-    "plotResultsTable",
-    "speciesSummaryTable"
+    "majorSpeciesTable"
   ];
 
   const allElementsExist =
     requiredElementIds.every(
       (elementId) =>
-        Boolean(getElement(elementId))
+        Boolean(
+          getElement(elementId)
+        )
     );
 
   if (!allElementsExist) {
@@ -386,11 +427,10 @@ function reportDataReady() {
     "stockingAssessmentBody",
     "basalAreaAssessmentBody",
     "volumeAssessmentBody",
-    "plotResultsBody",
-    "speciesSummaryBody"
+    "majorSpeciesBody"
   ];
 
-  const loadingStillPresent =
+  const stillLoading =
     requiredBodyIds.some(
       (elementId) => {
         const element =
@@ -398,17 +438,19 @@ function reportDataReady() {
 
         return (
           !element ||
-          isLoadingText(element.textContent)
+          isLoadingText(
+            element.textContent
+          )
         );
       }
     );
 
-  return !loadingStillPresent;
+  return !stillLoading;
 }
 
 
 /* =========================================================
-   6. Button State
+   Button State
 ========================================================= */
 
 function setPdfButtonState({
@@ -416,14 +458,19 @@ function setPdfButtonState({
   label
 }) {
   const button =
-    getElement(PDF_BUTTON_ID);
+    getElement(
+      PDF_BUTTON_ID
+    );
 
   if (!button) {
     return;
   }
 
-  button.disabled = !enabled;
-  button.textContent = label;
+  button.disabled =
+    !enabled;
+
+  button.textContent =
+    label;
 }
 
 
@@ -431,7 +478,8 @@ function refreshPdfButtonState() {
   if (!librariesAvailable()) {
     setPdfButtonState({
       enabled: false,
-      label: "PDF Library Error"
+      label:
+        "PDF Library Error"
     });
 
     return;
@@ -440,7 +488,8 @@ function refreshPdfButtonState() {
   if (reportDataReady()) {
     setPdfButtonState({
       enabled: true,
-      label: "Export PDF Report"
+      label:
+        "Export PDF Report"
     });
 
     return;
@@ -448,13 +497,14 @@ function refreshPdfButtonState() {
 
   setPdfButtonState({
     enabled: false,
-    label: "Preparing PDF..."
+    label:
+      "Preparing PDF..."
   });
 }
 
 
 /* =========================================================
-   7. PDF Drawing Utilities
+   PDF Drawing Utilities
 ========================================================= */
 
 function setTextColor(
@@ -481,24 +531,15 @@ function setDrawColor(
 }
 
 
-function setFillColor(
-  doc,
-  color = COLORS.white
-) {
-  doc.setFillColor(
-    color[0],
-    color[1],
-    color[2]
-  );
-}
-
-
 function drawSectionTitle(
   doc,
   title,
   y
 ) {
-  setTextColor(doc, COLORS.darkGreen);
+  setTextColor(
+    doc,
+    COLORS.darkGreen
+  );
 
   doc.setFont(
     "helvetica",
@@ -513,7 +554,10 @@ function drawSectionTitle(
     y
   );
 
-  setDrawColor(doc, [203, 213, 225]);
+  setDrawColor(
+    doc,
+    [203, 213, 225]
+  );
 
   doc.setLineWidth(0.25);
 
@@ -533,9 +577,13 @@ function drawReportHeader(
   doc,
   reportData
 ) {
-  let y = PDF_PAGE.marginTop;
+  let y =
+    PDF_PAGE.marginTop;
 
-  setTextColor(doc, COLORS.darkGreen);
+  setTextColor(
+    doc,
+    COLORS.darkGreen
+  );
 
   doc.setFont(
     "helvetica",
@@ -567,45 +615,47 @@ function drawReportHeader(
 
   doc.setFontSize(8.5);
 
-  setTextColor(doc, COLORS.darkText);
+  setTextColor(
+    doc,
+    COLORS.darkText
+  );
 
-  const metaRows =
-    reportData.meta || [];
+  reportData.meta.forEach(
+    (item) => {
+      doc.setFont(
+        "helvetica",
+        "bold"
+      );
 
-  metaRows.forEach((item) => {
-    const label =
-      normalizePdfText(item.label);
+      doc.text(
+        normalizePdfText(
+          item.label
+        ),
+        PDF_PAGE.marginLeft,
+        y
+      );
 
-    const value =
-      normalizePdfText(item.value) ||
-      "-";
+      doc.setFont(
+        "helvetica",
+        "normal"
+      );
 
-    doc.setFont(
-      "helvetica",
-      "bold"
-    );
+      doc.text(
+        normalizePdfText(
+          item.value
+        ) || "-",
+        PDF_PAGE.marginLeft + 32,
+        y
+      );
 
-    doc.text(
-      label,
-      PDF_PAGE.marginLeft,
-      y
-    );
+      y += 4.3;
+    }
+  );
 
-    doc.setFont(
-      "helvetica",
-      "normal"
-    );
-
-    doc.text(
-      value,
-      PDF_PAGE.marginLeft + 29,
-      y
-    );
-
-    y += 4.3;
-  });
-
-  setDrawColor(doc, COLORS.green);
+  setDrawColor(
+    doc,
+    COLORS.green
+  );
 
   doc.setLineWidth(0.45);
 
@@ -621,106 +671,8 @@ function drawReportHeader(
 }
 
 
-function drawExecutiveSummary(
-  doc,
-  summaryItems,
-  startY
-) {
-  let y = drawSectionTitle(
-    doc,
-    "Executive Summary",
-    startY
-  );
-
-  const items =
-    Array.isArray(summaryItems)
-      ? summaryItems.slice(0, 4)
-      : [];
-
-  while (items.length < 4) {
-    items.push({
-      label: "-",
-      value: "-"
-    });
-  }
-
-  const gap = 4;
-
-  const cardWidth =
-    (PDF_CONTENT_WIDTH - gap) / 2;
-
-  const cardHeight = 17;
-
-  items.forEach((item, index) => {
-    const column = index % 2;
-
-    const row =
-      Math.floor(index / 2);
-
-    const x =
-      PDF_PAGE.marginLeft +
-      column * (cardWidth + gap);
-
-    const cardY =
-      y +
-      row * (cardHeight + 4);
-
-    setFillColor(doc, COLORS.lightFill);
-    setDrawColor(doc, [203, 213, 225]);
-
-    doc.setLineWidth(0.25);
-
-    doc.roundedRect(
-      x,
-      cardY,
-      cardWidth,
-      cardHeight,
-      1.5,
-      1.5,
-      "FD"
-    );
-
-    setTextColor(doc, COLORS.mutedText);
-
-    doc.setFont(
-      "helvetica",
-      "normal"
-    );
-
-    doc.setFontSize(7.5);
-
-    doc.text(
-      normalizePdfText(item.label),
-      x + 3,
-      cardY + 5
-    );
-
-    setTextColor(doc, COLORS.darkText);
-
-    doc.setFont(
-      "helvetica",
-      "bold"
-    );
-
-    doc.setFontSize(12);
-
-    doc.text(
-      normalizePdfText(item.value),
-      x + 3,
-      cardY + 12.5
-    );
-  });
-
-  return (
-    y +
-    cardHeight * 2 +
-    8
-  );
-}
-
-
 /* =========================================================
-   8. AutoTable Utilities
+   AutoTable
 ========================================================= */
 
 function getCommonTableStyles() {
@@ -732,32 +684,42 @@ function getCommonTableStyles() {
       fontSize: 7.5,
       cellPadding: 1.7,
       lineWidth: 0.15,
-      lineColor: COLORS.border,
-      textColor: COLORS.darkText,
+      lineColor:
+        COLORS.border,
+      textColor:
+        COLORS.darkText,
       overflow: "linebreak",
       valign: "middle"
     },
 
     headStyles: {
-      fillColor: COLORS.headerFill,
-      textColor: COLORS.darkText,
+      fillColor:
+        COLORS.headerFill,
+      textColor:
+        COLORS.darkText,
       fontStyle: "bold",
       halign: "center",
       lineWidth: 0.15,
-      lineColor: COLORS.border
+      lineColor:
+        COLORS.border
     },
 
     bodyStyles: {
-      fillColor: COLORS.white
+      fillColor:
+        COLORS.white
     },
 
     alternateRowStyles: {
-      fillColor: COLORS.lightFill
+      fillColor:
+        COLORS.lightFill
     },
 
     margin: {
-      left: PDF_PAGE.marginLeft,
-      right: PDF_PAGE.marginRight
+      left:
+        PDF_PAGE.marginLeft,
+
+      right:
+        PDF_PAGE.marginRight
     }
   };
 }
@@ -769,7 +731,10 @@ function drawAssessmentTable(
   tableData,
   startY
 ) {
-  setTextColor(doc, COLORS.darkText);
+  setTextColor(
+    doc,
+    COLORS.darkText
+  );
 
   doc.setFont(
     "helvetica",
@@ -790,27 +755,36 @@ function drawAssessmentTable(
   doc.autoTable({
     ...getCommonTableStyles(),
 
-    startY: tableStartY,
+    startY:
+      tableStartY,
 
-    head: tableData.head,
-    body: tableData.body,
+    head:
+      tableData.head,
 
-    tableWidth: PDF_CONTENT_WIDTH,
+    body:
+      tableData.body,
+
+    tableWidth:
+      PDF_CONTENT_WIDTH,
 
     columnStyles: {
       0: {
         cellWidth: 42,
         halign: "left"
       },
+
       1: {
         halign: "right"
       },
+
       2: {
         halign: "right"
       },
+
       3: {
         halign: "right"
       },
+
       4: {
         halign: "right"
       }
@@ -822,31 +796,37 @@ function drawAssessmentTable(
 
       const firstCell =
         Array.isArray(rowData)
-          ? normalizePdfText(rowData[0])
+          ? normalizePdfText(
+              rowData[0]
+            )
           : "";
 
       if (
-        data.section === "body" &&
+        data.section ===
+          "body" &&
         firstCell.toUpperCase() ===
           "TOTAL"
       ) {
-        data.cell.styles.fillColor =
-          COLORS.totalFill;
+        data.cell.styles
+          .fillColor =
+            COLORS.totalFill;
 
-        data.cell.styles.fontStyle =
-          "bold";
+        data.cell.styles
+          .fontStyle =
+            "bold";
       }
     }
   });
 
   return (
-    doc.lastAutoTable?.finalY ||
+    doc.lastAutoTable
+      ?.finalY ||
     tableStartY
   ) + 6;
 }
 
 
-function drawPlotTable(
+function drawMajorSpeciesTable(
   doc,
   tableData,
   startY
@@ -856,110 +836,73 @@ function drawPlotTable(
 
     startY,
 
-    head: tableData.head,
-    body: tableData.body,
+    head:
+      tableData.head,
 
-    tableWidth: PDF_CONTENT_WIDTH,
+    body:
+      tableData.body,
 
-    styles: {
-      ...getCommonTableStyles().styles,
-      fontSize: 8.5,
-      cellPadding: 2.2
-    },
-
-    columnStyles: {
-      0: {
-        cellWidth: 38,
-        halign: "left"
-      },
-      1: {
-        cellWidth: 35,
-        halign: "right"
-      },
-      2: {
-        halign: "right"
-      },
-      3: {
-        halign: "right"
-      }
-    }
-  });
-
-  return (
-    doc.lastAutoTable?.finalY ||
-    startY
-  ) + 8;
-}
-
-
-function drawSpeciesTable(
-  doc,
-  tableData,
-  startY
-) {
-  doc.autoTable({
-    ...getCommonTableStyles(),
-
-    startY,
-
-    head: tableData.head,
-    body: tableData.body,
-
-    tableWidth: PDF_CONTENT_WIDTH,
+    tableWidth:
+      PDF_CONTENT_WIDTH,
 
     styles: {
-      ...getCommonTableStyles().styles,
-      fontSize: 6.8,
-      cellPadding: 1.5
+      ...getCommonTableStyles()
+        .styles,
+
+      fontSize: 7.2,
+      cellPadding: 1.7
     },
 
     headStyles: {
       ...getCommonTableStyles()
         .headStyles,
-      fontSize: 6.5
+
+      fontSize: 7
     },
 
     columnStyles: {
       0: {
+        cellWidth: 54,
+        halign: "left"
+      },
+
+      1: {
         cellWidth: 18,
         halign: "center"
       },
-      1: {
-        cellWidth: 38,
-        halign: "left"
-      },
+
       2: {
-        cellWidth: 28,
-        halign: "left"
+        cellWidth: 25,
+        halign: "right"
       },
+
       3: {
-        cellWidth: 30,
-        halign: "left"
+        cellWidth: 25,
+        halign: "right"
       },
+
       4: {
-        cellWidth: 18,
+        cellWidth: 25,
         halign: "right"
       },
+
       5: {
-        cellWidth: 24,
-        halign: "right"
-      },
-      6: {
-        cellWidth: 24,
+        cellWidth: 35,
         halign: "right"
       }
     }
   });
 
   return (
-    doc.lastAutoTable?.finalY ||
+    doc.lastAutoTable
+      ?.finalY ||
     startY
   ) + 5;
 }
 
 
 /* =========================================================
-   9. Footer
+   Footer
 ========================================================= */
 
 function addPageFooters(doc) {
@@ -973,17 +916,23 @@ function addPageFooters(doc) {
   ) {
     doc.setPage(pageNumber);
 
-    setDrawColor(doc, [203, 213, 225]);
+    setDrawColor(
+      doc,
+      [203, 213, 225]
+    );
 
     doc.setLineWidth(0.2);
 
     doc.line(
       PDF_PAGE.marginLeft,
+
       PDF_PAGE.height -
         PDF_PAGE.marginBottom +
         2,
+
       PDF_PAGE.width -
         PDF_PAGE.marginRight,
+
       PDF_PAGE.height -
         PDF_PAGE.marginBottom +
         2
@@ -1003,15 +952,20 @@ function addPageFooters(doc) {
 
     doc.text(
       "Generated from FIPS Cloud",
+
       PDF_PAGE.marginLeft,
+
       PDF_PAGE.height - 5
     );
 
     doc.text(
       `Page ${pageNumber} of ${pageCount}`,
+
       PDF_PAGE.width -
         PDF_PAGE.marginRight,
+
       PDF_PAGE.height - 5,
+
       {
         align: "right"
       }
@@ -1021,7 +975,7 @@ function addPageFooters(doc) {
 
 
 /* =========================================================
-   10. Main PDF Generator
+   Main PDF Generator
 ========================================================= */
 
 async function generateFipsPdf() {
@@ -1043,39 +997,38 @@ async function generateFipsPdf() {
   const JsPDF =
     getJsPdfConstructor();
 
-  const doc = new JsPDF({
-    orientation: "portrait",
-    unit: "mm",
-    format: "a4",
-    compress: true,
-    putOnlyUsedFonts: true
-  });
+  const doc =
+    new JsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4",
+      compress: true,
+      putOnlyUsedFonts: true
+    });
 
   doc.setProperties({
-    title: reportData.title,
+    title:
+      reportData.title,
+
     subject:
-      "FIPS Survey Summary Report",
-    author: "FIPS Cloud",
+      "FIPS Assessment Summary Report",
+
+    author:
+      "FIPS Cloud",
+
     creator:
       "FIPS Cloud jsPDF Generator"
   });
 
 
-  /* -------------------------------------------------------
+  /* =====================================================
      Page 1
-  ------------------------------------------------------- */
+  ===================================================== */
 
   let y =
     drawReportHeader(
       doc,
       reportData
-    );
-
-  y =
-    drawExecutiveSummary(
-      doc,
-      reportData.summary,
-      y
     );
 
   y =
@@ -1096,59 +1049,48 @@ async function generateFipsPdf() {
   y =
     drawAssessmentTable(
       doc,
-      "(B) Basal Area per hectare (m2/ha)",
+      "(B) Basal area per hectare",
       reportData.basalArea,
       y
     );
 
   drawAssessmentTable(
     doc,
-    "(C) Gross Volume per hectare (m3/ha)",
+    "(C) Gross volume per hectare",
     reportData.volume,
     y
   );
 
 
-  /* -------------------------------------------------------
+  /* =====================================================
      Page 2
-  ------------------------------------------------------- */
+  ===================================================== */
 
   doc.addPage();
 
   let page2Y =
-    PDF_PAGE.marginTop;
-
-  page2Y =
-    drawSectionTitle(
+    drawReportHeader(
       doc,
-      "Plot Results",
-      page2Y
-    );
-
-  page2Y =
-    drawPlotTable(
-      doc,
-      reportData.plots,
-      page2Y
+      reportData
     );
 
   page2Y =
     drawSectionTitle(
       doc,
-      "Species Summary",
+      "(D) Major species summary",
       page2Y
     );
 
-  drawSpeciesTable(
+  drawMajorSpeciesTable(
     doc,
-    reportData.species,
+    reportData.majorSpecies,
     page2Y
   );
 
 
-  /* -------------------------------------------------------
-     Footer and save
-  ------------------------------------------------------- */
+  /* =====================================================
+     Footer and Save
+  ===================================================== */
 
   addPageFooters(doc);
 
@@ -1159,7 +1101,9 @@ async function generateFipsPdf() {
           item.label
         )
           .toLowerCase()
-          .includes("survey name")
+          .includes(
+            "survey name"
+          )
     )?.value ||
     reportData.title;
 
@@ -1173,20 +1117,20 @@ async function generateFipsPdf() {
 
 
 /* =========================================================
-   11. Button Event
+   Button Event
 ========================================================= */
 
-async function handlePdfButtonClick(event) {
-  /*
-   * report.js側に残っているwindow.print()の
-   * clickイベントを停止する。
-   */
+async function handlePdfButtonClick(
+  event
+) {
   event.preventDefault();
   event.stopPropagation();
   event.stopImmediatePropagation();
 
   const button =
-    getElement(PDF_BUTTON_ID);
+    getElement(
+      PDF_BUTTON_ID
+    );
 
   if (!button) {
     return;
@@ -1197,6 +1141,7 @@ async function handlePdfButtonClick(event) {
 
   try {
     button.disabled = true;
+
     button.textContent =
       "Generating PDF...";
 
@@ -1216,6 +1161,7 @@ async function handlePdfButtonClick(event) {
     );
 
     button.disabled = false;
+
     button.textContent =
       originalLabel ||
       "Export PDF Report";
@@ -1229,21 +1175,19 @@ async function handlePdfButtonClick(event) {
 
 
 /* =========================================================
-   12. Initialization
+   Initialization
 ========================================================= */
 
 function attachPdfButtonHandler() {
   const button =
-    getElement(PDF_BUTTON_ID);
+    getElement(
+      PDF_BUTTON_ID
+    );
 
   if (!button) {
     return false;
   }
 
-  /*
-   * capture=trueにすることで、
-   * report.jsの通常clickイベントより先に実行する。
-   */
   button.addEventListener(
     "click",
     handlePdfButtonClick,
@@ -1275,6 +1219,7 @@ function observeReportLoading() {
 
   window.setTimeout(() => {
     observer.disconnect();
+
     refreshPdfButtonState();
   }, 30000);
 }
@@ -1283,7 +1228,9 @@ function observeReportLoading() {
 function initializePdfReport() {
   console.log(
     "jsPDF available:",
-    Boolean(getJsPdfConstructor())
+    Boolean(
+      getJsPdfConstructor()
+    )
   );
 
   console.log(
@@ -1301,16 +1248,14 @@ function initializePdfReport() {
 
     setPdfButtonState({
       enabled: false,
-      label: "PDF Library Error"
+      label:
+        "PDF Library Error"
     });
 
     return;
   }
 
-  const attached =
-    attachPdfButtonHandler();
-
-  if (!attached) {
+  if (!attachPdfButtonHandler()) {
     console.error(
       "PDF export button was not found."
     );
@@ -1319,6 +1264,7 @@ function initializePdfReport() {
   }
 
   refreshPdfButtonState();
+
   observeReportLoading();
 
   console.log(
@@ -1328,11 +1274,12 @@ function initializePdfReport() {
 
 
 /* =========================================================
-   13. Start
+   Start
 ========================================================= */
 
 if (
-  document.readyState === "loading"
+  document.readyState ===
+  "loading"
 ) {
   document.addEventListener(
     "DOMContentLoaded",
@@ -1341,6 +1288,7 @@ if (
       once: true
     }
   );
+
 } else {
   initializePdfReport();
 }
