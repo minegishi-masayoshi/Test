@@ -8,16 +8,24 @@
     content="width=device-width, initial-scale=1.0"
   />
 
-  <title>FIPS Summary Report</title>
+  <title>FIPS Assessment Summary Report</title>
 
   <meta name="robots" content="noindex, nofollow" />
+
   <meta
     name="referrer"
     content="strict-origin-when-cross-origin"
   />
 
-  <meta http-equiv="Cache-Control" content="no-store" />
-  <meta http-equiv="Pragma" content="no-cache" />
+  <meta
+    http-equiv="Cache-Control"
+    content="no-store"
+  />
+
+  <meta
+    http-equiv="Pragma"
+    content="no-cache"
+  />
 
   <meta
     http-equiv="Content-Security-Policy"
@@ -35,7 +43,10 @@
     "
   />
 
-  <link rel="stylesheet" href="./report.css" />
+  <link
+    rel="stylesheet"
+    href="./report.css"
+  />
 
   <script
     src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
@@ -57,7 +68,7 @@
     <header class="report-header">
 
       <h1 id="reportTitle">
-        FIPS Survey Summary Report
+        FIPS Assessment Summary Report
       </h1>
 
       <div
@@ -68,6 +79,7 @@
       </div>
 
     </header>
+
 
     <!-- ==================================================
          Executive Summary
@@ -81,12 +93,20 @@
         class="summary-cards"
       >
         <div class="summary-card">
-          <div class="label">Loading</div>
-          <div class="value">-</div>
+
+          <div class="label">
+            Loading
+          </div>
+
+          <div class="value">
+            -
+          </div>
+
         </div>
       </div>
 
     </section>
+
 
     <!-- ==================================================
          Survey Information
@@ -110,6 +130,137 @@
       </table>
 
     </section>
+
+
+    <!-- ==================================================
+         Legacy FIPS Assessment Summary
+    =================================================== -->
+    <section class="assessment-section">
+
+      <h2>Assessment Summary</h2>
+
+
+      <!-- ================================================
+           A. Stocking per hectare
+      ================================================= -->
+      <div class="assessment-table-block">
+
+        <h3>
+          (A) Stocking per hectare
+        </h3>
+
+        <div class="table-wrapper">
+
+          <table class="assessment-table">
+
+            <thead>
+              <tr>
+                <th>Quality Class</th>
+                <th>10–19 cm</th>
+                <th>20–49 cm</th>
+                <th>50 cm+</th>
+                <th>10 cm+</th>
+              </tr>
+            </thead>
+
+            <tbody id="stockingAssessmentBody">
+
+              <tr>
+                <td colspan="5">
+                  Loading stocking assessment...
+                </td>
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+
+      <!-- ================================================
+           B. Basal Area per hectare
+      ================================================= -->
+      <div class="assessment-table-block">
+
+        <h3>
+          (B) Basal Area per hectare (m²/ha)
+        </h3>
+
+        <div class="table-wrapper">
+
+          <table class="assessment-table">
+
+            <thead>
+              <tr>
+                <th>Quality Class</th>
+                <th>10–19 cm</th>
+                <th>20–49 cm</th>
+                <th>50 cm+</th>
+                <th>10 cm+</th>
+              </tr>
+            </thead>
+
+            <tbody id="basalAreaAssessmentBody">
+
+              <tr>
+                <td colspan="5">
+                  Loading basal area assessment...
+                </td>
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+
+      <!-- ================================================
+           C. Gross Volume per hectare
+      ================================================= -->
+      <div class="assessment-table-block">
+
+        <h3>
+          (C) Gross Volume per hectare (m³/ha)
+        </h3>
+
+        <div class="table-wrapper">
+
+          <table class="assessment-table">
+
+            <thead>
+              <tr>
+                <th>Quality Class</th>
+                <th>10–19 cm</th>
+                <th>20–49 cm</th>
+                <th>50 cm+</th>
+                <th>10 cm+</th>
+              </tr>
+            </thead>
+
+            <tbody id="volumeAssessmentBody">
+
+              <tr>
+                <td colspan="5">
+                  Loading volume assessment...
+                </td>
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+    </section>
+
 
     <!-- ==================================================
          Plot Results
@@ -146,6 +297,7 @@
       </div>
 
     </section>
+
 
     <!-- ==================================================
          Species Summary
@@ -186,6 +338,7 @@
 
     </section>
 
+
     <!-- ==================================================
          Report Note
     =================================================== -->
@@ -197,6 +350,7 @@
       </p>
 
     </section>
+
 
     <!-- ==================================================
          Actions
