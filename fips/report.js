@@ -294,29 +294,46 @@ function setLoadingState() {
 async function loadSurvey(
   surveyId
 ) {
+  const [
+    surveyResponse,
+    blockResponse
+  ] = await Promise.all([
+    supabaseClient
+      .from("fips_surveys")
+      .select(`
+        id,
+        survey_number,
+        survey_name,
+        survey_date,
+        province,
+        number_of_blocks
+      `)
+      .eq("id", surveyId)
+      .single(),
+
+    supabaseClient
+      .from("fips_tree_records")
+      .select("block_no")
+      .eq("survey_id", surveyId)
+  ]);
+
   const {
-    data,
-    error
-  } = await supabaseClient
-    .from("fips_surveys")
-    .select(`
-      id,
-      survey_number,
-      survey_name,
-      survey_date,
-      province,
-      number_of_blocks
-    `)
-    .eq("id", surveyId)
-    .single();
+    data: surveyData,
+    error: surveyError
+  } = surveyResponse;
+
+  const {
+    data: blockData,
+    error: blockError
+  } = blockResponse;
 
   if (
-    error ||
-    !data
+    surveyError ||
+    !surveyData
   ) {
     console.error(
       "loadSurvey:",
-      error
+      surveyError
     );
 
     throw new Error(
@@ -324,7 +341,40 @@ async function loadSurvey(
     );
   }
 
-  return data;
+  if (blockError) {
+    console.error(
+      "loadBlockCount:",
+      blockError
+    );
+
+    throw new Error(
+      "Failed to calculate the number of blocks."
+    );
+  }
+
+  const blockNumbers =
+    (blockData || [])
+      .map((row) => row.block_no)
+      .filter(
+        (blockNo) =>
+          blockNo !== null &&
+          blockNo !== undefined &&
+          String(blockNo).trim() !== ""
+      )
+      .map(
+        (blockNo) =>
+          String(blockNo).trim()
+      );
+
+  const calculatedNumberOfBlocks =
+    new Set(blockNumbers).size;
+
+  return {
+    ...surveyData,
+
+    number_of_blocks:
+      calculatedNumberOfBlocks
+  };
 }
 
 
@@ -458,7 +508,7 @@ function renderReportHeader(
         <strong>Number of Blocks:</strong>
         <span>
           ${safeText(
-            survey.number_of_blocks ?? 0,
+            survey.number_of_blocks,
             "0"
           )}
         </span>
@@ -850,9 +900,11 @@ async function initializeReport() {
     ] =
       await Promise.allSettled([
         loadSurvey(surveyId),
+
         loadAssessmentSummary(
           surveyId
         ),
+
         loadMajorSpeciesSummary(
           surveyId
         )
