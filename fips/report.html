@@ -2,56 +2,226 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
   <title>FIPS Summary Report</title>
+
+  <meta name="robots" content="noindex, nofollow" />
+  <meta
+    name="referrer"
+    content="strict-origin-when-cross-origin"
+  />
+
+  <meta http-equiv="Cache-Control" content="no-store" />
+  <meta http-equiv="Pragma" content="no-cache" />
+
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="
+      default-src 'self';
+      script-src 'self' https://cdn.jsdelivr.net;
+      style-src 'self' 'unsafe-inline';
+      connect-src https://pncvddqeuxlkplwgvxgk.supabase.co;
+      img-src 'self' data:;
+      font-src 'self';
+      object-src 'none';
+      base-uri 'self';
+      frame-ancestors 'none';
+      form-action 'self';
+    "
+  />
+
   <link rel="stylesheet" href="./report.css" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script type="module" src="./report.js"></script>
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
+  ></script>
+
+  <script
+    type="module"
+    src="./report.js"
+  ></script>
 </head>
+
 <body>
-  <div class="report-page">
+
+  <main class="report-page">
+
+    <!-- ==================================================
+         Report Header
+    =================================================== -->
     <header class="report-header">
-      <h1>FIPS Survey Summary Report</h1>
-      <div id="reportMeta" class="report-meta"></div>
+
+      <h1 id="reportTitle">
+        FIPS Survey Summary Report
+      </h1>
+
+      <div
+        id="reportMeta"
+        class="report-meta"
+      >
+        Loading survey information...
+      </div>
+
     </header>
 
+    <!-- ==================================================
+         Executive Summary
+    =================================================== -->
     <section class="summary-section">
+
       <h2>Executive Summary</h2>
-      <div id="summaryCards" class="summary-cards"></div>
+
+      <div
+        id="summaryCards"
+        class="summary-cards"
+      >
+        <div class="summary-card">
+          <div class="label">Loading</div>
+          <div class="value">-</div>
+        </div>
+      </div>
+
     </section>
 
+    <!-- ==================================================
+         Survey Information
+    =================================================== -->
     <section class="info-section">
+
       <h2>Survey Information</h2>
+
       <table class="info-table">
-        <tbody id="surveyInfoBody"></tbody>
-      </table>
-    </section>
 
-    <section class="plot-section">
-      <h2>Plot Results</h2>
-      <table class="plot-table">
-        <thead>
+        <tbody id="surveyInfoBody">
+
           <tr>
-            <th>Plot No</th>
-            <th>Tree Count</th>
-            <th>Basal Area (m²)</th>
-            <th>Volume (m³)</th>
+            <td colspan="2">
+              Loading survey information...
+            </td>
           </tr>
-        </thead>
-        <tbody id="plotResultsBody"></tbody>
+
+        </tbody>
+
       </table>
+
     </section>
 
+    <!-- ==================================================
+         Plot Results
+    =================================================== -->
+    <section class="plot-section">
+
+      <h2>Plot Results</h2>
+
+      <div class="table-wrapper">
+
+        <table class="plot-table">
+
+          <thead>
+            <tr>
+              <th>Plot No</th>
+              <th>Tree Count</th>
+              <th>Basal Area (m²)</th>
+              <th>Volume (m³)</th>
+            </tr>
+          </thead>
+
+          <tbody id="plotResultsBody">
+
+            <tr>
+              <td colspan="4">
+                Loading plot results...
+              </td>
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </section>
+
+    <!-- ==================================================
+         Species Summary
+    =================================================== -->
+    <section class="species-section">
+
+      <h2>Species Summary</h2>
+
+      <div class="table-wrapper">
+
+        <table class="species-table">
+
+          <thead>
+            <tr>
+              <th>Species Code</th>
+              <th>Species Name</th>
+              <th>Trade Name</th>
+              <th>Common Name</th>
+              <th>Tree Count</th>
+              <th>Basal Area (m²)</th>
+              <th>Volume (m³)</th>
+            </tr>
+          </thead>
+
+          <tbody id="speciesSummaryBody">
+
+            <tr>
+              <td colspan="7">
+                Loading species summary...
+              </td>
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </section>
+
+    <!-- ==================================================
+         Report Note
+    =================================================== -->
     <section class="note-section">
+
       <p class="report-note">
-        Generated automatically from processed survey results.
+        Generated automatically from processed FIPS survey
+        results stored in the PostgreSQL database.
       </p>
+
     </section>
 
+    <!-- ==================================================
+         Actions
+    =================================================== -->
     <div class="report-actions no-print">
-      <button id="printReportBtn">Print / Save as PDF</button>
-      <button id="backToResultBtn">Back</button>
+
+      <button
+        id="printReportBtn"
+        type="button"
+        class="primary-button"
+      >
+        Print / Save as PDF
+      </button>
+
+      <button
+        id="backToResultBtn"
+        type="button"
+        class="secondary-button"
+      >
+        Back
+      </button>
+
     </div>
-  </div>
+
+  </main>
+
 </body>
 </html>
