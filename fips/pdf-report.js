@@ -1,90 +1,35 @@
 /* =========================================================
    FIPS PDF Report Generator
-   pdf-report.js - Complete Replacement Version
-
-   Page 1:
-   - Report header
-   - Assessment Summary
-   - (A) Stocking per hectare
-   - (B) Basal area per hectare
-   - (C) Gross volume per hectare
-
-   Page 2:
-   - Report header
-   - (D) Major species summary
+   Modern cloud layout with legacy FIPS information
 ========================================================= */
 
-
-/* =========================================================
-   Constants
-========================================================= */
-
-const PDF_BUTTON_ID =
-  "printReportBtn";
-
+const PDF_BUTTON_ID = "printReportBtn";
 
 const PDF_PAGE = {
   width: 210,
   height: 297,
-
   marginLeft: 14,
   marginRight: 14,
   marginTop: 12,
   marginBottom: 12
 };
 
-
 const PDF_CONTENT_WIDTH =
   PDF_PAGE.width -
   PDF_PAGE.marginLeft -
   PDF_PAGE.marginRight;
 
-
 const COLORS = {
   darkGreen: [20, 83, 45],
   green: [22, 101, 52],
-
-  headerFill: [
-    226,
-    232,
-    240
-  ],
-
-  lightFill: [
-    248,
-    250,
-    252
-  ],
-
-  totalFill: [
-    219,
-    234,
-    254
-  ],
-
-  border: [
-    100,
-    116,
-    139
-  ],
-
-  darkText: [
-    17,
-    24,
-    39
-  ],
-
-  mutedText: [
-    100,
-    116,
-    139
-  ],
-
-  white: [
-    255,
-    255,
-    255
-  ]
+  headerFill: [226, 232, 240],
+  labelFill: [241, 245, 249],
+  lightFill: [248, 250, 252],
+  totalFill: [219, 234, 254],
+  border: [100, 116, 139],
+  darkText: [17, 24, 39],
+  mutedText: [100, 116, 139],
+  white: [255, 255, 255]
 };
 
 
@@ -92,20 +37,12 @@ const COLORS = {
    Utilities
 ========================================================= */
 
-function getElement(
-  elementId
-) {
-  return document.getElementById(
-    elementId
-  );
+function getElement(elementId) {
+  return document.getElementById(elementId);
 }
 
-
 function cleanText(value) {
-  if (
-    value === null ||
-    value === undefined
-  ) {
+  if (value === null || value === undefined) {
     return "";
   }
 
@@ -114,7 +51,6 @@ function cleanText(value) {
     .replace(/\s+/g, " ")
     .trim();
 }
-
 
 function normalizePdfText(value) {
   return cleanText(value)
@@ -125,78 +61,37 @@ function normalizePdfText(value) {
     .replace(/㎥/g, "m3");
 }
 
-
 function sanitizeFileName(value) {
   const normalized =
-    normalizePdfText(
-      value ||
-      "FIPS_Report"
-    );
-
-  const safeName =
-    normalized
-      .replace(
-        /[\\/:*?"<>|]/g,
-        "_"
-      )
-      .replace(/\s+/g, "_")
-      .replace(/_+/g, "_")
-      .replace(
-        /^_+|_+$/g,
-        ""
-      );
+    normalizePdfText(value || "FIPS_Report");
 
   return (
-    safeName ||
+    normalized
+      .replace(/[\\/:*?"<>|]/g, "_")
+      .replace(/\s+/g, "_")
+      .replace(/_+/g, "_")
+      .replace(/^_+|_+$/g, "") ||
     "FIPS_Report"
   );
 }
 
+function formatDateForFileName(date = new Date()) {
+  const year = String(date.getFullYear());
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hour = String(date.getHours()).padStart(2, "0");
+  const minute = String(date.getMinutes()).padStart(2, "0");
 
-function formatDateForFileName(
-  date = new Date()
-) {
-  const year =
-    String(date.getFullYear());
-
-  const month =
-    String(
-      date.getMonth() + 1
-    ).padStart(2, "0");
-
-  const day =
-    String(
-      date.getDate()
-    ).padStart(2, "0");
-
-  const hour =
-    String(
-      date.getHours()
-    ).padStart(2, "0");
-
-  const minute =
-    String(
-      date.getMinutes()
-    ).padStart(2, "0");
-
-  return (
-    `${year}${month}${day}` +
-    `_${hour}${minute}`
-  );
+  return `${year}${month}${day}_${hour}${minute}`;
 }
 
-
 function isLoadingText(value) {
-  const text =
-    cleanText(value)
-      .toLowerCase();
+  const text = cleanText(value).toLowerCase();
 
   return (
     text.includes("loading") ||
     text.includes("preparing") ||
-    text.includes(
-      "failed to load"
-    )
+    text.includes("failed to load")
   );
 }
 
@@ -206,16 +101,11 @@ function isLoadingText(value) {
 ========================================================= */
 
 function getJsPdfConstructor() {
-  return (
-    window.jspdf?.jsPDF ||
-    null
-  );
+  return window.jspdf?.jsPDF || null;
 }
 
-
 function librariesAvailable() {
-  const JsPDF =
-    getJsPdfConstructor();
+  const JsPDF = getJsPdfConstructor();
 
   return Boolean(
     JsPDF &&
@@ -225,72 +115,77 @@ function librariesAvailable() {
 
 
 /* =========================================================
-   DOM Data Extraction
+   DOM Extraction
 ========================================================= */
 
-function extractReportTitle() {
-  return normalizePdfText(
-    getElement(
-      "reportTitle"
-    )?.textContent ||
-    "FIPS Assessment Summary Report"
-  );
-}
-
-
 function extractReportMeta() {
-  const metaContainer =
-    getElement("reportMeta");
+  const metaContainer = getElement("reportMeta");
 
   if (!metaContainer) {
     return [];
   }
 
   return Array.from(
-    metaContainer.querySelectorAll(
-      "div"
-    )
+    metaContainer.querySelectorAll("div")
   )
-    .map((rowElement) => {
-      const strongElement =
-        rowElement.querySelector(
-          "strong"
-        );
-
-      const spanElement =
-        rowElement.querySelector(
-          "span"
-        );
-
-      return {
-        label:
-          normalizePdfText(
-            strongElement
-              ?.textContent ||
-            ""
-          ),
-
-        value:
-          normalizePdfText(
-            spanElement
-              ?.textContent ||
-            ""
-          )
-      };
-    })
-    .filter(
-      (row) =>
-        row.label ||
-        row.value
-    );
+    .map((rowElement) => ({
+      label: normalizePdfText(
+        rowElement.querySelector("strong")?.textContent || ""
+      ),
+      value: normalizePdfText(
+        rowElement.querySelector("span")?.textContent || ""
+      )
+    }))
+    .filter((row) => row.label || row.value);
 }
 
+function extractLegacyInformation() {
+  return [
+    [
+      "Gross Area (ha)",
+      normalizePdfText(
+        getElement("grossAreaValue")?.textContent || "-"
+      ),
+      "Date of Survey",
+      normalizePdfText(
+        getElement("surveyDateValue")?.textContent || "-"
+      )
+    ],
+    [
+      "Net Area (ha)",
+      normalizePdfText(
+        getElement("netAreaValue")?.textContent || "-"
+      ),
+      "File Reference",
+      normalizePdfText(
+        getElement("fileReferenceValue")?.textContent || "-"
+      )
+    ],
+    [
+      "Sample Area (ha), stems 50 cm+",
+      normalizePdfText(
+        getElement("sampleArea50Value")?.textContent || "-"
+      ),
+      "Number of Plots",
+      normalizePdfText(
+        getElement("numberOfPlotsValue")?.textContent || "-"
+      )
+    ],
+    [
+      "Sample Area (ha), stems 20-49 cm",
+      normalizePdfText(
+        getElement("sampleArea20Value")?.textContent || "-"
+      ),
+      "Sampling Intensity",
+      normalizePdfText(
+        getElement("samplingIntensityValue")?.textContent || "-"
+      )
+    ]
+  ];
+}
 
-function extractHtmlTable(
-  tableId
-) {
-  const table =
-    getElement(tableId);
+function extractHtmlTable(tableId) {
+  const table = getElement(tableId);
 
   if (!table) {
     return {
@@ -299,62 +194,37 @@ function extractHtmlTable(
     };
   }
 
-  const head =
+  const head = Array.from(
+    table.querySelectorAll("thead tr")
+  ).map((row) =>
     Array.from(
-      table.querySelectorAll(
-        "thead tr"
-      )
-    ).map((row) =>
-      Array.from(
-        row.querySelectorAll(
-          "th, td"
-        )
-      ).map((cell) =>
-        normalizePdfText(
-          cell.textContent
-        )
-      )
-    );
+      row.querySelectorAll("th, td")
+    ).map((cell) =>
+      normalizePdfText(cell.textContent)
+    )
+  );
 
-  const body =
-    Array.from(
-      table.querySelectorAll(
-        "tbody tr"
+  const body = Array.from(
+    table.querySelectorAll("tbody tr")
+  )
+    .map((row) =>
+      Array.from(
+        row.querySelectorAll("th, td")
+      ).map((cell) =>
+        normalizePdfText(cell.textContent)
       )
     )
-      .map((row) =>
-        Array.from(
-          row.querySelectorAll(
-            "th, td"
-          )
-        ).map((cell) =>
-          normalizePdfText(
-            cell.textContent
-          )
-        )
-      )
-      .filter((row) => {
-        const combined =
-          row
-            .join(" ")
-            .toLowerCase();
+    .filter((row) => {
+      const combined = row.join(" ").toLowerCase();
 
-        return (
-          row.length > 1 &&
-          !combined.includes(
-            "loading"
-          ) &&
-          !combined.includes(
-            "no assessment"
-          ) &&
-          !combined.includes(
-            "no major species"
-          ) &&
-          !combined.includes(
-            "failed to load"
-          )
-        );
-      });
+      return (
+        row.length > 1 &&
+        !combined.includes("loading") &&
+        !combined.includes("no assessment") &&
+        !combined.includes("no major species") &&
+        !combined.includes("failed to load")
+      );
+    });
 
   return {
     head,
@@ -362,34 +232,17 @@ function extractHtmlTable(
   };
 }
 
-
 function extractAllReportData() {
   return {
-    title:
-      extractReportTitle(),
-
-    meta:
-      extractReportMeta(),
-
-    stocking:
-      extractHtmlTable(
-        "stockingAssessmentTable"
-      ),
-
-    basalArea:
-      extractHtmlTable(
-        "basalAreaAssessmentTable"
-      ),
-
-    volume:
-      extractHtmlTable(
-        "volumeAssessmentTable"
-      ),
-
-    majorSpecies:
-      extractHtmlTable(
-        "majorSpeciesTable"
-      )
+    title: "ASSESSMENT SUMMARY - ALL BLOCKS",
+    subtitle: "FIPS Survey Assessment Report",
+    version: "FIPS Cloud version 1.0",
+    meta: extractReportMeta(),
+    legacyInformation: extractLegacyInformation(),
+    stocking: extractHtmlTable("stockingAssessmentTable"),
+    basalArea: extractHtmlTable("basalAreaAssessmentTable"),
+    volume: extractHtmlTable("volumeAssessmentTable"),
+    majorSpecies: extractHtmlTable("majorSpeciesTable")
   };
 }
 
@@ -408,18 +261,16 @@ function reportDataReady() {
     "stockingAssessmentTable",
     "basalAreaAssessmentTable",
     "volumeAssessmentTable",
-    "majorSpeciesTable"
+    "majorSpeciesTable",
+    "grossAreaValue",
+    "numberOfPlotsValue"
   ];
 
-  const allElementsExist =
-    requiredElementIds.every(
-      (elementId) =>
-        Boolean(
-          getElement(elementId)
-        )
-    );
-
-  if (!allElementsExist) {
+  if (
+    !requiredElementIds.every(
+      (elementId) => Boolean(getElement(elementId))
+    )
+  ) {
     return false;
   }
 
@@ -430,22 +281,14 @@ function reportDataReady() {
     "majorSpeciesBody"
   ];
 
-  const stillLoading =
-    requiredBodyIds.some(
-      (elementId) => {
-        const element =
-          getElement(elementId);
+  return !requiredBodyIds.some((elementId) => {
+    const element = getElement(elementId);
 
-        return (
-          !element ||
-          isLoadingText(
-            element.textContent
-          )
-        );
-      }
+    return (
+      !element ||
+      isLoadingText(element.textContent)
     );
-
-  return !stillLoading;
+  });
 }
 
 
@@ -453,52 +296,37 @@ function reportDataReady() {
    Button State
 ========================================================= */
 
-function setPdfButtonState({
-  enabled,
-  label
-}) {
-  const button =
-    getElement(
-      PDF_BUTTON_ID
-    );
+function setPdfButtonState({ enabled, label }) {
+  const button = getElement(PDF_BUTTON_ID);
 
   if (!button) {
     return;
   }
 
-  button.disabled =
-    !enabled;
-
-  button.textContent =
-    label;
+  button.disabled = !enabled;
+  button.textContent = label;
 }
-
 
 function refreshPdfButtonState() {
   if (!librariesAvailable()) {
     setPdfButtonState({
       enabled: false,
-      label:
-        "PDF Library Error"
+      label: "PDF Library Error"
     });
-
     return;
   }
 
   if (reportDataReady()) {
     setPdfButtonState({
       enabled: true,
-      label:
-        "Export PDF Report"
+      label: "Export PDF Report"
     });
-
     return;
   }
 
   setPdfButtonState({
     enabled: false,
-    label:
-      "Preparing PDF..."
+    label: "Preparing PDF..."
   });
 }
 
@@ -507,46 +335,127 @@ function refreshPdfButtonState() {
    PDF Drawing Utilities
 ========================================================= */
 
-function setTextColor(
-  doc,
-  color = COLORS.darkText
-) {
-  doc.setTextColor(
-    color[0],
-    color[1],
-    color[2]
-  );
+function setTextColor(doc, color = COLORS.darkText) {
+  doc.setTextColor(color[0], color[1], color[2]);
 }
 
-
-function setDrawColor(
-  doc,
-  color = COLORS.border
-) {
-  doc.setDrawColor(
-    color[0],
-    color[1],
-    color[2]
-  );
+function setDrawColor(doc, color = COLORS.border) {
+  doc.setDrawColor(color[0], color[1], color[2]);
 }
 
-
-function drawSectionTitle(
+function drawReportHeader(
   doc,
-  title,
-  y
+  reportData,
+  pageNumber
 ) {
-  setTextColor(
-    doc,
-    COLORS.darkGreen
+  let y = PDF_PAGE.marginTop;
+
+  setTextColor(doc, COLORS.darkGreen);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(14);
+
+  doc.text(
+    reportData.title,
+    PDF_PAGE.marginLeft,
+    y
   );
 
-  doc.setFont(
-    "helvetica",
-    "bold"
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.5);
+  setTextColor(doc, COLORS.mutedText);
+
+  doc.text(
+    reportData.subtitle,
+    PDF_PAGE.marginLeft,
+    y + 4.5
   );
 
-  doc.setFontSize(12);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7.5);
+  setTextColor(doc, COLORS.darkText);
+
+  doc.text(
+    reportData.version,
+    PDF_PAGE.width - PDF_PAGE.marginRight,
+    y,
+    { align: "right" }
+  );
+
+  doc.setFont("helvetica", "normal");
+  doc.text(
+    `Page No. ${pageNumber}`,
+    PDF_PAGE.width - PDF_PAGE.marginRight,
+    y + 4.5,
+    { align: "right" }
+  );
+
+  y += 10;
+
+  const leftMeta = reportData.meta.filter((_, index) => index % 2 === 0);
+  const rightMeta = reportData.meta.filter((_, index) => index % 2 === 1);
+
+  const maxRows = Math.max(leftMeta.length, rightMeta.length);
+
+  doc.setFontSize(8);
+
+  for (let index = 0; index < maxRows; index += 1) {
+    const left = leftMeta[index];
+    const right = rightMeta[index];
+
+    if (left) {
+      doc.setFont("helvetica", "bold");
+      doc.text(
+        left.label,
+        PDF_PAGE.marginLeft,
+        y
+      );
+
+      doc.setFont("helvetica", "normal");
+      doc.text(
+        left.value || "-",
+        PDF_PAGE.marginLeft + 29,
+        y
+      );
+    }
+
+    if (right) {
+      const rightX = 111;
+
+      doc.setFont("helvetica", "bold");
+      doc.text(
+        right.label,
+        rightX,
+        y
+      );
+
+      doc.setFont("helvetica", "normal");
+      doc.text(
+        right.value || "-",
+        rightX + 30,
+        y
+      );
+    }
+
+    y += 4.2;
+  }
+
+  setDrawColor(doc, COLORS.green);
+  doc.setLineWidth(0.45);
+
+  doc.line(
+    PDF_PAGE.marginLeft,
+    y + 1,
+    PDF_PAGE.width - PDF_PAGE.marginRight,
+    y + 1
+  );
+
+  return y + 5;
+}
+
+function drawSectionTitle(doc, title, y) {
+  setTextColor(doc, COLORS.darkGreen);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(11);
 
   doc.text(
     normalizePdfText(title),
@@ -554,125 +463,22 @@ function drawSectionTitle(
     y
   );
 
-  setDrawColor(
-    doc,
-    [203, 213, 225]
-  );
-
+  setDrawColor(doc, [203, 213, 225]);
   doc.setLineWidth(0.25);
 
   doc.line(
     PDF_PAGE.marginLeft,
     y + 2,
-    PDF_PAGE.width -
-      PDF_PAGE.marginRight,
+    PDF_PAGE.width - PDF_PAGE.marginRight,
     y + 2
   );
 
-  return y + 7;
-}
-
-
-function drawReportHeader(
-  doc,
-  reportData
-) {
-  let y =
-    PDF_PAGE.marginTop;
-
-  setTextColor(
-    doc,
-    COLORS.darkGreen
-  );
-
-  doc.setFont(
-    "helvetica",
-    "bold"
-  );
-
-  doc.setFontSize(16);
-
-  const titleLines =
-    doc.splitTextToSize(
-      reportData.title,
-      PDF_CONTENT_WIDTH
-    );
-
-  doc.text(
-    titleLines,
-    PDF_PAGE.marginLeft,
-    y
-  );
-
-  y +=
-    titleLines.length * 6 +
-    2;
-
-  doc.setFont(
-    "helvetica",
-    "normal"
-  );
-
-  doc.setFontSize(8.5);
-
-  setTextColor(
-    doc,
-    COLORS.darkText
-  );
-
-  reportData.meta.forEach(
-    (item) => {
-      doc.setFont(
-        "helvetica",
-        "bold"
-      );
-
-      doc.text(
-        normalizePdfText(
-          item.label
-        ),
-        PDF_PAGE.marginLeft,
-        y
-      );
-
-      doc.setFont(
-        "helvetica",
-        "normal"
-      );
-
-      doc.text(
-        normalizePdfText(
-          item.value
-        ) || "-",
-        PDF_PAGE.marginLeft + 32,
-        y
-      );
-
-      y += 4.3;
-    }
-  );
-
-  setDrawColor(
-    doc,
-    COLORS.green
-  );
-
-  doc.setLineWidth(0.45);
-
-  doc.line(
-    PDF_PAGE.marginLeft,
-    y + 1,
-    PDF_PAGE.width -
-      PDF_PAGE.marginRight,
-    y + 1
-  );
-
-  return y + 7;
+  return y + 6;
 }
 
 
 /* =========================================================
-   AutoTable
+   PDF Tables
 ========================================================= */
 
 function getCommonTableStyles() {
@@ -681,49 +487,84 @@ function getCommonTableStyles() {
 
     styles: {
       font: "helvetica",
-      fontSize: 7.5,
-      cellPadding: 1.7,
+      fontSize: 7.2,
+      cellPadding: 1.45,
       lineWidth: 0.15,
-      lineColor:
-        COLORS.border,
-      textColor:
-        COLORS.darkText,
+      lineColor: COLORS.border,
+      textColor: COLORS.darkText,
       overflow: "linebreak",
       valign: "middle"
     },
 
     headStyles: {
-      fillColor:
-        COLORS.headerFill,
-      textColor:
-        COLORS.darkText,
+      fillColor: COLORS.headerFill,
+      textColor: COLORS.darkText,
       fontStyle: "bold",
       halign: "center",
       lineWidth: 0.15,
-      lineColor:
-        COLORS.border
+      lineColor: COLORS.border
     },
 
     bodyStyles: {
-      fillColor:
-        COLORS.white
+      fillColor: COLORS.white
     },
 
     alternateRowStyles: {
-      fillColor:
-        COLORS.lightFill
+      fillColor: COLORS.lightFill
     },
 
     margin: {
-      left:
-        PDF_PAGE.marginLeft,
-
-      right:
-        PDF_PAGE.marginRight
+      left: PDF_PAGE.marginLeft,
+      right: PDF_PAGE.marginRight
     }
   };
 }
 
+function drawLegacyInformationTable(
+  doc,
+  rows,
+  startY
+) {
+  doc.autoTable({
+    ...getCommonTableStyles(),
+    startY,
+    body: rows,
+    showHead: "never",
+    tableWidth: PDF_CONTENT_WIDTH,
+
+    styles: {
+      ...getCommonTableStyles().styles,
+      fontSize: 7.1,
+      cellPadding: 1.6
+    },
+
+    columnStyles: {
+      0: {
+        cellWidth: 56,
+        fillColor: COLORS.labelFill,
+        fontStyle: "bold"
+      },
+      1: {
+        cellWidth: 35,
+        halign: "right"
+      },
+      2: {
+        cellWidth: 56,
+        fillColor: COLORS.labelFill,
+        fontStyle: "bold"
+      },
+      3: {
+        cellWidth: 35,
+        halign: "right"
+      }
+    }
+  });
+
+  return (
+    doc.lastAutoTable?.finalY ||
+    startY
+  ) + 5;
+}
 
 function drawAssessmentTable(
   doc,
@@ -731,17 +572,9 @@ function drawAssessmentTable(
   tableData,
   startY
 ) {
-  setTextColor(
-    doc,
-    COLORS.darkText
-  );
-
-  doc.setFont(
-    "helvetica",
-    "bold"
-  );
-
-  doc.setFontSize(9);
+  setTextColor(doc, COLORS.darkText);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8.5);
 
   doc.text(
     normalizePdfText(title),
@@ -749,82 +582,60 @@ function drawAssessmentTable(
     startY
   );
 
-  const tableStartY =
-    startY + 3;
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(6.5);
+  setTextColor(doc, COLORS.mutedText);
+
+  doc.text(
+    "Diameter Class",
+    PDF_PAGE.marginLeft + PDF_CONTENT_WIDTH / 2,
+    startY + 3.5,
+    { align: "center" }
+  );
+
+  const tableStartY = startY + 5;
 
   doc.autoTable({
     ...getCommonTableStyles(),
-
-    startY:
-      tableStartY,
-
-    head:
-      tableData.head,
-
-    body:
-      tableData.body,
-
-    tableWidth:
-      PDF_CONTENT_WIDTH,
+    startY: tableStartY,
+    head: tableData.head,
+    body: tableData.body,
+    tableWidth: PDF_CONTENT_WIDTH,
 
     columnStyles: {
       0: {
         cellWidth: 42,
         halign: "left"
       },
-
-      1: {
-        halign: "right"
-      },
-
-      2: {
-        halign: "right"
-      },
-
-      3: {
-        halign: "right"
-      },
-
-      4: {
-        halign: "right"
-      }
+      1: { halign: "right" },
+      2: { halign: "right" },
+      3: { halign: "right" },
+      4: { halign: "right" }
     },
 
     didParseCell(data) {
-      const rowData =
-        data.row?.raw;
+      const rowData = data.row?.raw;
 
       const firstCell =
         Array.isArray(rowData)
-          ? normalizePdfText(
-              rowData[0]
-            )
+          ? normalizePdfText(rowData[0])
           : "";
 
       if (
-        data.section ===
-          "body" &&
-        firstCell.toUpperCase() ===
-          "TOTAL"
+        data.section === "body" &&
+        firstCell.toUpperCase() === "TOTAL"
       ) {
-        data.cell.styles
-          .fillColor =
-            COLORS.totalFill;
-
-        data.cell.styles
-          .fontStyle =
-            "bold";
+        data.cell.styles.fillColor = COLORS.totalFill;
+        data.cell.styles.fontStyle = "bold";
       }
     }
   });
 
   return (
-    doc.lastAutoTable
-      ?.finalY ||
+    doc.lastAutoTable?.finalY ||
     tableStartY
-  ) + 6;
+  ) + 5;
 }
-
 
 function drawMajorSpeciesTable(
   doc,
@@ -833,31 +644,20 @@ function drawMajorSpeciesTable(
 ) {
   doc.autoTable({
     ...getCommonTableStyles(),
-
     startY,
-
-    head:
-      tableData.head,
-
-    body:
-      tableData.body,
-
-    tableWidth:
-      PDF_CONTENT_WIDTH,
+    head: tableData.head,
+    body: tableData.body,
+    tableWidth: PDF_CONTENT_WIDTH,
 
     styles: {
-      ...getCommonTableStyles()
-        .styles,
-
-      fontSize: 7.2,
-      cellPadding: 1.7
+      ...getCommonTableStyles().styles,
+      fontSize: 7.1,
+      cellPadding: 1.55
     },
 
     headStyles: {
-      ...getCommonTableStyles()
-        .headStyles,
-
-      fontSize: 7
+      ...getCommonTableStyles().headStyles,
+      fontSize: 6.9
     },
 
     columnStyles: {
@@ -865,27 +665,22 @@ function drawMajorSpeciesTable(
         cellWidth: 54,
         halign: "left"
       },
-
       1: {
         cellWidth: 18,
         halign: "center"
       },
-
       2: {
         cellWidth: 25,
         halign: "right"
       },
-
       3: {
         cellWidth: 25,
         halign: "right"
       },
-
       4: {
         cellWidth: 25,
         halign: "right"
       },
-
       5: {
         cellWidth: 35,
         halign: "right"
@@ -894,8 +689,7 @@ function drawMajorSpeciesTable(
   });
 
   return (
-    doc.lastAutoTable
-      ?.finalY ||
+    doc.lastAutoTable?.finalY ||
     startY
   ) + 5;
 }
@@ -906,8 +700,7 @@ function drawMajorSpeciesTable(
 ========================================================= */
 
 function addPageFooters(doc) {
-  const pageCount =
-    doc.getNumberOfPages();
+  const pageCount = doc.getNumberOfPages();
 
   for (
     let pageNumber = 1;
@@ -916,56 +709,30 @@ function addPageFooters(doc) {
   ) {
     doc.setPage(pageNumber);
 
-    setDrawColor(
-      doc,
-      [203, 213, 225]
-    );
-
+    setDrawColor(doc, [203, 213, 225]);
     doc.setLineWidth(0.2);
 
     doc.line(
       PDF_PAGE.marginLeft,
-
-      PDF_PAGE.height -
-        PDF_PAGE.marginBottom +
-        2,
-
-      PDF_PAGE.width -
-        PDF_PAGE.marginRight,
-
-      PDF_PAGE.height -
-        PDF_PAGE.marginBottom +
-        2
+      PDF_PAGE.height - PDF_PAGE.marginBottom + 2,
+      PDF_PAGE.width - PDF_PAGE.marginRight,
+      PDF_PAGE.height - PDF_PAGE.marginBottom + 2
     );
 
-    setTextColor(
-      doc,
-      COLORS.mutedText
-    );
-
-    doc.setFont(
-      "helvetica",
-      "normal"
-    );
-
+    setTextColor(doc, COLORS.mutedText);
+    doc.setFont("helvetica", "normal");
     doc.setFontSize(7);
 
     doc.text(
       "Generated from FIPS Cloud",
-
       PDF_PAGE.marginLeft,
-
       PDF_PAGE.height - 5
     );
 
     doc.text(
       `Page ${pageNumber} of ${pageCount}`,
-
-      PDF_PAGE.width -
-        PDF_PAGE.marginRight,
-
+      PDF_PAGE.width - PDF_PAGE.marginRight,
       PDF_PAGE.height - 5,
-
       {
         align: "right"
       }
@@ -991,95 +758,110 @@ async function generateFipsPdf() {
     );
   }
 
-  const reportData =
-    extractAllReportData();
+  const reportData = extractAllReportData();
+  const JsPDF = getJsPdfConstructor();
 
-  const JsPDF =
-    getJsPdfConstructor();
-
-  const doc =
-    new JsPDF({
-      orientation: "portrait",
-      unit: "mm",
-      format: "a4",
-      compress: true,
-      putOnlyUsedFonts: true
-    });
+  const doc = new JsPDF({
+    orientation: "portrait",
+    unit: "mm",
+    format: "a4",
+    compress: true,
+    putOnlyUsedFonts: true
+  });
 
   doc.setProperties({
-    title:
-      reportData.title,
-
-    subject:
-      "FIPS Assessment Summary Report",
-
-    author:
-      "FIPS Cloud",
-
-    creator:
-      "FIPS Cloud jsPDF Generator"
+    title: reportData.title,
+    subject: "FIPS Assessment Summary - All Blocks",
+    author: "FIPS Cloud",
+    creator: "FIPS Cloud jsPDF Generator"
   });
 
 
-  /* =====================================================
-     Page 1
-  ===================================================== */
+  /* Page 1 */
 
-  let y =
-    drawReportHeader(
-      doc,
-      reportData
-    );
+  let y = drawReportHeader(doc, reportData, 1);
 
-  y =
-    drawSectionTitle(
-      doc,
-      "Assessment Summary",
-      y
-    );
-
-  y =
-    drawAssessmentTable(
-      doc,
-      "(A) Stocking per hectare",
-      reportData.stocking,
-      y
-    );
-
-  y =
-    drawAssessmentTable(
-      doc,
-      "(B) Basal area per hectare",
-      reportData.basalArea,
-      y
-    );
-
-  drawAssessmentTable(
+  y = drawSectionTitle(
     doc,
-    "(C) Gross volume per hectare",
+    "Survey Information",
+    y
+  );
+
+  y = drawLegacyInformationTable(
+    doc,
+    reportData.legacyInformation,
+    y
+  );
+
+  y = drawSectionTitle(
+    doc,
+    "Assessment Summary",
+    y
+  );
+
+  y = drawAssessmentTable(
+    doc,
+    "(A) Stocking per hectare",
+    reportData.stocking,
+    y
+  );
+
+  y = drawAssessmentTable(
+    doc,
+    "(B) Basal area per hectare (m2/ha)",
+    reportData.basalArea,
+    y
+  );
+
+  y = drawAssessmentTable(
+    doc,
+    "(C) Gross volume per hectare (m3/ha)",
     reportData.volume,
     y
   );
 
+  setTextColor(doc, COLORS.mutedText);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(6.8);
 
-  /* =====================================================
-     Page 2
-  ===================================================== */
+  doc.text(
+    "NB. If Quality Class figures do not add up to TOTAL, quality-code records may be incomplete.",
+    PDF_PAGE.marginLeft,
+    Math.min(y, PDF_PAGE.height - 18)
+  );
+
+
+  /* Page 2 */
 
   doc.addPage();
 
-  let page2Y =
-    drawReportHeader(
-      doc,
-      reportData
-    );
+  let page2Y = drawReportHeader(doc, reportData, 2);
 
-  page2Y =
-    drawSectionTitle(
-      doc,
-      "(D) Major species summary",
-      page2Y
-    );
+  page2Y = drawSectionTitle(
+    doc,
+    "(D) Major species summary",
+    page2Y
+  );
+
+  setTextColor(doc, COLORS.mutedText);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.2);
+
+  const description =
+    "List of major species in sawlog size classes, in order of volume representation in the assessment.";
+
+  const descriptionLines = doc.splitTextToSize(
+    description,
+    PDF_CONTENT_WIDTH
+  );
+
+  doc.text(
+    descriptionLines,
+    PDF_PAGE.marginLeft,
+    page2Y
+  );
+
+  page2Y += descriptionLines.length * 3.5 + 2;
 
   drawMajorSpeciesTable(
     doc,
@@ -1087,25 +869,14 @@ async function generateFipsPdf() {
     page2Y
   );
 
-
-  /* =====================================================
-     Footer and Save
-  ===================================================== */
-
   addPageFooters(doc);
 
   const surveyName =
     reportData.meta.find(
       (item) =>
-        normalizePdfText(
-          item.label
-        )
-          .toLowerCase()
-          .includes(
-            "survey name"
-          )
+        item.label.toLowerCase().includes("survey name")
     )?.value ||
-    reportData.title;
+    "Survey";
 
   const fileName =
     `FIPS_${sanitizeFileName(
@@ -1120,35 +891,26 @@ async function generateFipsPdf() {
    Button Event
 ========================================================= */
 
-async function handlePdfButtonClick(
-  event
-) {
+async function handlePdfButtonClick(event) {
   event.preventDefault();
   event.stopPropagation();
   event.stopImmediatePropagation();
 
-  const button =
-    getElement(
-      PDF_BUTTON_ID
-    );
+  const button = getElement(PDF_BUTTON_ID);
 
   if (!button) {
     return;
   }
 
-  const originalLabel =
-    button.textContent;
+  const originalLabel = button.textContent;
 
   try {
     button.disabled = true;
-
-    button.textContent =
-      "Generating PDF...";
+    button.textContent = "Generating PDF...";
 
     await generateFipsPdf();
 
-    button.textContent =
-      "PDF Generated";
+    button.textContent = "PDF Generated";
 
     window.setTimeout(() => {
       refreshPdfButtonState();
@@ -1161,7 +923,6 @@ async function handlePdfButtonClick(
     );
 
     button.disabled = false;
-
     button.textContent =
       originalLabel ||
       "Export PDF Report";
@@ -1179,10 +940,7 @@ async function handlePdfButtonClick(
 ========================================================= */
 
 function attachPdfButtonHandler() {
-  const button =
-    getElement(
-      PDF_BUTTON_ID
-    );
+  const button = getElement(PDF_BUTTON_ID);
 
   if (!button) {
     return false;
@@ -1197,50 +955,28 @@ function attachPdfButtonHandler() {
   return true;
 }
 
-
 function observeReportLoading() {
-  const observer =
-    new MutationObserver(() => {
-      refreshPdfButtonState();
+  const observer = new MutationObserver(() => {
+    refreshPdfButtonState();
 
-      if (reportDataReady()) {
-        observer.disconnect();
-      }
-    });
-
-  observer.observe(
-    document.body,
-    {
-      childList: true,
-      subtree: true,
-      characterData: true
+    if (reportDataReady()) {
+      observer.disconnect();
     }
-  );
+  });
+
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+    characterData: true
+  });
 
   window.setTimeout(() => {
     observer.disconnect();
-
     refreshPdfButtonState();
   }, 30000);
 }
 
-
 function initializePdfReport() {
-  console.log(
-    "jsPDF available:",
-    Boolean(
-      getJsPdfConstructor()
-    )
-  );
-
-  console.log(
-    "AutoTable available:",
-    Boolean(
-      getJsPdfConstructor()
-        ?.API?.autoTable
-    )
-  );
-
   if (!librariesAvailable()) {
     console.error(
       "PDF libraries could not be loaded."
@@ -1248,8 +984,7 @@ function initializePdfReport() {
 
     setPdfButtonState({
       enabled: false,
-      label:
-        "PDF Library Error"
+      label: "PDF Library Error"
     });
 
     return;
@@ -1259,17 +994,11 @@ function initializePdfReport() {
     console.error(
       "PDF export button was not found."
     );
-
     return;
   }
 
   refreshPdfButtonState();
-
   observeReportLoading();
-
-  console.log(
-    "FIPS PDF generator initialized."
-  );
 }
 
 
@@ -1277,10 +1006,7 @@ function initializePdfReport() {
    Start
 ========================================================= */
 
-if (
-  document.readyState ===
-  "loading"
-) {
+if (document.readyState === "loading") {
   document.addEventListener(
     "DOMContentLoaded",
     initializePdfReport,
@@ -1288,7 +1014,6 @@ if (
       once: true
     }
   );
-
 } else {
   initializePdfReport();
 }
