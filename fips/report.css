@@ -1,5 +1,11 @@
 /* =========================================================
-   Base
+   FIPS Assessment Summary Report
+   report.css - Complete Replacement Version
+========================================================= */
+
+
+/* =========================================================
+   1. Reset / Base
 ========================================================= */
 
 * {
@@ -7,21 +13,31 @@
 }
 
 html {
-  background: #f3f4f6;
+  margin: 0;
+  padding: 0;
+  background: #e5e7eb;
 }
 
 body {
   margin: 0;
   padding: 0;
-  background: #f3f4f6;
-  font-family: Arial, Helvetica, sans-serif;
+
+  background: #e5e7eb;
+
   color: #111827;
-  line-height: 1.5;
+
+  font-family:
+    Arial,
+    Helvetica,
+    sans-serif;
+
+  font-size: 13px;
+  line-height: 1.4;
 }
 
 
 /* =========================================================
-   Report Page
+   2. Main Report Page
 ========================================================= */
 
 .report-page {
@@ -29,118 +45,135 @@ body {
   min-height: 297mm;
 
   margin: 16px auto;
-  padding: 18mm 16mm;
+  padding: 14mm 14mm 12mm;
 
   background: #ffffff;
 
-  box-sizing: border-box;
-
-  border: 1px solid #e5e7eb;
+  border: 1px solid #d1d5db;
 
   box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.08),
-    0 4px 12px rgba(0, 0, 0, 0.05);
+    0 2px 4px rgba(0, 0, 0, 0.08),
+    0 8px 24px rgba(0, 0, 0, 0.08);
 }
 
 
 /* =========================================================
-   Report Header
+   3. Report Header
 ========================================================= */
 
 .report-header {
-  border-bottom: 2px solid #1f7a5c;
-  padding-bottom: 12px;
-  margin-bottom: 20px;
+  margin: 0 0 18px;
+  padding: 0 0 12px;
+
+  border-bottom: 2px solid #166534;
 }
 
 .report-header h1 {
-  margin: 0 0 12px 0;
+  margin: 0 0 10px;
 
-  font-size: 24px;
+  color: #14532d;
+
+  font-size: 23px;
+  font-weight: 700;
   line-height: 1.2;
-
-  color: #14523d;
 }
 
 .report-meta {
-  font-size: 13px;
-  line-height: 1.7;
-  color: #374151;
+  color: #1f2937;
+
+  font-size: 12px;
+  line-height: 1.65;
 }
 
 .report-meta div {
-  margin-bottom: 2px;
+  margin: 0;
 }
 
-
-/* =========================================================
-   Sections
-========================================================= */
-
-.summary-section,
-.info-section,
-.plot-section,
-.species-section,
-.note-section {
-  margin-top: 24px;
-}
-
-.summary-section h2,
-.info-section h2,
-.plot-section h2,
-.species-section h2 {
-  margin: 0 0 12px 0;
-  padding-bottom: 6px;
-
-  font-size: 16px;
-  line-height: 1.3;
-
-  color: #14523d;
-
-  border-bottom: 1px solid #d1d5db;
-}
-
-
-/* =========================================================
-   Summary Cards
-========================================================= */
-
-.summary-cards {
-  display: grid;
-
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-
-  gap: 12px;
-}
-
-.summary-card {
-  padding: 12px;
-
-  background: #f9fafb;
-
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-}
-
-.summary-card .label {
-  margin-bottom: 6px;
-
-  font-size: 12px;
-  color: #6b7280;
-}
-
-.summary-card .value {
-  font-size: 20px;
-  line-height: 1.2;
-
-  font-weight: 700;
+.report-meta strong {
+  display: inline-block;
+  min-width: 110px;
 
   color: #111827;
 }
 
 
 /* =========================================================
-   Table Wrapper
+   4. Common Section Settings
+========================================================= */
+
+.summary-section,
+.info-section,
+.assessment-section,
+.plot-section,
+.species-section,
+.note-section {
+  margin-top: 20px;
+}
+
+.summary-section h2,
+.info-section h2,
+.assessment-section h2,
+.plot-section h2,
+.species-section h2 {
+  margin: 0 0 10px;
+  padding: 0 0 6px;
+
+  color: #14532d;
+
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.25;
+
+  border-bottom: 1px solid #cbd5e1;
+}
+
+
+/* =========================================================
+   5. Executive Summary Cards
+========================================================= */
+
+.summary-cards {
+  display: grid;
+
+  grid-template-columns:
+    repeat(2, minmax(0, 1fr));
+
+  gap: 10px;
+}
+
+.summary-card {
+  min-height: 68px;
+
+  padding: 10px 12px;
+
+  background: #f8fafc;
+
+  border: 1px solid #cbd5e1;
+  border-radius: 5px;
+}
+
+.summary-card .label {
+  margin-bottom: 4px;
+
+  color: #64748b;
+
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.summary-card .value {
+  color: #111827;
+
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.2;
+
+  font-variant-numeric: tabular-nums;
+}
+
+
+/* =========================================================
+   6. General Table Settings
 ========================================================= */
 
 .table-wrapper {
@@ -148,100 +181,212 @@ body {
   overflow-x: auto;
 }
 
-
-/* =========================================================
-   General Table Settings
-========================================================= */
-
 .info-table,
+.assessment-table,
 .plot-table,
 .species-table {
   width: 100%;
 
   border-collapse: collapse;
   border-spacing: 0;
+
+  background: #ffffff;
 }
 
 .info-table td,
+.assessment-table th,
+.assessment-table td,
 .plot-table th,
 .plot-table td,
 .species-table th,
 .species-table td {
-  border: 1px solid #d1d5db;
+  border: 1px solid #cbd5e1;
 
-  padding: 8px 10px;
-
-  vertical-align: top;
+  vertical-align: middle;
 }
 
+.assessment-table th,
 .plot-table th,
 .species-table th {
-  background: #f3f4f6;
+  background: #f1f5f9;
 
   color: #111827;
 
   font-weight: 700;
-  text-align: left;
+  text-align: center;
 }
 
 
 /* =========================================================
-   Survey Information Table
+   7. Survey Information
 ========================================================= */
 
+.info-table {
+  table-layout: fixed;
+}
+
 .info-table td {
-  font-size: 13px;
+  padding: 6px 8px;
+
+  font-size: 11.5px;
 }
 
 .info-table td:first-child {
   width: 38%;
 
-  background: #f9fafb;
+  background: #f8fafc;
 
-  color: #374151;
+  color: #1f2937;
+
+  font-weight: 700;
 }
 
 .info-table td:last-child {
   width: 62%;
+
+  color: #111827;
 }
 
 
 /* =========================================================
-   Plot Results Table
+   8. Assessment Summary
 ========================================================= */
+
+.assessment-section {
+  margin-top: 20px;
+}
+
+.assessment-table-block {
+  margin: 0 0 14px;
+}
+
+.assessment-table-block:last-child {
+  margin-bottom: 0;
+}
+
+.assessment-table-block h3 {
+  margin: 0 0 6px;
+
+  color: #111827;
+
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.assessment-table {
+  table-layout: fixed;
+}
+
+.assessment-table th,
+.assessment-table td {
+  padding: 5px 7px;
+
+  font-size: 10.5px;
+  line-height: 1.25;
+}
+
+.assessment-table th:first-child,
+.assessment-table td:first-child {
+  width: 24%;
+
+  text-align: left;
+}
+
+.assessment-table th:not(:first-child),
+.assessment-table td:not(:first-child) {
+  width: 19%;
+
+  text-align: right;
+
+  font-variant-numeric: tabular-nums;
+}
+
+.assessment-table tbody tr:nth-child(even):not(
+  .assessment-total-row
+) {
+  background: #fafafa;
+}
+
+.assessment-total-row {
+  background: #e2e8f0;
+}
+
+.assessment-total-row td {
+  border-top: 2px solid #475569;
+
+  font-weight: 700;
+}
+
+.assessment-table td[colspan] {
+  padding: 12px;
+
+  color: #64748b;
+
+  text-align: center;
+
+  font-style: italic;
+}
+
+
+/* =========================================================
+   9. Plot Results
+========================================================= */
+
+.plot-section {
+  margin-top: 22px;
+}
+
+.plot-table {
+  table-layout: fixed;
+}
 
 .plot-table th,
 .plot-table td {
-  font-size: 13px;
+  padding: 6px 8px;
+
+  font-size: 11px;
 }
 
 .plot-table th:nth-child(1) {
   width: 25%;
+
+  text-align: left;
 }
 
 .plot-table th:nth-child(2) {
   width: 20%;
 }
 
-.plot-table th:nth-child(3) {
+.plot-table th:nth-child(3),
+.plot-table th:nth-child(4) {
   width: 27.5%;
 }
 
-.plot-table th:nth-child(4) {
-  width: 27.5%;
+.plot-table td:first-child {
+  text-align: left;
 }
 
 .plot-table td:nth-child(2),
 .plot-table td:nth-child(3),
 .plot-table td:nth-child(4) {
   text-align: right;
+
   font-variant-numeric: tabular-nums;
+}
+
+.plot-table tbody tr:nth-child(even) {
+  background: #fafafa;
 }
 
 
 /* =========================================================
-   Species Summary Table
+   10. Species Summary
 ========================================================= */
+
+.species-section {
+  margin-top: 20px;
+}
 
 .species-table {
   table-layout: fixed;
@@ -249,12 +394,12 @@ body {
 
 .species-table th,
 .species-table td {
-  padding: 7px 8px;
+  padding: 5px 6px;
 
-  font-size: 10.5px;
+  font-size: 9.5px;
+  line-height: 1.25;
 
   overflow-wrap: anywhere;
-  word-break: normal;
 }
 
 .species-table th:nth-child(1) {
@@ -274,15 +419,15 @@ body {
 }
 
 .species-table th:nth-child(5) {
-  width: 10%;
+  width: 9%;
 }
 
 .species-table th:nth-child(6) {
-  width: 13%;
+  width: 13.5%;
 }
 
 .species-table th:nth-child(7) {
-  width: 13%;
+  width: 13.5%;
 }
 
 .species-table td:nth-child(1) {
@@ -293,40 +438,52 @@ body {
 .species-table td:nth-child(6),
 .species-table td:nth-child(7) {
   text-align: right;
+
   font-variant-numeric: tabular-nums;
+}
+
+.species-table tbody tr:nth-child(even) {
+  background: #fafafa;
 }
 
 
 /* =========================================================
-   Loading / Empty Rows
+   11. Loading / Empty Table Rows
 ========================================================= */
 
+.info-table td[colspan],
 .plot-table td[colspan],
-.species-table td[colspan],
-.info-table td[colspan] {
-  padding: 16px;
+.species-table td[colspan] {
+  padding: 14px;
+
+  color: #64748b;
 
   text-align: center;
 
-  color: #6b7280;
   font-style: italic;
 }
 
 
 /* =========================================================
-   Report Note
+   12. Report Note
 ========================================================= */
+
+.note-section {
+  margin-top: 16px;
+}
 
 .report-note {
   margin: 0;
 
-  font-size: 11px;
-  color: #6b7280;
+  color: #64748b;
+
+  font-size: 10px;
+  line-height: 1.4;
 }
 
 
 /* =========================================================
-   Report Actions
+   13. Buttons
 ========================================================= */
 
 .report-actions {
@@ -335,85 +492,121 @@ body {
 
   gap: 10px;
 
-  margin-top: 24px;
-  padding-top: 16px;
+  margin-top: 20px;
+  padding-top: 14px;
 
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid #d1d5db;
 }
 
 .report-actions button {
-  padding: 10px 16px;
+  min-width: 100px;
 
-  border: none;
-  border-radius: 3px;
+  padding: 9px 15px;
 
-  font-size: 13px;
+  border: 0;
+  border-radius: 4px;
+
+  font-family: inherit;
+  font-size: 12px;
   font-weight: 700;
 
   cursor: pointer;
+
+  transition:
+    background-color 0.15s ease,
+    opacity 0.15s ease;
 }
 
 .primary-button {
-  background: #1f7a5c;
+  background: #15803d;
   color: #ffffff;
 }
 
 .primary-button:hover {
-  background: #14523d;
+  background: #166534;
 }
 
 .secondary-button {
-  background: #6b7280;
+  background: #64748b;
   color: #ffffff;
 }
 
 .secondary-button:hover {
-  background: #4b5563;
+  background: #475569;
+}
+
+.report-actions button:focus-visible {
+  outline: 3px solid rgba(21, 128, 61, 0.25);
+  outline-offset: 2px;
 }
 
 
 /* =========================================================
-   Responsive Display
+   14. Screen Responsive
 ========================================================= */
 
 @media screen and (max-width: 900px) {
 
+  body {
+    font-size: 12px;
+  }
+
   .report-page {
-    width: calc(100% - 24px);
+    width: calc(100% - 20px);
     min-height: auto;
 
-    margin: 12px;
-    padding: 24px 18px;
+    margin: 10px;
+    padding: 20px 14px;
+  }
+
+  .report-header h1 {
+    font-size: 20px;
   }
 
   .summary-cards {
     grid-template-columns: 1fr;
   }
 
-  .report-header h1 {
-    font-size: 21px;
+  .report-meta strong {
+    min-width: 100px;
+  }
+
+  .assessment-table,
+  .species-table {
+    min-width: 680px;
   }
 
 }
 
 
 /* =========================================================
-   Print / PDF
+   15. Print Page Settings
 ========================================================= */
 
 @page {
   size: A4 portrait;
-  margin: 12mm;
+  margin: 8mm;
 }
+
+
+/* =========================================================
+   16. Print / PDF Output
+========================================================= */
 
 @media print {
 
   html,
   body {
+    width: 100%;
+
     margin: 0;
     padding: 0;
 
     background: #ffffff;
+
+    color: #000000;
+
+    font-size: 8.5pt;
 
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
@@ -426,60 +619,245 @@ body {
     margin: 0;
     padding: 0;
 
-    border: none;
+    border: 0;
     box-shadow: none;
   }
 
-  .no-print {
-    display: none !important;
+  .report-header {
+    margin-bottom: 5mm;
+    padding-bottom: 2.5mm;
   }
+
+  .report-header h1 {
+    margin-bottom: 2mm;
+
+    font-size: 16pt;
+  }
+
+  .report-meta {
+    font-size: 8pt;
+    line-height: 1.4;
+  }
+
+  .report-meta strong {
+    min-width: 26mm;
+  }
+
+
+  /* -------------------------------------------------------
+     Compact section spacing
+  ------------------------------------------------------- */
 
   .summary-section,
   .info-section,
-  .plot-section {
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
-
+  .assessment-section,
+  .plot-section,
   .species-section {
-    break-before: auto;
+    margin-top: 4mm;
   }
 
-  .plot-table,
-  .species-table {
+  .summary-section h2,
+  .info-section h2,
+  .assessment-section h2,
+  .plot-section h2,
+  .species-section h2 {
+    margin-bottom: 2mm;
+    padding-bottom: 1mm;
+
+    font-size: 11pt;
+  }
+
+
+  /* -------------------------------------------------------
+     Executive Summary
+  ------------------------------------------------------- */
+
+  .summary-cards {
+    gap: 2mm;
+  }
+
+  .summary-card {
+    min-height: 15mm;
+
+    padding: 2mm 3mm;
+
+    border-radius: 2px;
+  }
+
+  .summary-card .label {
+    margin-bottom: 1mm;
+
+    font-size: 7pt;
+  }
+
+  .summary-card .value {
+    font-size: 12pt;
+  }
+
+
+  /* -------------------------------------------------------
+     Survey Information
+  ------------------------------------------------------- */
+
+  .info-table td {
+    padding: 1.2mm 2mm;
+
+    font-size: 7.5pt;
+    line-height: 1.15;
+  }
+
+
+  /* -------------------------------------------------------
+     Assessment Summary
+  ------------------------------------------------------- */
+
+  .assessment-section {
     break-inside: auto;
     page-break-inside: auto;
   }
 
-  .plot-table tr,
+  .assessment-table-block {
+    margin-bottom: 3mm;
+
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .assessment-table-block h3 {
+    margin-bottom: 1.2mm;
+
+    font-size: 8.5pt;
+  }
+
+  .assessment-table th,
+  .assessment-table td {
+    padding: 1mm 1.5mm;
+
+    font-size: 7.2pt;
+    line-height: 1.1;
+  }
+
+  .assessment-table thead {
+    display: table-header-group;
+  }
+
+  .assessment-table tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+
+  /* -------------------------------------------------------
+     Force report result details onto page 2
+  ------------------------------------------------------- */
+
+  .plot-section {
+    break-before: page;
+    page-break-before: always;
+
+    margin-top: 0;
+  }
+
+
+  /* -------------------------------------------------------
+     Plot Results
+  ------------------------------------------------------- */
+
+  .plot-table th,
+  .plot-table td {
+    padding: 1.5mm 2mm;
+
+    font-size: 7.5pt;
+    line-height: 1.15;
+  }
+
+  .plot-table thead {
+    display: table-header-group;
+  }
+
+  .plot-table tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+
+  /* -------------------------------------------------------
+     Species Summary
+  ------------------------------------------------------- */
+
+  .species-section {
+    margin-top: 4mm;
+
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+  .species-table th,
+  .species-table td {
+    padding: 1.2mm 1.4mm;
+
+    font-size: 6.5pt;
+    line-height: 1.1;
+  }
+
+  .species-table thead {
+    display: table-header-group;
+  }
+
   .species-table tr {
     break-inside: avoid;
     page-break-inside: avoid;
   }
 
-  .plot-table thead,
-  .species-table thead {
-    display: table-header-group;
-  }
 
-  .plot-table tfoot,
-  .species-table tfoot {
-    display: table-footer-group;
-  }
+  /* -------------------------------------------------------
+     Prevent horizontal scrolling in PDF
+  ------------------------------------------------------- */
 
   .table-wrapper {
+    width: 100%;
+
     overflow: visible;
   }
 
-  .species-table th,
-  .species-table td {
-    font-size: 9px;
-    padding: 5px 6px;
+
+  /* -------------------------------------------------------
+     Hide interactive elements and note in PDF
+  ------------------------------------------------------- */
+
+  .no-print,
+  .report-actions,
+  .note-section {
+    display: none !important;
   }
 
-  a {
-    color: inherit;
-    text-decoration: none;
+
+  /* -------------------------------------------------------
+     Preserve table background colors
+  ------------------------------------------------------- */
+
+  .summary-card,
+  .info-table td:first-child,
+  .assessment-table th,
+  .assessment-total-row,
+  .plot-table th,
+  .species-table th {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+
+  /* -------------------------------------------------------
+     Avoid unwanted final blank page
+  ------------------------------------------------------- */
+
+  .species-section,
+  .species-table,
+  .species-table tbody,
+  .species-table tr:last-child,
+  .species-table td {
+    margin-bottom: 0;
+    padding-bottom: 0;
   }
 
 }
