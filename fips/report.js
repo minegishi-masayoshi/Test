@@ -22,11 +22,9 @@ function redirectToLogin() {
   window.location.replace("./index.html");
 }
 
-
 function redirectToSurveyList() {
   window.location.href = "./surveys.html";
 }
-
 
 function redirectToResult() {
   window.location.href = "./result.html";
@@ -34,14 +32,11 @@ function redirectToResult() {
 
 
 /* =========================================================
-   Basic Utilities
+   Utilities
 ========================================================= */
 
 function escapeHtml(value) {
-  if (
-    value === null ||
-    value === undefined
-  ) {
+  if (value === null || value === undefined) {
     return "";
   }
 
@@ -53,11 +48,7 @@ function escapeHtml(value) {
     .replace(/'/g, "&#39;");
 }
 
-
-function safeText(
-  value,
-  fallback = "-"
-) {
+function safeText(value, fallback = "-") {
   if (
     value === null ||
     value === undefined ||
@@ -69,79 +60,81 @@ function safeText(
   return escapeHtml(value);
 }
 
-
-function toNumber(
-  value,
-  fallback = 0
-) {
-  const converted =
-    Number(value);
-
-  return Number.isFinite(converted)
-    ? converted
-    : fallback;
+function toNumber(value, fallback = 0) {
+  const converted = Number(value);
+  return Number.isFinite(converted) ? converted : fallback;
 }
 
+function nullableNumber(value) {
+  if (value === null || value === undefined || value === "") {
+    return null;
+  }
+
+  const converted = Number(value);
+  return Number.isFinite(converted) ? converted : null;
+}
 
 function formatAssessmentNumber(value) {
   return toNumber(value).toFixed(3);
 }
 
-
 function formatPercentage(value) {
   return toNumber(value).toFixed(2);
 }
 
+function formatArea(value) {
+  const number = nullableNumber(value);
+  return number === null ? "-" : number.toFixed(3);
+}
+
+function formatInteger(value) {
+  const number = nullableNumber(value);
+  return number === null ? "-" : String(Math.trunc(number));
+}
 
 function formatDate(value) {
   if (!value) {
     return "-";
   }
 
-  const date =
-    new Date(value);
+  const date = new Date(value);
 
-  if (
-    Number.isNaN(date.getTime())
-  ) {
+  if (Number.isNaN(date.getTime())) {
     return safeText(value);
   }
 
-  return date.toLocaleDateString(
-    "en-GB",
-    {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit"
-    }
-  );
+  return date.toLocaleDateString("en-GB", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  });
 }
 
+function formatDateTime(value = null) {
+  const date = value ? new Date(value) : new Date();
 
-function formatDateTime(
-  value = null
-) {
-  const date = value
-    ? new Date(value)
-    : new Date();
-
-  if (
-    Number.isNaN(date.getTime())
-  ) {
+  if (Number.isNaN(date.getTime())) {
     return "-";
   }
 
-  return date.toLocaleString(
-    "en-GB",
-    {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit"
-    }
-  );
+  return date.toLocaleString("en-GB", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  });
+}
+
+function createCompositePlotKey(row) {
+  return [
+    row.block_no,
+    row.strip_no,
+    row.plot_no
+  ]
+    .map((value) => String(value ?? "").trim())
+    .join("::");
 }
 
 
@@ -150,26 +143,17 @@ function formatDateTime(
 ========================================================= */
 
 function getSurveyId() {
-  const parameters =
-    new URLSearchParams(
-      window.location.search
-    );
+  const parameters = new URLSearchParams(window.location.search);
 
   const querySurveyId =
     parameters.get("survey_id") ||
     parameters.get("survey");
 
   const storedSurveyId =
-    localStorage.getItem(
-      "currentSurveyId"
-    );
+    localStorage.getItem("currentSurveyId");
 
-  const candidate =
-    querySurveyId ||
-    storedSurveyId;
-
-  const surveyId =
-    Number(candidate);
+  const candidate = querySurveyId || storedSurveyId;
+  const surveyId = Number(candidate);
 
   if (
     !candidate ||
@@ -189,17 +173,10 @@ function getSurveyId() {
 
 async function checkAuthentication() {
   try {
-    const {
-      data,
-      error
-    } =
+    const { data, error } =
       await supabaseClient.auth.getSession();
 
-    if (
-      error ||
-      !data ||
-      !data.session
-    ) {
+    if (error || !data || !data.session) {
       redirectToLogin();
       return null;
     }
@@ -207,13 +184,8 @@ async function checkAuthentication() {
     return data.session;
 
   } catch (error) {
-    console.error(
-      "Authentication check failed:",
-      error
-    );
-
+    console.error("Authentication check failed:", error);
     redirectToLogin();
-
     return null;
   }
 }
@@ -223,15 +195,8 @@ async function checkAuthentication() {
    Loading Display
 ========================================================= */
 
-function setTableMessage(
-  elementId,
-  colspan,
-  message
-) {
-  const body =
-    document.getElementById(
-      elementId
-    );
+function setTableMessage(elementId, colspan, message) {
+  const body = document.getElementById(elementId);
 
   if (!body) {
     return;
@@ -239,26 +204,18 @@ function setTableMessage(
 
   body.innerHTML = `
     <tr>
-      <td
-        colspan="${colspan}"
-        class="message-cell"
-      >
+      <td colspan="${colspan}" class="message-cell">
         ${escapeHtml(message)}
       </td>
     </tr>
   `;
 }
 
-
 function setLoadingState() {
-  const reportMeta =
-    document.getElementById(
-      "reportMeta"
-    );
+  const reportMeta = document.getElementById("reportMeta");
 
   if (reportMeta) {
-    reportMeta.textContent =
-      "Loading survey information...";
+    reportMeta.textContent = "Loading survey information...";
   }
 
   setTableMessage(
@@ -291,12 +248,11 @@ function setLoadingState() {
    Supabase Data Loading
 ========================================================= */
 
-async function loadSurvey(
-  surveyId
-) {
+async function loadSurvey(surveyId) {
   const [
     surveyResponse,
-    blockResponse
+    treeResponse,
+    plotTypeResponse
   ] = await Promise.all([
     supabaseClient
       .from("fips_surveys")
@@ -306,15 +262,37 @@ async function loadSurvey(
         survey_name,
         survey_date,
         province,
-        number_of_blocks
+        number_of_blocks,
+        gross_area_ha,
+        adjusted_net_forest_area,
+        plan_id,
+        survey_type,
+        vegetation,
+        slope_min,
+        slope_max,
+        elevation_min,
+        elevation_max
       `)
       .eq("id", surveyId)
       .single(),
 
     supabaseClient
       .from("fips_tree_records")
-      .select("block_no")
-      .eq("survey_id", surveyId)
+      .select(`
+        block_no,
+        strip_no,
+        plot_no,
+        plot_type
+      `)
+      .eq("survey_id", surveyId),
+
+    supabaseClient
+      .from("fips_plot_type_master")
+      .select(`
+        plot_type,
+        main_plot_area_m2,
+        sub_plot_area_m2
+      `)
   ]);
 
   const {
@@ -323,68 +301,124 @@ async function loadSurvey(
   } = surveyResponse;
 
   const {
-    data: blockData,
-    error: blockError
-  } = blockResponse;
+    data: treeData,
+    error: treeError
+  } = treeResponse;
 
-  if (
-    surveyError ||
-    !surveyData
-  ) {
-    console.error(
-      "loadSurvey:",
-      surveyError
-    );
+  const {
+    data: plotTypeData,
+    error: plotTypeError
+  } = plotTypeResponse;
 
-    throw new Error(
-      "Failed to load survey information."
+  if (surveyError || !surveyData) {
+    console.error("loadSurvey:", surveyError);
+    throw new Error("Failed to load survey information.");
+  }
+
+  if (treeError) {
+    console.error("loadSurvey tree records:", treeError);
+    throw new Error("Failed to calculate survey statistics.");
+  }
+
+  if (plotTypeError) {
+    console.warn(
+      "Plot type master could not be loaded. Sample area will be unavailable:",
+      plotTypeError
     );
   }
 
-  if (blockError) {
-    console.error(
-      "loadBlockCount:",
-      blockError
-    );
+  const records = Array.isArray(treeData) ? treeData : [];
 
-    throw new Error(
-      "Failed to calculate the number of blocks."
-    );
-  }
-
-  const blockNumbers =
-    (blockData || [])
-      .map((row) => row.block_no)
-      .filter(
-        (blockNo) =>
-          blockNo !== null &&
-          blockNo !== undefined &&
-          String(blockNo).trim() !== ""
-      )
-      .map(
-        (blockNo) =>
-          String(blockNo).trim()
-      );
+  const blockNumbers = records
+    .map((row) => String(row.block_no ?? "").trim())
+    .filter(Boolean);
 
   const calculatedNumberOfBlocks =
     new Set(blockNumbers).size;
+
+  const uniquePlotsMap = new Map();
+
+  records.forEach((row) => {
+    const key = createCompositePlotKey(row);
+
+    if (
+      key !== "::::" &&
+      !uniquePlotsMap.has(key)
+    ) {
+      uniquePlotsMap.set(key, {
+        block_no: row.block_no,
+        strip_no: row.strip_no,
+        plot_no: row.plot_no,
+        plot_type: row.plot_type
+      });
+    }
+  });
+
+  const uniquePlots = Array.from(uniquePlotsMap.values());
+  const numberOfPlots = uniquePlots.length;
+
+  const plotTypeMap = new Map(
+    (Array.isArray(plotTypeData) ? plotTypeData : [])
+      .map((row) => [
+        String(row.plot_type),
+        {
+          mainPlotAreaM2: toNumber(row.main_plot_area_m2),
+          subPlotAreaM2: toNumber(row.sub_plot_area_m2)
+        }
+      ])
+  );
+
+  let sampleArea50PlusHa = 0;
+  let sampleArea20To49Ha = 0;
+  let sampleAreaCalculationAvailable = uniquePlots.length > 0;
+
+  uniquePlots.forEach((plot) => {
+    const master = plotTypeMap.get(String(plot.plot_type));
+
+    if (!master) {
+      sampleAreaCalculationAvailable = false;
+      return;
+    }
+
+    sampleArea50PlusHa += master.mainPlotAreaM2 / 10000;
+    sampleArea20To49Ha += master.subPlotAreaM2 / 10000;
+  });
+
+  const grossArea = nullableNumber(surveyData.gross_area_ha);
+
+  const samplingIntensity =
+    grossArea !== null &&
+    grossArea > 0 &&
+    sampleAreaCalculationAvailable
+      ? sampleArea50PlusHa / grossArea * 100
+      : null;
 
   return {
     ...surveyData,
 
     number_of_blocks:
-      calculatedNumberOfBlocks
+      calculatedNumberOfBlocks,
+
+    number_of_plots:
+      numberOfPlots,
+
+    sample_area_50_plus_ha:
+      sampleAreaCalculationAvailable
+        ? sampleArea50PlusHa
+        : null,
+
+    sample_area_20_49_ha:
+      sampleAreaCalculationAvailable
+        ? sampleArea20To49Ha
+        : null,
+
+    sampling_intensity_percent:
+      samplingIntensity
   };
 }
 
-
-async function loadAssessmentSummary(
-  surveyId
-) {
-  const {
-    data,
-    error
-  } = await supabaseClient.rpc(
+async function loadAssessmentSummary(surveyId) {
+  const { data, error } = await supabaseClient.rpc(
     "get_assessment_summary_page1",
     {
       p_survey_id: surveyId
@@ -392,29 +426,15 @@ async function loadAssessmentSummary(
   );
 
   if (error) {
-    console.error(
-      "loadAssessmentSummary:",
-      error
-    );
-
-    throw new Error(
-      "Failed to load assessment summary."
-    );
+    console.error("loadAssessmentSummary:", error);
+    throw new Error("Failed to load assessment summary.");
   }
 
-  return Array.isArray(data)
-    ? data
-    : [];
+  return Array.isArray(data) ? data : [];
 }
 
-
-async function loadMajorSpeciesSummary(
-  surveyId
-) {
-  const {
-    data,
-    error
-  } = await supabaseClient.rpc(
+async function loadMajorSpeciesSummary(surveyId) {
+  const { data, error } = await supabaseClient.rpc(
     "get_major_species_summary",
     {
       p_survey_id: surveyId
@@ -422,108 +442,101 @@ async function loadMajorSpeciesSummary(
   );
 
   if (error) {
-    console.error(
-      "loadMajorSpeciesSummary:",
-      error
-    );
-
-    throw new Error(
-      "Failed to load major species summary."
-    );
+    console.error("loadMajorSpeciesSummary:", error);
+    throw new Error("Failed to load major species summary.");
   }
 
-  return Array.isArray(data)
-    ? data
-    : [];
+  return Array.isArray(data) ? data : [];
 }
 
 
 /* =========================================================
-   Report Header
+   Header and Survey Information
 ========================================================= */
 
-function renderReportHeader(
-  survey
-) {
-  const reportTitle =
-    document.getElementById(
-      "reportTitle"
-    );
+function setTextContent(elementId, value) {
+  const element = document.getElementById(elementId);
 
-  const reportMeta =
-    document.getElementById(
-      "reportMeta"
-    );
-
-  const surveyName =
-    survey.survey_name ||
-    "Survey";
-
-  if (reportTitle) {
-    reportTitle.textContent =
-      `FIPS Assessment Summary Report - ${surveyName}`;
+  if (element) {
+    element.textContent = value;
   }
+}
+
+function renderReportHeader(survey) {
+  const reportMeta = document.getElementById("reportMeta");
 
   if (reportMeta) {
     reportMeta.innerHTML = `
       <div>
         <strong>Survey Name:</strong>
-        <span>
-          ${safeText(
-            survey.survey_name
-          )}
-        </span>
+        <span>${safeText(survey.survey_name)}</span>
       </div>
 
       <div>
         <strong>Survey Number:</strong>
-        <span>
-          ${safeText(
-            survey.survey_number
-          )}
-        </span>
-      </div>
-
-      <div>
-        <strong>Survey Date:</strong>
-        <span>
-          ${safeText(
-            formatDate(
-              survey.survey_date
-            )
-          )}
-        </span>
+        <span>${safeText(survey.survey_number)}</span>
       </div>
 
       <div>
         <strong>Province:</strong>
-        <span>
-          ${safeText(
-            survey.province
-          )}
-        </span>
+        <span>${safeText(survey.province)}</span>
       </div>
 
       <div>
         <strong>Number of Blocks:</strong>
-        <span>
-          ${safeText(
-            survey.number_of_blocks,
-            "0"
-          )}
-        </span>
+        <span>${safeText(survey.number_of_blocks, "0")}</span>
       </div>
 
       <div>
         <strong>Exported At:</strong>
-        <span>
-          ${safeText(
-            formatDateTime()
-          )}
-        </span>
+        <span>${safeText(formatDateTime())}</span>
       </div>
     `;
   }
+
+  setTextContent(
+    "grossAreaValue",
+    formatArea(survey.gross_area_ha)
+  );
+
+  setTextContent(
+    "surveyDateValue",
+    formatDate(survey.survey_date)
+  );
+
+  setTextContent(
+    "netAreaValue",
+    formatArea(survey.adjusted_net_forest_area)
+  );
+
+  setTextContent(
+    "fileReferenceValue",
+    survey.plan_id || "-"
+  );
+
+  setTextContent(
+    "sampleArea50Value",
+    formatArea(survey.sample_area_50_plus_ha)
+  );
+
+  setTextContent(
+    "numberOfPlotsValue",
+    formatInteger(survey.number_of_plots)
+  );
+
+  setTextContent(
+    "sampleArea20Value",
+    formatArea(survey.sample_area_20_49_ha)
+  );
+
+  setTextContent(
+    "samplingIntensityValue",
+    survey.sampling_intensity_percent === null
+      ? "N/A"
+      : `${formatPercentage(
+          survey.sampling_intensity_percent
+        )} %`
+  );
 }
 
 
@@ -554,50 +567,35 @@ const ASSESSMENT_FIELDS = {
   ]
 };
 
-
-function calculateAssessmentTotals(
-  rows
-) {
+function calculateAssessmentTotals(rows) {
   const totals = {
     quality_code: 999,
     quality_class: "TOTAL"
   };
 
-  Object
-    .values(ASSESSMENT_FIELDS)
+  Object.values(ASSESSMENT_FIELDS)
     .flat()
-    .forEach(
-      (fieldName) => {
-        totals[fieldName] = 0;
-      }
-    );
+    .forEach((fieldName) => {
+      totals[fieldName] = 0;
+    });
 
   rows.forEach((row) => {
-    Object
-      .values(ASSESSMENT_FIELDS)
+    Object.values(ASSESSMENT_FIELDS)
       .flat()
-      .forEach(
-        (fieldName) => {
-          totals[fieldName] +=
-            toNumber(
-              row[fieldName]
-            );
-        }
-      );
+      .forEach((fieldName) => {
+        totals[fieldName] += toNumber(row[fieldName]);
+      });
   });
 
   return totals;
 }
-
 
 function buildAssessmentTableRows(
   assessmentRows,
   fieldNames
 ) {
   const totalRow =
-    calculateAssessmentTotals(
-      assessmentRows
-    );
+    calculateAssessmentTotals(assessmentRows);
 
   const displayRows = [
     ...assessmentRows,
@@ -607,8 +605,7 @@ function buildAssessmentTableRows(
   return displayRows
     .map((row) => {
       const isTotal =
-        row.quality_class ===
-        "TOTAL";
+        row.quality_class === "TOTAL";
 
       return `
         <tr class="${
@@ -616,14 +613,11 @@ function buildAssessmentTableRows(
             ? "assessment-total-row"
             : ""
         }">
-
           <th scope="row">
             ${
               isTotal
                 ? "TOTAL"
-                : safeText(
-                    row.quality_class
-                  )
+                : safeText(row.quality_class)
             }
           </th>
 
@@ -638,36 +632,23 @@ function buildAssessmentTableRows(
               `
             )
             .join("")}
-
         </tr>
       `;
     })
     .join("");
 }
 
-
-function renderAssessmentSummary(
-  rows
-) {
+function renderAssessmentSummary(rows) {
   const stockingBody =
-    document.getElementById(
-      "stockingAssessmentBody"
-    );
+    document.getElementById("stockingAssessmentBody");
 
   const basalAreaBody =
-    document.getElementById(
-      "basalAreaAssessmentBody"
-    );
+    document.getElementById("basalAreaAssessmentBody");
 
   const volumeBody =
-    document.getElementById(
-      "volumeAssessmentBody"
-    );
+    document.getElementById("volumeAssessmentBody");
 
-  if (
-    !Array.isArray(rows) ||
-    rows.length === 0
-  ) {
+  if (!Array.isArray(rows) || rows.length === 0) {
     [
       stockingBody,
       basalAreaBody,
@@ -676,10 +657,7 @@ function renderAssessmentSummary(
       if (body) {
         body.innerHTML = `
           <tr>
-            <td
-              colspan="5"
-              class="message-cell"
-            >
+            <td colspan="5" class="message-cell">
               No assessment summary data found.
             </td>
           </tr>
@@ -690,16 +668,10 @@ function renderAssessmentSummary(
     return;
   }
 
-  const orderedRows = [
-    ...rows
-  ].sort(
+  const orderedRows = [...rows].sort(
     (first, second) =>
-      toNumber(
-        first.quality_code
-      ) -
-      toNumber(
-        second.quality_code
-      )
+      toNumber(first.quality_code) -
+      toNumber(second.quality_code)
   );
 
   if (stockingBody) {
@@ -732,22 +704,15 @@ function renderAssessmentSummary(
    Major Species Summary
 ========================================================= */
 
-function renderMajorSpeciesSummary(
-  rows
-) {
+function renderMajorSpeciesSummary(rows) {
   const majorSpeciesBody =
-    document.getElementById(
-      "majorSpeciesBody"
-    );
+    document.getElementById("majorSpeciesBody");
 
   if (!majorSpeciesBody) {
     return;
   }
 
-  if (
-    !Array.isArray(rows) ||
-    rows.length === 0
-  ) {
+  if (!Array.isArray(rows) || rows.length === 0) {
     setTableMessage(
       "majorSpeciesBody",
       6,
@@ -757,53 +722,46 @@ function renderMajorSpeciesSummary(
     return;
   }
 
-  majorSpeciesBody.innerHTML =
-    rows
-      .map(
-        (row) => `
-          <tr>
+  majorSpeciesBody.innerHTML = rows
+    .map(
+      (row) => `
+        <tr>
+          <td>
+            ${safeText(
+              row.species_name,
+              "Unknown species"
+            )}
+          </td>
 
-            <td>
-              ${safeText(
-                row.species_name,
-                "Unknown species"
-              )}
-            </td>
+          <td>${safeText(row.species_code)}</td>
 
-            <td>
-              ${safeText(
-                row.species_code
-              )}
-            </td>
+          <td>
+            ${formatAssessmentNumber(
+              row.volume_10_19
+            )}
+          </td>
 
-            <td>
-              ${formatAssessmentNumber(
-                row.volume_10_19
-              )}
-            </td>
+          <td>
+            ${formatAssessmentNumber(
+              row.volume_20_49
+            )}
+          </td>
 
-            <td>
-              ${formatAssessmentNumber(
-                row.volume_20_49
-              )}
-            </td>
+          <td>
+            ${formatAssessmentNumber(
+              row.volume_50_plus
+            )}
+          </td>
 
-            <td>
-              ${formatAssessmentNumber(
-                row.volume_50_plus
-              )}
-            </td>
-
-            <td>
-              ${formatPercentage(
-                row.percentage_of_total
-              )}
-            </td>
-
-          </tr>
-        `
-      )
-      .join("");
+          <td>
+            ${formatPercentage(
+              row.percentage_of_total
+            )}
+          </td>
+        </tr>
+      `
+    )
+    .join("");
 }
 
 
@@ -811,9 +769,7 @@ function renderMajorSpeciesSummary(
    Error Rendering
 ========================================================= */
 
-function renderAssessmentError(
-  message
-) {
+function renderAssessmentError(message) {
   [
     "stockingAssessmentBody",
     "basalAreaAssessmentBody",
@@ -828,10 +784,7 @@ function renderAssessmentError(
   });
 }
 
-
-function renderMajorSpeciesError(
-  message
-) {
+function renderMajorSpeciesError(message) {
   setTableMessage(
     "majorSpeciesBody",
     6,
@@ -847,9 +800,7 @@ function renderMajorSpeciesError(
 
 function attachButtonEvents() {
   const backButton =
-    document.getElementById(
-      "backToResultBtn"
-    );
+    document.getElementById("backToResultBtn");
 
   if (backButton) {
     backButton.addEventListener(
@@ -865,8 +816,7 @@ function attachButtonEvents() {
 ========================================================= */
 
 async function initializeReport() {
-  const session =
-    await checkAuthentication();
+  const session = await checkAuthentication();
 
   if (!session) {
     return;
@@ -874,8 +824,7 @@ async function initializeReport() {
 
   setLoadingState();
 
-  const surveyId =
-    getSurveyId();
+  const surveyId = getSurveyId();
 
   if (!surveyId) {
     window.alert(
@@ -883,7 +832,6 @@ async function initializeReport() {
     );
 
     redirectToSurveyList();
-
     return;
   }
 
@@ -897,38 +845,22 @@ async function initializeReport() {
       surveyResult,
       assessmentResult,
       majorSpeciesResult
-    ] =
-      await Promise.allSettled([
-        loadSurvey(surveyId),
+    ] = await Promise.allSettled([
+      loadSurvey(surveyId),
+      loadAssessmentSummary(surveyId),
+      loadMajorSpeciesSummary(surveyId)
+    ]);
 
-        loadAssessmentSummary(
-          surveyId
-        ),
-
-        loadMajorSpeciesSummary(
-          surveyId
-        )
-      ]);
-
-    if (
-      surveyResult.status ===
-      "rejected"
-    ) {
+    if (surveyResult.status === "rejected") {
       throw surveyResult.reason;
     }
 
-    renderReportHeader(
-      surveyResult.value
-    );
+    renderReportHeader(surveyResult.value);
 
-    if (
-      assessmentResult.status ===
-      "fulfilled"
-    ) {
+    if (assessmentResult.status === "fulfilled") {
       renderAssessmentSummary(
         assessmentResult.value
       );
-
     } else {
       console.error(
         "Assessment Summary:",
@@ -936,20 +868,14 @@ async function initializeReport() {
       );
 
       renderAssessmentError(
-        assessmentResult
-          .reason
-          ?.message
+        assessmentResult.reason?.message
       );
     }
 
-    if (
-      majorSpeciesResult.status ===
-      "fulfilled"
-    ) {
+    if (majorSpeciesResult.status === "fulfilled") {
       renderMajorSpeciesSummary(
         majorSpeciesResult.value
       );
-
     } else {
       console.error(
         "Major Species Summary:",
@@ -957,9 +883,7 @@ async function initializeReport() {
       );
 
       renderMajorSpeciesError(
-        majorSpeciesResult
-          .reason
-          ?.message
+        majorSpeciesResult.reason?.message
       );
     }
 
