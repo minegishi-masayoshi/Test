@@ -8,27 +8,31 @@ import {
    Supabase Client
 ========================================================= */
 
-const supabase = window.supabase.createClient(
+const supabaseClient = window.supabase.createClient(
   SUPABASE_URL,
   SUPABASE_ANON_KEY
 );
 
 
 /* =========================================================
-   Navigation / Error Handling
+   Navigation
 ========================================================= */
 
-function redirectToPortal() {
+function redirectToLogin() {
   window.location.replace("./index.html");
 }
 
-function showGenericError(message) {
-  alert(message);
+function redirectToSurveyList() {
+  window.location.href = "./surveys.html";
+}
+
+function redirectToResult() {
+  window.location.href = "./result.html";
 }
 
 
 /* =========================================================
-   Security / Formatting Utilities
+   General Utilities
 ========================================================= */
 
 function escapeHtml(value) {
@@ -44,6 +48,7 @@ function escapeHtml(value) {
     .replace(/'/g, "&#39;");
 }
 
+
 function safeText(value, fallback = "-") {
   if (
     value === null ||
@@ -56,15 +61,27 @@ function safeText(value, fallback = "-") {
   return escapeHtml(value);
 }
 
-function formatNumber(value, digits = 4) {
-  const numberValue = Number(value);
 
-  if (!Number.isFinite(numberValue)) {
-    return Number(0).toFixed(digits);
+function toNumber(value, fallback = 0) {
+  const converted = Number(value);
+
+  if (!Number.isFinite(converted)) {
+    return fallback;
   }
 
-  return numberValue.toFixed(digits);
+  return converted;
 }
+
+
+function formatNumber(value, digits = 4) {
+  return toNumber(value, 0).toFixed(digits);
+}
+
+
+function formatAssessmentNumber(value) {
+  return toNumber(value, 0).toFixed(3);
+}
+
 
 function formatDate(value) {
   if (!value) {
@@ -74,13 +91,18 @@ function formatDate(value) {
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
-    return String(value);
+    return safeText(value);
   }
 
-  return date.toLocaleDateString("en-CA");
+  return date.toLocaleDateString("en-GB", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  });
 }
 
-function formatDateTime(value) {
+
+function formatDateTime(value = null) {
   const date = value
     ? new Date(value)
     : new Date();
@@ -101,27 +123,66 @@ function formatDateTime(value) {
 
 
 /* =========================================================
+   Survey ID Resolution
+========================================================= */
+
+function getSurveyId() {
+  const urlParameters =
+    new URLSearchParams(window.location.search);
+
+  const urlSurveyId =
+    urlParameters.get("survey_id") ||
+    urlParameters.get("survey");
+
+  const storedSurveyId =
+    localStorage.getItem("currentSurveyId");
+
+  const candidate =
+    urlSurveyId || storedSurveyId;
+
+  const surveyId = Number(candidate);
+
+  if (
+    !candidate ||
+    !Number.isInteger(surveyId) ||
+    surveyId <= 0
+  ) {
+    return null;
+  }
+
+  return surveyId;
+}
+
+
+/* =========================================================
    Authentication
 ========================================================= */
 
-async function checkLogin() {
+async function checkAuthentication() {
   try {
-    const { data, error } =
-      await supabase.auth.getSession();
+    const {
+      data,
+      error
+    } = await supabaseClient.auth.getSession();
 
     if (
       error ||
       !data ||
       !data.session
     ) {
-      redirectToPortal();
+      redirectToLogin();
       return null;
     }
 
     return data.session;
 
-  } catch (_error) {
-    redirectToPortal();
+  } catch (error) {
+    console.error(
+      "Authentication check failed:",
+      error
+    );
+
+    redirectToLogin();
     return null;
   }
 }
@@ -131,7 +192,7 @@ async function checkLogin() {
    Loading State
 ========================================================= */
 
-function showReportLoadingState() {
+function setLoadingState() {
   const reportMeta =
     document.getElementById("reportMeta");
 
@@ -141,11 +202,28 @@ function showReportLoadingState() {
   const surveyInfoBody =
     document.getElementById("surveyInfoBody");
 
+  const stockingBody =
+    document.getElementById(
+      "stockingAssessmentBody"
+    );
+
+  const basalAreaBody =
+    document.getElementById(
+      "basalAreaAssessmentBody"
+    );
+
+  const volumeBody =
+    document.getElementById(
+      "volumeAssessmentBody"
+    );
+
   const plotResultsBody =
     document.getElementById("plotResultsBody");
 
   const speciesSummaryBody =
-    document.getElementById("speciesSummaryBody");
+    document.getElementById(
+      "speciesSummaryBody"
+    );
 
   if (reportMeta) {
     reportMeta.textContent =
@@ -166,6 +244,36 @@ function showReportLoadingState() {
       <tr>
         <td colspan="2">
           Loading survey information...
+        </td>
+      </tr>
+    `;
+  }
+
+  if (stockingBody) {
+    stockingBody.innerHTML = `
+      <tr>
+        <td colspan="5">
+          Loading stocking assessment...
+        </td>
+      </tr>
+    `;
+  }
+
+  if (basalAreaBody) {
+    basalAreaBody.innerHTML = `
+      <tr>
+        <td colspan="5">
+          Loading basal area assessment...
+        </td>
+      </tr>
+    `;
+  }
+
+  if (volumeBody) {
+    volumeBody.innerHTML = `
+      <tr>
+        <td colspan="5">
+          Loading volume assessment...
         </td>
       </tr>
     `;
@@ -194,11 +302,14 @@ function showReportLoadingState() {
 
 
 /* =========================================================
-   Data Loading
+   Supabase Data Loading
 ========================================================= */
 
 async function loadSurvey(surveyId) {
-  const { data, error } = await supabase
+  const {
+    data,
+    error
+  } = await supabaseClient
     .from("fips_surveys")
     .select(`
       id,
@@ -217,7 +328,7 @@ async function loadSurvey(surveyId) {
       elevation_max,
       plan_id
     `)
-    .eq("id", Number(surveyId))
+    .eq("id", surveyId)
     .single();
 
   if (error || !data) {
@@ -227,15 +338,19 @@ async function loadSurvey(surveyId) {
     );
 
     throw new Error(
-      "Failed to load survey."
+      "Failed to load survey information."
     );
   }
 
   return data;
 }
 
-async function loadSummary(surveyId) {
-  const { data, error } = await supabase
+
+async function loadSurveySummary(surveyId) {
+  const {
+    data,
+    error
+  } = await supabaseClient
     .from("fips_survey_results")
     .select(`
       survey_id,
@@ -245,10 +360,7 @@ async function loadSummary(surveyId) {
       total_volume_m3,
       calculated_at
     `)
-    .eq(
-      "survey_id",
-      Number(surveyId)
-    )
+    .eq("survey_id", surveyId)
     .order(
       "calculated_at",
       { ascending: false }
@@ -258,7 +370,7 @@ async function loadSummary(surveyId) {
 
   if (error) {
     console.error(
-      "loadSummary error:",
+      "loadSurveySummary error:",
       error
     );
 
@@ -269,15 +381,19 @@ async function loadSummary(surveyId) {
 
   if (!data) {
     throw new Error(
-      "No processed summary found."
+      "No processed survey summary was found."
     );
   }
 
   return data;
 }
 
+
 async function loadPlotResults(surveyId) {
-  const { data, error } = await supabase
+  const {
+    data,
+    error
+  } = await supabaseClient
     .from("fips_plot_results")
     .select(`
       plot_no,
@@ -285,10 +401,7 @@ async function loadPlotResults(surveyId) {
       basal_area_m2,
       volume_m3
     `)
-    .eq(
-      "survey_id",
-      Number(surveyId)
-    )
+    .eq("survey_id", surveyId)
     .order(
       "plot_no",
       { ascending: true }
@@ -305,26 +418,22 @@ async function loadPlotResults(surveyId) {
     );
   }
 
-  if (
-    !Array.isArray(data) ||
-    data.length === 0
-  ) {
-    throw new Error(
-      "No plot results found."
-    );
-  }
-
-  return data;
+  return Array.isArray(data)
+    ? data
+    : [];
 }
 
+
 async function loadSpeciesSummary(surveyId) {
-  const { data, error } = await supabase
-    .rpc(
-      "get_species_summary",
-      {
-        p_survey_id: Number(surveyId)
-      }
-    );
+  const {
+    data,
+    error
+  } = await supabaseClient.rpc(
+    "get_species_summary",
+    {
+      p_survey_id: surveyId
+    }
+  );
 
   if (error) {
     console.error(
@@ -337,11 +446,37 @@ async function loadSpeciesSummary(surveyId) {
     );
   }
 
-  if (!Array.isArray(data)) {
-    return [];
+  return Array.isArray(data)
+    ? data
+    : [];
+}
+
+
+async function loadAssessmentSummary(surveyId) {
+  const {
+    data,
+    error
+  } = await supabaseClient.rpc(
+    "get_assessment_summary_page1",
+    {
+      p_survey_id: surveyId
+    }
+  );
+
+  if (error) {
+    console.error(
+      "loadAssessmentSummary error:",
+      error
+    );
+
+    throw new Error(
+      "Failed to load assessment summary."
+    );
   }
 
-  return data;
+  return Array.isArray(data)
+    ? data
+    : [];
 }
 
 
@@ -349,65 +484,51 @@ async function loadSpeciesSummary(surveyId) {
    Report Header
 ========================================================= */
 
-function setReportTitle(survey) {
-  const titleElement =
+function renderReportHeader(survey) {
+  const reportTitle =
     document.getElementById("reportTitle");
 
-  if (!titleElement) {
-    return;
-  }
-
-  const surveyName =
-    survey &&
-    survey.survey_name
-      ? String(survey.survey_name)
-      : "Survey";
-
-  titleElement.textContent =
-    `FIPS Survey Summary Report - ${surveyName}`;
-}
-
-function renderMeta(survey) {
   const reportMeta =
     document.getElementById("reportMeta");
 
-  if (!reportMeta) {
-    return;
+  const surveyName =
+    survey.survey_name || "Survey";
+
+  if (reportTitle) {
+    reportTitle.textContent =
+      `FIPS Survey Summary Report - ${surveyName}`;
   }
 
-  const exportedAt =
-    formatDateTime(
-      new Date().toISOString()
-    );
+  if (reportMeta) {
+    reportMeta.innerHTML = `
+      <div>
+        <strong>Survey Name:</strong>
+        ${safeText(survey.survey_name)}
+      </div>
 
-  reportMeta.innerHTML = `
-    <div>
-      <strong>Survey Name:</strong>
-      ${safeText(survey.survey_name)}
-    </div>
+      <div>
+        <strong>Survey Number:</strong>
+        ${safeText(survey.survey_number)}
+      </div>
 
-    <div>
-      <strong>Survey Number:</strong>
-      ${safeText(survey.survey_number)}
-    </div>
+      <div>
+        <strong>Survey Date:</strong>
+        ${safeText(
+          formatDate(survey.survey_date)
+        )}
+      </div>
 
-    <div>
-      <strong>Survey Date:</strong>
-      ${safeText(
-        formatDate(survey.survey_date)
-      )}
-    </div>
+      <div>
+        <strong>Province:</strong>
+        ${safeText(survey.province)}
+      </div>
 
-    <div>
-      <strong>Province:</strong>
-      ${safeText(survey.province)}
-    </div>
-
-    <div>
-      <strong>Exported At:</strong>
-      ${safeText(exportedAt)}
-    </div>
-  `;
+      <div>
+        <strong>Exported At:</strong>
+        ${safeText(formatDateTime())}
+      </div>
+    `;
+  }
 }
 
 
@@ -415,7 +536,7 @@ function renderMeta(survey) {
    Executive Summary
 ========================================================= */
 
-function renderSummary(summary) {
+function renderExecutiveSummary(summary) {
   const summaryCards =
     document.getElementById("summaryCards");
 
@@ -457,7 +578,8 @@ function renderSummary(summary) {
 
       <div class="value">
         ${formatNumber(
-          summary.total_basal_area_m2
+          summary.total_basal_area_m2,
+          4
         )}
       </div>
     </div>
@@ -469,7 +591,8 @@ function renderSummary(summary) {
 
       <div class="value">
         ${formatNumber(
-          summary.total_volume_m3
+          summary.total_volume_m3,
+          4
         )}
       </div>
     </div>
@@ -481,7 +604,7 @@ function renderSummary(summary) {
    Survey Information
 ========================================================= */
 
-function renderSurveyInfo(survey) {
+function renderSurveyInformation(survey) {
   const surveyInfoBody =
     document.getElementById("surveyInfoBody");
 
@@ -489,7 +612,7 @@ function renderSurveyInfo(survey) {
     return;
   }
 
-  const infoRows = [
+  const rows = [
     [
       "Survey Type",
       survey.survey_type
@@ -532,24 +655,275 @@ function renderSurveyInfo(survey) {
     ]
   ];
 
-  surveyInfoBody.innerHTML =
-    infoRows
-      .map(
-        ([label, value]) => `
-          <tr>
-            <td>
-              <strong>
-                ${escapeHtml(label)}
-              </strong>
-            </td>
+  surveyInfoBody.innerHTML = rows
+    .map(
+      ([label, value]) => `
+        <tr>
+          <td>
+            <strong>
+              ${escapeHtml(label)}
+            </strong>
+          </td>
 
-            <td>
-              ${safeText(value)}
-            </td>
-          </tr>
-        `
-      )
-      .join("");
+          <td>
+            ${safeText(value)}
+          </td>
+        </tr>
+      `
+    )
+    .join("");
+}
+
+
+/* =========================================================
+   Assessment Summary Totals
+========================================================= */
+
+function calculateAssessmentTotals(rows) {
+  const total = {
+    quality_class: "TOTAL",
+
+    stocking_10_19: 0,
+    stocking_20_49: 0,
+    stocking_50_plus: 0,
+    stocking_10_plus: 0,
+
+    basal_area_10_19: 0,
+    basal_area_20_49: 0,
+    basal_area_50_plus: 0,
+    basal_area_10_plus: 0,
+
+    volume_10_19: 0,
+    volume_20_49: 0,
+    volume_50_plus: 0,
+    volume_10_plus: 0
+  };
+
+  rows.forEach((row) => {
+    total.stocking_10_19 +=
+      toNumber(row.stocking_10_19);
+
+    total.stocking_20_49 +=
+      toNumber(row.stocking_20_49);
+
+    total.stocking_50_plus +=
+      toNumber(row.stocking_50_plus);
+
+    total.stocking_10_plus +=
+      toNumber(row.stocking_10_plus);
+
+    total.basal_area_10_19 +=
+      toNumber(row.basal_area_10_19);
+
+    total.basal_area_20_49 +=
+      toNumber(row.basal_area_20_49);
+
+    total.basal_area_50_plus +=
+      toNumber(row.basal_area_50_plus);
+
+    total.basal_area_10_plus +=
+      toNumber(row.basal_area_10_plus);
+
+    total.volume_10_19 +=
+      toNumber(row.volume_10_19);
+
+    total.volume_20_49 +=
+      toNumber(row.volume_20_49);
+
+    total.volume_50_plus +=
+      toNumber(row.volume_50_plus);
+
+    total.volume_10_plus +=
+      toNumber(row.volume_10_plus);
+  });
+
+  return total;
+}
+
+
+/* =========================================================
+   Assessment Table Rendering
+========================================================= */
+
+function createAssessmentRows(
+  assessmentRows,
+  fieldNames
+) {
+  const total =
+    calculateAssessmentTotals(
+      assessmentRows
+    );
+
+  const displayRows = [
+    ...assessmentRows,
+    total
+  ];
+
+  return displayRows
+    .map((row) => {
+      const isTotal =
+        row.quality_class === "TOTAL";
+
+      return `
+        <tr class="${
+          isTotal
+            ? "assessment-total-row"
+            : ""
+        }">
+          <td>
+            ${
+              isTotal
+                ? "<strong>TOTAL</strong>"
+                : safeText(
+                    row.quality_class
+                  )
+            }
+          </td>
+
+          <td>
+            ${
+              isTotal
+                ? `<strong>${formatAssessmentNumber(
+                    row[fieldNames[0]]
+                  )}</strong>`
+                : formatAssessmentNumber(
+                    row[fieldNames[0]]
+                  )
+            }
+          </td>
+
+          <td>
+            ${
+              isTotal
+                ? `<strong>${formatAssessmentNumber(
+                    row[fieldNames[1]]
+                  )}</strong>`
+                : formatAssessmentNumber(
+                    row[fieldNames[1]]
+                  )
+            }
+          </td>
+
+          <td>
+            ${
+              isTotal
+                ? `<strong>${formatAssessmentNumber(
+                    row[fieldNames[2]]
+                  )}</strong>`
+                : formatAssessmentNumber(
+                    row[fieldNames[2]]
+                  )
+            }
+          </td>
+
+          <td>
+            ${
+              isTotal
+                ? `<strong>${formatAssessmentNumber(
+                    row[fieldNames[3]]
+                  )}</strong>`
+                : formatAssessmentNumber(
+                    row[fieldNames[3]]
+                  )
+            }
+          </td>
+        </tr>
+      `;
+    })
+    .join("");
+}
+
+
+function renderAssessmentSummary(
+  assessmentRows
+) {
+  const stockingBody =
+    document.getElementById(
+      "stockingAssessmentBody"
+    );
+
+  const basalAreaBody =
+    document.getElementById(
+      "basalAreaAssessmentBody"
+    );
+
+  const volumeBody =
+    document.getElementById(
+      "volumeAssessmentBody"
+    );
+
+  if (
+    !Array.isArray(assessmentRows) ||
+    assessmentRows.length === 0
+  ) {
+    const emptyRow = `
+      <tr>
+        <td colspan="5">
+          No assessment summary data found.
+        </td>
+      </tr>
+    `;
+
+    if (stockingBody) {
+      stockingBody.innerHTML = emptyRow;
+    }
+
+    if (basalAreaBody) {
+      basalAreaBody.innerHTML = emptyRow;
+    }
+
+    if (volumeBody) {
+      volumeBody.innerHTML = emptyRow;
+    }
+
+    return;
+  }
+
+  const orderedRows = [...assessmentRows]
+    .sort(
+      (first, second) =>
+        toNumber(first.quality_code) -
+        toNumber(second.quality_code)
+    );
+
+  if (stockingBody) {
+    stockingBody.innerHTML =
+      createAssessmentRows(
+        orderedRows,
+        [
+          "stocking_10_19",
+          "stocking_20_49",
+          "stocking_50_plus",
+          "stocking_10_plus"
+        ]
+      );
+  }
+
+  if (basalAreaBody) {
+    basalAreaBody.innerHTML =
+      createAssessmentRows(
+        orderedRows,
+        [
+          "basal_area_10_19",
+          "basal_area_20_49",
+          "basal_area_50_plus",
+          "basal_area_10_plus"
+        ]
+      );
+  }
+
+  if (volumeBody) {
+    volumeBody.innerHTML =
+      createAssessmentRows(
+        orderedRows,
+        [
+          "volume_10_19",
+          "volume_20_49",
+          "volume_50_plus",
+          "volume_10_plus"
+        ]
+      );
+  }
 }
 
 
@@ -557,7 +931,7 @@ function renderSurveyInfo(survey) {
    Plot Results
 ========================================================= */
 
-function renderPlotResults(plotResults) {
+function renderPlotResults(plotRows) {
   const plotResultsBody =
     document.getElementById(
       "plotResultsBody"
@@ -568,8 +942,8 @@ function renderPlotResults(plotResults) {
   }
 
   if (
-    !Array.isArray(plotResults) ||
-    plotResults.length === 0
+    !Array.isArray(plotRows) ||
+    plotRows.length === 0
   ) {
     plotResultsBody.innerHTML = `
       <tr>
@@ -582,37 +956,38 @@ function renderPlotResults(plotResults) {
     return;
   }
 
-  plotResultsBody.innerHTML =
-    plotResults
-      .map(
-        (row) => `
-          <tr>
-            <td>
-              ${safeText(row.plot_no)}
-            </td>
+  plotResultsBody.innerHTML = plotRows
+    .map(
+      (row) => `
+        <tr>
+          <td>
+            ${safeText(row.plot_no)}
+          </td>
 
-            <td>
-              ${safeText(
-                row.tree_count ?? 0,
-                "0"
-              )}
-            </td>
+          <td>
+            ${safeText(
+              row.tree_count ?? 0,
+              "0"
+            )}
+          </td>
 
-            <td>
-              ${formatNumber(
-                row.basal_area_m2
-              )}
-            </td>
+          <td>
+            ${formatNumber(
+              row.basal_area_m2,
+              4
+            )}
+          </td>
 
-            <td>
-              ${formatNumber(
-                row.volume_m3
-              )}
-            </td>
-          </tr>
-        `
-      )
-      .join("");
+          <td>
+            ${formatNumber(
+              row.volume_m3,
+              4
+            )}
+          </td>
+        </tr>
+      `
+    )
+    .join("");
 }
 
 
@@ -620,9 +995,7 @@ function renderPlotResults(plotResults) {
    Species Summary
 ========================================================= */
 
-function renderSpeciesSummary(
-  speciesSummary
-) {
+function renderSpeciesSummary(speciesRows) {
   const speciesSummaryBody =
     document.getElementById(
       "speciesSummaryBody"
@@ -633,8 +1006,8 @@ function renderSpeciesSummary(
   }
 
   if (
-    !Array.isArray(speciesSummary) ||
-    speciesSummary.length === 0
+    !Array.isArray(speciesRows) ||
+    speciesRows.length === 0
   ) {
     speciesSummaryBody.innerHTML = `
       <tr>
@@ -648,7 +1021,7 @@ function renderSpeciesSummary(
   }
 
   speciesSummaryBody.innerHTML =
-    speciesSummary
+    speciesRows
       .map(
         (row) => `
           <tr>
@@ -686,13 +1059,15 @@ function renderSpeciesSummary(
 
             <td>
               ${formatNumber(
-                row.basal_area_m2
+                row.basal_area_m2,
+                4
               )}
             </td>
 
             <td>
               ${formatNumber(
-                row.volume_m3
+                row.volume_m3,
+                4
               )}
             </td>
           </tr>
@@ -703,64 +1078,67 @@ function renderSpeciesSummary(
 
 
 /* =========================================================
-   Validation of Report Totals
+   Cross-check Totals
 ========================================================= */
 
-function validateSpeciesTotals(
-  summary,
-  speciesSummary
+function validateReportTotals(
+  surveySummary,
+  speciesRows
 ) {
   if (
-    !summary ||
-    !Array.isArray(speciesSummary)
+    !surveySummary ||
+    !Array.isArray(speciesRows)
   ) {
     return;
   }
 
   const speciesTreeTotal =
-    speciesSummary.reduce(
-      (total, row) =>
-        total +
-        Number(row.tree_count || 0),
+    speciesRows.reduce(
+      (sum, row) =>
+        sum +
+        toNumber(row.tree_count),
       0
     );
 
-  const speciesBasalAreaTotal =
-    speciesSummary.reduce(
-      (total, row) =>
-        total +
-        Number(row.basal_area_m2 || 0),
+  const speciesBasalTotal =
+    speciesRows.reduce(
+      (sum, row) =>
+        sum +
+        toNumber(row.basal_area_m2),
       0
     );
 
   const speciesVolumeTotal =
-    speciesSummary.reduce(
-      (total, row) =>
-        total +
-        Number(row.volume_m3 || 0),
+    speciesRows.reduce(
+      (sum, row) =>
+        sum +
+        toNumber(row.volume_m3),
       0
     );
 
   const surveyTreeTotal =
-    Number(summary.total_trees || 0);
+    toNumber(
+      surveySummary.total_trees
+    );
 
-  const surveyBasalAreaTotal =
-    Number(
-      summary.total_basal_area_m2 || 0
+  const surveyBasalTotal =
+    toNumber(
+      surveySummary.total_basal_area_m2
     );
 
   const surveyVolumeTotal =
-    Number(
-      summary.total_volume_m3 || 0
+    toNumber(
+      surveySummary.total_volume_m3
     );
 
   const tolerance = 0.00001;
 
   if (
-    speciesTreeTotal !== surveyTreeTotal ||
+    speciesTreeTotal !==
+      surveyTreeTotal ||
     Math.abs(
-      speciesBasalAreaTotal -
-      surveyBasalAreaTotal
+      speciesBasalTotal -
+      surveyBasalTotal
     ) > tolerance ||
     Math.abs(
       speciesVolumeTotal -
@@ -768,20 +1146,23 @@ function validateSpeciesTotals(
     ) > tolerance
   ) {
     console.warn(
-      "Species summary totals do not match survey totals.",
+      "Report totals mismatch.",
       {
-        survey: {
-          trees: surveyTreeTotal,
-          basalArea:
-            surveyBasalAreaTotal,
-          volume:
+        surveySummary: {
+          treeTotal:
+            surveyTreeTotal,
+          basalAreaTotal:
+            surveyBasalTotal,
+          volumeTotal:
             surveyVolumeTotal
         },
-        species: {
-          trees: speciesTreeTotal,
-          basalArea:
-            speciesBasalAreaTotal,
-          volume:
+
+        speciesSummary: {
+          treeTotal:
+            speciesTreeTotal,
+          basalAreaTotal:
+            speciesBasalTotal,
+          volumeTotal:
             speciesVolumeTotal
         }
       }
@@ -791,48 +1172,37 @@ function validateSpeciesTotals(
 
 
 /* =========================================================
-   Buttons
+   Error Rendering
 ========================================================= */
 
-function attachActions() {
-  const printReportBtn =
-    document.getElementById(
-      "printReportBtn"
-    );
+function renderAssessmentError(message) {
+  const elementIds = [
+    "stockingAssessmentBody",
+    "basalAreaAssessmentBody",
+    "volumeAssessmentBody"
+  ];
 
-  const backToResultBtn =
-    document.getElementById(
-      "backToResultBtn"
-    );
+  elementIds.forEach((elementId) => {
+    const element =
+      document.getElementById(elementId);
 
-  if (printReportBtn) {
-    printReportBtn.addEventListener(
-      "click",
-      () => {
-        window.print();
-      }
-    );
-  }
-
-  if (backToResultBtn) {
-    backToResultBtn.addEventListener(
-      "click",
-      () => {
-        window.location.href =
-          "./result.html";
-      }
-    );
-  }
+    if (element) {
+      element.innerHTML = `
+        <tr>
+          <td colspan="5">
+            ${safeText(
+              message,
+              "Failed to load assessment summary."
+            )}
+          </td>
+        </tr>
+      `;
+    }
+  });
 }
 
 
-/* =========================================================
-   Species Error Display
-========================================================= */
-
-function renderSpeciesLoadError(
-  message
-) {
+function renderSpeciesError(message) {
   const speciesSummaryBody =
     document.getElementById(
       "speciesSummaryBody"
@@ -856,136 +1226,170 @@ function renderSpeciesLoadError(
 
 
 /* =========================================================
-   Report Initialization
+   Buttons
 ========================================================= */
 
-async function initReport() {
-  const session = await checkLogin();
+function attachButtonEvents() {
+  const printButton =
+    document.getElementById(
+      "printReportBtn"
+    );
 
-  if (!session) {
-    return;
+  const backButton =
+    document.getElementById(
+      "backToResultBtn"
+    );
+
+  if (printButton) {
+    printButton.addEventListener(
+      "click",
+      () => {
+        window.print();
+      }
+    );
   }
 
-  showReportLoadingState();
-
-  const storedSurveyId =
-    localStorage.getItem(
-      "currentSurveyId"
+  if (backButton) {
+    backButton.addEventListener(
+      "click",
+      () => {
+        redirectToResult();
+      }
     );
-
-  const surveyId =
-    Number(storedSurveyId);
-
-  if (
-    !storedSurveyId ||
-    !Number.isInteger(surveyId) ||
-    surveyId <= 0
-  ) {
-    showGenericError(
-      "No valid current survey selected."
-    );
-
-    window.location.href =
-      "./surveys.html";
-
-    return;
-  }
-
-  try {
-    /*
-     * Survey、Survey Summary、Plot Resultsは
-     * 帳票表示に必須。
-     */
-    const [
-      survey,
-      summary,
-      plotResults
-    ] = await Promise.all([
-      loadSurvey(surveyId),
-      loadSummary(surveyId),
-      loadPlotResults(surveyId)
-    ]);
-
-    /*
-     * Species Summaryの取得に失敗しても、
-     * Survey帳票全体は表示する。
-     */
-    let speciesSummary = [];
-
-    try {
-      speciesSummary =
-        await loadSpeciesSummary(
-          surveyId
-        );
-
-    } catch (speciesError) {
-      console.error(
-        "Species Summary could not be loaded:",
-        speciesError
-      );
-
-      renderSpeciesLoadError(
-        speciesError &&
-        speciesError.message
-          ? speciesError.message
-          : "Failed to load species summary."
-      );
-    }
-
-    setReportTitle(survey);
-    renderMeta(survey);
-    renderSummary(summary);
-    renderSurveyInfo(survey);
-    renderPlotResults(plotResults);
-
-    if (
-      Array.isArray(speciesSummary) &&
-      speciesSummary.length > 0
-    ) {
-      renderSpeciesSummary(
-        speciesSummary
-      );
-
-      validateSpeciesTotals(
-        summary,
-        speciesSummary
-      );
-    }
-
-    attachActions();
-
-  } catch (error) {
-    console.error(
-      "Report initialization error:",
-      error
-    );
-
-    const message =
-      error &&
-      error.message
-        ? error.message
-        : "Failed to generate report.";
-
-    showGenericError(message);
-
-    if (
-      message ===
-      "Failed to load survey."
-    ) {
-      window.location.href =
-        "./surveys.html";
-
-      return;
-    }
-
-    window.location.href =
-      "./result.html";
   }
 }
 
 
 /* =========================================================
-   Start
+   Main Initialization
 ========================================================= */
 
-await initReport();
+async function initializeReport() {
+  const session =
+    await checkAuthentication();
+
+  if (!session) {
+    return;
+  }
+
+  setLoadingState();
+
+  const surveyId = getSurveyId();
+
+  if (!surveyId) {
+    alert(
+      "No valid survey has been selected."
+    );
+
+    redirectToSurveyList();
+    return;
+  }
+
+  localStorage.setItem(
+    "currentSurveyId",
+    String(surveyId)
+  );
+
+  try {
+    /*
+     * These datasets are required for
+     * the main report.
+     */
+    const [
+      survey,
+      surveySummary,
+      plotResults
+    ] = await Promise.all([
+      loadSurvey(surveyId),
+      loadSurveySummary(surveyId),
+      loadPlotResults(surveyId)
+    ]);
+
+    renderReportHeader(survey);
+
+    renderExecutiveSummary(
+      surveySummary
+    );
+
+    renderSurveyInformation(survey);
+
+    renderPlotResults(plotResults);
+
+    /*
+     * Assessment Summary is loaded
+     * independently.
+     */
+    try {
+      const assessmentRows =
+        await loadAssessmentSummary(
+          surveyId
+        );
+
+      renderAssessmentSummary(
+        assessmentRows
+      );
+
+    } catch (assessmentError) {
+      console.error(
+        "Assessment Summary error:",
+        assessmentError
+      );
+
+      renderAssessmentError(
+        assessmentError.message
+      );
+    }
+
+    /*
+     * Species Summary is loaded
+     * independently.
+     */
+    try {
+      const speciesRows =
+        await loadSpeciesSummary(
+          surveyId
+        );
+
+      renderSpeciesSummary(
+        speciesRows
+      );
+
+      validateReportTotals(
+        surveySummary,
+        speciesRows
+      );
+
+    } catch (speciesError) {
+      console.error(
+        "Species Summary error:",
+        speciesError
+      );
+
+      renderSpeciesError(
+        speciesError.message
+      );
+    }
+
+    attachButtonEvents();
+
+  } catch (error) {
+    console.error(
+      "Report initialization failed:",
+      error
+    );
+
+    alert(
+      error.message ||
+      "Failed to generate the report."
+    );
+
+    redirectToResult();
+  }
+}
+
+
+/* =========================================================
+   Start Application
+========================================================= */
+
+initializeReport();
