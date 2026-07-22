@@ -46,46 +46,28 @@
     "
   />
 
-  <!-- ==================================================
-       Report stylesheet
-  =================================================== -->
   <link
     rel="stylesheet"
     href="./report.css"
   />
 
-  <!-- ==================================================
-       Supabase JavaScript Client
-  =================================================== -->
   <script
     src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"
   ></script>
 
-  <!-- ==================================================
-       jsPDF
-  =================================================== -->
   <script
     src="https://cdn.jsdelivr.net/npm/jspdf@2.5.2/dist/jspdf.umd.min.js"
   ></script>
 
-  <!-- ==================================================
-       jsPDF AutoTable
-  =================================================== -->
   <script
     src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"
   ></script>
 
-  <!-- ==================================================
-       Web report rendering
-  =================================================== -->
   <script
     type="module"
     src="./report.js"
   ></script>
 
-  <!-- ==================================================
-       Direct PDF generation
-  =================================================== -->
   <script
     type="module"
     src="./pdf-report.js"
@@ -116,34 +98,7 @@
 
 
     <!-- ==================================================
-         Executive Summary
-    =================================================== -->
-    <section class="summary-section">
-
-      <h2>Executive Summary</h2>
-
-      <div
-        id="summaryCards"
-        class="summary-cards"
-      >
-        <div class="summary-card">
-
-          <div class="label">
-            Loading
-          </div>
-
-          <div class="value">
-            -
-          </div>
-
-        </div>
-      </div>
-
-    </section>
-
-
-    <!-- ==================================================
-         Legacy FIPS Assessment Summary
+         Assessment Summary
     =================================================== -->
     <section class="assessment-section">
 
@@ -177,11 +132,13 @@
             </thead>
 
             <tbody id="stockingAssessmentBody">
+
               <tr>
                 <td colspan="5">
                   Loading stocking assessment...
                 </td>
               </tr>
+
             </tbody>
 
           </table>
@@ -192,12 +149,12 @@
 
 
       <!-- ================================================
-           B. Basal Area per hectare
+           B. Basal area per hectare
       ================================================= -->
       <div class="assessment-table-block">
 
         <h3>
-          (B) Basal Area per hectare (m²/ha)
+          (B) Basal area per hectare
         </h3>
 
         <div class="table-wrapper">
@@ -218,11 +175,13 @@
             </thead>
 
             <tbody id="basalAreaAssessmentBody">
+
               <tr>
                 <td colspan="5">
                   Loading basal area assessment...
                 </td>
               </tr>
+
             </tbody>
 
           </table>
@@ -233,12 +192,12 @@
 
 
       <!-- ================================================
-           C. Gross Volume per hectare
+           C. Gross volume per hectare
       ================================================= -->
       <div class="assessment-table-block">
 
         <h3>
-          (C) Gross Volume per hectare (m³/ha)
+          (C) Gross volume per hectare
         </h3>
 
         <div class="table-wrapper">
@@ -259,11 +218,13 @@
             </thead>
 
             <tbody id="volumeAssessmentBody">
+
               <tr>
                 <td colspan="5">
                   Loading volume assessment...
                 </td>
               </tr>
+
             </tbody>
 
           </table>
@@ -276,75 +237,40 @@
 
 
     <!-- ==================================================
-         Plot Results
+         D. Major species summary
     =================================================== -->
-    <section class="plot-section">
+    <section class="major-species-section">
 
-      <h2>Plot Results</h2>
+      <h2>
+        (D) Major species summary
+      </h2>
 
       <div class="table-wrapper">
 
         <table
-          id="plotResultsTable"
-          class="plot-table"
+          id="majorSpeciesTable"
+          class="major-species-table"
         >
 
           <thead>
             <tr>
-              <th>Plot No</th>
-              <th>Tree Count</th>
-              <th>Basal Area (m²)</th>
-              <th>Volume (m³)</th>
+              <th>Species</th>
+              <th>Code</th>
+              <th>10–19 cm</th>
+              <th>20–49 cm</th>
+              <th>50 cm+</th>
+              <th>Percentage of total</th>
             </tr>
           </thead>
 
-          <tbody id="plotResultsBody">
+          <tbody id="majorSpeciesBody">
+
             <tr>
-              <td colspan="4">
-                Loading plot results...
+              <td colspan="6">
+                Loading major species summary...
               </td>
             </tr>
-          </tbody>
 
-        </table>
-
-      </div>
-
-    </section>
-
-
-    <!-- ==================================================
-         Species Summary
-    =================================================== -->
-    <section class="species-section">
-
-      <h2>Species Summary</h2>
-
-      <div class="table-wrapper">
-
-        <table
-          id="speciesSummaryTable"
-          class="species-table"
-        >
-
-          <thead>
-            <tr>
-              <th>Species Code</th>
-              <th>Species Name</th>
-              <th>Trade Name</th>
-              <th>Common Name</th>
-              <th>Tree Count</th>
-              <th>Basal Area (m²)</th>
-              <th>Volume (m³)</th>
-            </tr>
-          </thead>
-
-          <tbody id="speciesSummaryBody">
-            <tr>
-              <td colspan="7">
-                Loading species summary...
-              </td>
-            </tr>
           </tbody>
 
         </table>
