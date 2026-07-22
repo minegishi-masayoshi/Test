@@ -22,7 +22,6 @@ function checkPdfLibraries() {
     console.error(
       "jsPDF library was not loaded."
     );
-
     return;
   }
 
@@ -30,7 +29,6 @@ function checkPdfLibraries() {
     console.error(
       "jsPDF AutoTable was not loaded."
     );
-
     return;
   }
 
