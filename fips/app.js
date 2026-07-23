@@ -819,7 +819,11 @@ if (recentRecordsBody) {
   (async () => {
     const { data, error } = await supabase
       .from("fips_surveys")
-      .select("survey_number, survey_name")
+      .select(`
+        id,
+        survey_number,
+        survey_name
+      `)
       .order("id", { ascending: false })
       .limit(5);
 
@@ -836,10 +840,73 @@ if (recentRecordsBody) {
 
     data.forEach((row) => {
       const tr = document.createElement("tr");
+
+      tr.className = "clickable-survey-row";
+      tr.dataset.surveyId = String(row.id);
+      tr.dataset.surveyName = String(row.survey_name ?? "");
+      tr.tabIndex = 0;
+      tr.setAttribute("role", "link");
+      tr.setAttribute(
+        "aria-label",
+        `Open processing status for ${String(
+          row.survey_name ?? row.survey_number ?? "survey"
+        )}`
+      );
+
       tr.innerHTML = `
         <td>${escapeHtml(row.survey_number ?? "")}</td>
         <td>${escapeHtml(row.survey_name ?? "")}</td>
       `;
+
+      const openProcessingStatus = () => {
+        const surveyId = Number(tr.dataset.surveyId);
+        const surveyName = tr.dataset.surveyName || "";
+
+        if (
+          !Number.isInteger(surveyId) ||
+          surveyId <= 0
+        ) {
+          console.error(
+            "Invalid survey ID:",
+            tr.dataset.surveyId
+          );
+          return;
+        }
+
+        localStorage.setItem(
+          "currentSurveyId",
+          String(surveyId)
+        );
+
+        localStorage.setItem(
+          "currentSurveyName",
+          surveyName
+        );
+
+        window.location.href =
+          `./status.html?survey_id=${encodeURIComponent(
+            surveyId
+          )}`;
+      };
+
+      tr.addEventListener(
+        "click",
+        openProcessingStatus
+      );
+
+      tr.addEventListener(
+        "keydown",
+        (event) => {
+          if (
+            event.key === "Enter" ||
+            event.key === " "
+          ) {
+            event.preventDefault();
+            openProcessingStatus();
+          }
+        }
+      );
+
       recentRecordsBody.appendChild(tr);
     });
   })();
