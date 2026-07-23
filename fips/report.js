@@ -31,6 +31,36 @@ function redirectToResult() {
 }
 
 
+
+/* =========================================================
+   Safe Back Navigation
+========================================================= */
+
+function goBack() {
+  try {
+    if (document.referrer) {
+      const previousUrl = new URL(document.referrer);
+      const currentUrl = new URL(window.location.href);
+
+      if (
+        previousUrl.origin === currentUrl.origin &&
+        previousUrl.href !== currentUrl.href &&
+        window.history.length > 1
+      ) {
+        window.history.back();
+        return;
+      }
+    }
+  } catch (error) {
+    console.warn(
+      "Could not determine the previous page:",
+      error
+    );
+  }
+
+  window.location.href = "./index.html";
+}
+
 /* =========================================================
    Utilities
 ========================================================= */
@@ -767,7 +797,7 @@ function attachButtonEvents() {
   if (backButton) {
     backButton.addEventListener(
       "click",
-      redirectToResult
+      goBack
     );
   }
 }
