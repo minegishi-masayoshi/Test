@@ -1,6 +1,6 @@
 /* =========================================================
    FIPS Assessment Summary Report
-   Modern cloud layout with legacy FIPS content
+   Final Survey Information layout
 ========================================================= */
 
 * {
@@ -72,30 +72,6 @@ body {
   white-space: nowrap;
 }
 
-.report-meta {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 2px 20px;
-  margin-top: 12px;
-  color: #111827;
-  font-size: 11px;
-  line-height: 1.45;
-}
-
-.report-meta div {
-  display: flex;
-  min-width: 0;
-}
-
-.report-meta strong {
-  flex: 0 0 112px;
-}
-
-.report-meta span {
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-
 .survey-information-section,
 .assessment-section,
 .major-species-section,
@@ -115,39 +91,46 @@ body {
   border-bottom: 1px solid #cbd5e1;
 }
 
-.legacy-info-grid {
+.survey-information-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   border-top: 1px solid #94a3b8;
   border-left: 1px solid #94a3b8;
 }
 
-.legacy-info-item {
+.survey-information-item {
   display: grid;
-  grid-template-columns: minmax(0, 1.7fr) minmax(80px, 0.7fr);
-  min-height: 31px;
+  grid-template-columns:
+    minmax(0, 1.1fr)
+    minmax(0, 1fr);
+  min-height: 32px;
   border-right: 1px solid #94a3b8;
   border-bottom: 1px solid #94a3b8;
   background: #ffffff;
 }
 
-.legacy-info-label,
-.legacy-info-value {
+.survey-information-label,
+.survey-information-value {
   display: flex;
   align-items: center;
   padding: 6px 8px;
 }
 
-.legacy-info-label {
+.survey-information-label {
   background: #f1f5f9;
+  color: #111827;
   font-size: 10.5px;
   font-weight: 700;
 }
 
-.legacy-info-value {
+.survey-information-value {
   justify-content: flex-end;
+  min-width: 0;
+  color: #111827;
   font-size: 10.5px;
   font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+  text-align: right;
 }
 
 .table-wrapper {
@@ -386,8 +369,7 @@ body {
     margin-top: 8px;
   }
 
-  .report-meta,
-  .legacy-info-grid {
+  .survey-information-grid {
     grid-template-columns: 1fr;
   }
 
@@ -435,16 +417,6 @@ body {
     font-size: 16px;
   }
 
-  .report-meta {
-    margin-top: 8px;
-    font-size: 8.5px;
-    gap: 1px 14px;
-  }
-
-  .report-meta strong {
-    flex-basis: 90px;
-  }
-
   .survey-information-section,
   .assessment-section,
   .major-species-section {
@@ -459,14 +431,14 @@ body {
     font-size: 12px;
   }
 
-  .legacy-info-item {
+  .survey-information-item {
     min-height: 24px;
   }
 
-  .legacy-info-label,
-  .legacy-info-value {
+  .survey-information-label,
+  .survey-information-value {
     padding: 3px 5px;
-    font-size: 7.8px;
+    font-size: 7.7px;
   }
 
   .assessment-table-block {
