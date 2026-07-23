@@ -170,3 +170,38 @@ background:#14523d;
     min-width: 0;
   }
 }
+
+
+/* =========================================================
+   Clickable Recent Surveys
+========================================================= */
+
+.clickable-survey-row {
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.clickable-survey-row:hover {
+  background: #eaf5f0;
+}
+
+.clickable-survey-row:focus {
+  background: #eaf5f0;
+  outline: none;
+}
+
+.clickable-survey-row:focus-visible {
+  outline: 2px solid #1f7a5c;
+  outline-offset: -2px;
+}
+
+.clickable-survey-row td:first-child {
+  font-weight: 600;
+}
+
+.clickable-survey-row:hover td,
+.clickable-survey-row:focus-visible td {
+  color: #14523d;
+}
