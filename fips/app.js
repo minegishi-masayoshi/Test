@@ -25,6 +25,36 @@ function escapeHtml(value) {
     .replace(/'/g, "&#39;");
 }
 
+
+/* =========================
+   SAFE BACK NAVIGATION
+   ========================= */
+
+function goBack() {
+  try {
+    if (document.referrer) {
+      const previousUrl = new URL(document.referrer);
+      const currentUrl = new URL(window.location.href);
+
+      if (
+        previousUrl.origin === currentUrl.origin &&
+        previousUrl.href !== currentUrl.href &&
+        window.history.length > 1
+      ) {
+        window.history.back();
+        return;
+      }
+    }
+  } catch (error) {
+    console.warn(
+      "Could not determine the previous page:",
+      error
+    );
+  }
+
+  window.location.href = "./index.html";
+}
+
 async function checkLogin() {
   try {
     const { data, error } = await supabase.auth.getSession();
@@ -408,9 +438,10 @@ if (chooseFileBtn && importFileInput) {
 }
 
 if (backToSurveyBtn) {
-  backToSurveyBtn.addEventListener("click", () => {
-    window.location.href = "./new-survey.html";
-  });
+  backToSurveyBtn.addEventListener(
+    "click",
+    goBack
+  );
 }
 
 if (importFileInput && fileNameLabel) {
@@ -1056,33 +1087,38 @@ const backToSurveyListBtn = document.getElementById("backToSurveyListBtn");
 const backFromSurveyBtn = document.getElementById("backFromSurveyBtn");
 
 if (backToImportBtn) {
-  backToImportBtn.addEventListener("click", () => {
-    window.location.href = "./kobo-import.html";
-  });
+  backToImportBtn.addEventListener(
+    "click",
+    goBack
+  );
 }
 
 if (backToHomeBtn) {
-  backToHomeBtn.addEventListener("click", () => {
-    window.location.href = "./index.html";
-  });
+  backToHomeBtn.addEventListener(
+    "click",
+    goBack
+  );
 }
 
 if (backToStatusBtn) {
-  backToStatusBtn.addEventListener("click", () => {
-    window.location.href = "./status.html";
-  });
+  backToStatusBtn.addEventListener(
+    "click",
+    goBack
+  );
 }
 
 if (backToSurveyListBtn) {
-  backToSurveyListBtn.addEventListener("click", () => {
-    window.location.href = "./surveys.html";
-  });
+  backToSurveyListBtn.addEventListener(
+    "click",
+    goBack
+  );
 }
 
 if (backFromSurveyBtn) {
-  backFromSurveyBtn.addEventListener("click", () => {
-    window.location.href = "./index.html";
-  });
+  backFromSurveyBtn.addEventListener(
+    "click",
+    goBack
+  );
 }
 
 const exportPdfReportBtn = document.getElementById("exportPdfReportBtn");
