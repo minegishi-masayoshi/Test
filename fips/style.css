@@ -48,7 +48,7 @@ body {
 }
 
 .welcome-panel,
-.menu-panel,
+.start-panel,
 .recent-panel {
   background: #f4f4f4;
   border: 1px solid #8c8c8c;
@@ -57,43 +57,10 @@ body {
 }
 
 .welcome-panel h1,
-.menu-panel h2,
+.start-panel h2,
 .recent-panel h2 {
   margin-top: 0;
   color: #14523d;
-}
-
-.menu-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 16px;
-}
-
-.menu-card {
-  display: block;
-  text-decoration: none;
-  color: #222;
-  background: white;
-  border: 2px solid #1f7a5c;
-  padding: 16px;
-  min-height: 120px;
-  transition: 0.2s ease;
-}
-
-.menu-card:hover {
-  background: #eaf5f0;
-}
-
-.menu-card-title {
-  font-size: 20px;
-  font-weight: bold;
-  margin-bottom: 8px;
-  color: #14523d;
-}
-
-.menu-card-text {
-  font-size: 14px;
-  line-height: 1.5;
 }
 
 .survey-table {
@@ -142,4 +109,64 @@ margin-right:8px;
 
 button:hover{
 background:#14523d;
+}
+
+
+/* =========================================================
+   Start New Survey
+========================================================= */
+
+.start-panel {
+  text-align: center;
+}
+
+.start-description {
+  max-width: 680px;
+  margin: 0 auto 24px;
+  color: #475569;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.start-survey-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 280px;
+  min-height: 58px;
+  padding: 15px 30px;
+  border: 2px solid #14523d;
+  border-radius: 5px;
+  background: #1f7a5c;
+  color: #ffffff;
+  font-size: 18px;
+  font-weight: bold;
+  text-decoration: none;
+  transition:
+    background-color 0.2s ease,
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.start-survey-button:hover {
+  background: #14523d;
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(20, 82, 61, 0.2);
+}
+
+.start-survey-button:focus-visible {
+  outline: 3px solid rgba(31, 122, 92, 0.35);
+  outline-offset: 3px;
+}
+
+@media screen and (max-width: 640px) {
+  .main-content {
+    padding: 14px;
+  }
+
+  .start-survey-button {
+    width: 100%;
+    min-width: 0;
+  }
 }
