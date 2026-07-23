@@ -46,57 +46,78 @@
           <h1 id="reportTitle">ASSESSMENT SUMMARY - ALL BLOCKS</h1>
           <p class="report-subtitle">FIPS Survey Assessment Report</p>
         </div>
-        <div class="version-badge">FIPS Cloud version 1.0</div>
-      </div>
 
-      <div id="reportMeta" class="report-meta">
-        Loading survey information...
+        <div class="version-badge">
+          FIPS Cloud version 1.0
+        </div>
       </div>
     </header>
 
     <section class="survey-information-section">
       <h2>Survey Information</h2>
 
-      <div id="legacyInfoGrid" class="legacy-info-grid">
-        <div class="legacy-info-item">
-          <span class="legacy-info-label">Gross Area (ha)</span>
-          <span id="grossAreaValue" class="legacy-info-value">-</span>
+      <div id="surveyInformationGrid" class="survey-information-grid">
+
+        <div class="survey-information-item">
+          <span class="survey-information-label">Survey Name</span>
+          <span id="surveyNameValue" class="survey-information-value">-</span>
         </div>
 
-        <div class="legacy-info-item">
-          <span class="legacy-info-label">Date of Survey</span>
-          <span id="surveyDateValue" class="legacy-info-value">-</span>
+        <div class="survey-information-item">
+          <span class="survey-information-label">Survey Number</span>
+          <span id="surveyNumberValue" class="survey-information-value">-</span>
         </div>
 
-        <div class="legacy-info-item">
-          <span class="legacy-info-label">Net Area (ha)</span>
-          <span id="netAreaValue" class="legacy-info-value">-</span>
+        <div class="survey-information-item">
+          <span class="survey-information-label">Province</span>
+          <span id="provinceValue" class="survey-information-value">-</span>
         </div>
 
-        <div class="legacy-info-item">
-          <span class="legacy-info-label">File Reference</span>
-          <span id="fileReferenceValue" class="legacy-info-value">-</span>
+        <div class="survey-information-item">
+          <span class="survey-information-label">Date of Survey</span>
+          <span id="surveyDateValue" class="survey-information-value">-</span>
         </div>
 
-        <div class="legacy-info-item">
-          <span class="legacy-info-label">Sample Area (ha), stems 50 cm+</span>
-          <span id="sampleArea50Value" class="legacy-info-value">-</span>
+        <div class="survey-information-item">
+          <span class="survey-information-label">Gross Area (ha)</span>
+          <span id="grossAreaValue" class="survey-information-value">-</span>
         </div>
 
-        <div class="legacy-info-item">
-          <span class="legacy-info-label">Number of Plots</span>
-          <span id="numberOfPlotsValue" class="legacy-info-value">-</span>
+        <div class="survey-information-item">
+          <span class="survey-information-label">Net Area (ha)</span>
+          <span id="netAreaValue" class="survey-information-value">-</span>
         </div>
 
-        <div class="legacy-info-item">
-          <span class="legacy-info-label">Sample Area (ha), stems 20–49 cm</span>
-          <span id="sampleArea20Value" class="legacy-info-value">-</span>
+        <div class="survey-information-item">
+          <span class="survey-information-label">Sample Area (50 cm+)</span>
+          <span id="sampleArea50Value" class="survey-information-value">-</span>
         </div>
 
-        <div class="legacy-info-item">
-          <span class="legacy-info-label">Sampling Intensity</span>
-          <span id="samplingIntensityValue" class="legacy-info-value">-</span>
+        <div class="survey-information-item">
+          <span class="survey-information-label">Sample Area (20–49 cm)</span>
+          <span id="sampleArea20Value" class="survey-information-value">-</span>
         </div>
+
+        <div class="survey-information-item">
+          <span class="survey-information-label">Number of Plots</span>
+          <span id="numberOfPlotsValue" class="survey-information-value">-</span>
+        </div>
+
+        <div class="survey-information-item">
+          <span class="survey-information-label">Sampling Intensity</span>
+          <span id="samplingIntensityValue" class="survey-information-value">-</span>
+        </div>
+
+        <div class="survey-information-item">
+          <span class="survey-information-label">File Reference</span>
+          <span id="fileReferenceValue" class="survey-information-value">-</span>
+        </div>
+
+        <div class="survey-information-item">
+          <span class="survey-information-label">Exported At</span>
+          <span id="exportedAtValue" class="survey-information-value">-</span>
+        </div>
+
       </div>
     </section>
 
@@ -119,7 +140,9 @@
               </tr>
             </thead>
             <tbody id="stockingAssessmentBody">
-              <tr><td colspan="5">Loading stocking assessment...</td></tr>
+              <tr>
+                <td colspan="5">Loading stocking assessment...</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -141,7 +164,9 @@
               </tr>
             </thead>
             <tbody id="basalAreaAssessmentBody">
-              <tr><td colspan="5">Loading basal area assessment...</td></tr>
+              <tr>
+                <td colspan="5">Loading basal area assessment...</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -163,21 +188,26 @@
               </tr>
             </thead>
             <tbody id="volumeAssessmentBody">
-              <tr><td colspan="5">Loading volume assessment...</td></tr>
+              <tr>
+                <td colspan="5">Loading volume assessment...</td>
+              </tr>
             </tbody>
           </table>
         </div>
       </div>
 
       <p class="legacy-note">
-        NB. If Quality Class figures do not add up to TOTAL, quality-code records may be incomplete.
+        NB. If Quality Class figures do not add up to TOTAL,
+        quality-code records may be incomplete.
       </p>
     </section>
 
     <section class="major-species-section">
       <h2>(D) Major species summary</h2>
+
       <p class="major-species-description">
-        List of major species in sawlog size classes, in order of volume representation in the assessment.
+        List of major species in sawlog size classes, in order of
+        volume representation in the assessment.
       </p>
 
       <div class="table-wrapper">
@@ -193,7 +223,9 @@
             </tr>
           </thead>
           <tbody id="majorSpeciesBody">
-            <tr><td colspan="6">Loading major species summary...</td></tr>
+            <tr>
+              <td colspan="6">Loading major species summary...</td>
+            </tr>
           </tbody>
         </table>
       </div>
@@ -201,15 +233,26 @@
 
     <section class="note-section">
       <p class="report-note">
-        Generated automatically from processed FIPS survey results stored in the PostgreSQL database.
+        GIS-derived area and sampling information will be supplied
+        through future FIMS integration.
       </p>
     </section>
 
     <div class="report-actions no-print">
-      <button id="printReportBtn" type="button" class="primary-button" disabled>
+      <button
+        id="printReportBtn"
+        type="button"
+        class="primary-button"
+        disabled
+      >
         Preparing PDF...
       </button>
-      <button id="backToResultBtn" type="button" class="secondary-button">
+
+      <button
+        id="backToResultBtn"
+        type="button"
+        class="secondary-button"
+      >
         Back
       </button>
     </div>
