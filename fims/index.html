@@ -19,7 +19,6 @@
     font-src 'self' data:;
     object-src 'none';
     base-uri 'self';
-    frame-ancestors 'none';
     form-action 'self';
   " />
 
@@ -27,9 +26,7 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div id="loadingScreen" class="loading-screen" role="status">Checking access…</div>
-
-  <div id="app" class="app-shell" hidden>
+  <div id="app" class="app-shell">
     <header class="app-header">
       <div class="brand-block">
         <div class="brand-mark" aria-hidden="true">PNGFA</div>
@@ -40,9 +37,9 @@
       </div>
 
       <div class="header-actions">
-        <span id="userLabel" class="user-label">Authorized user</span>
+        <span id="userLabel" class="user-label">Prototype mode</span>
         <a class="header-link" href="../index.html">Portal</a>
-        <button id="logoutButton" class="logout-button" type="button">Logout</button>
+        <a class="logout-button" href="../index.html">Exit</a>
       </div>
     </header>
 
@@ -149,7 +146,6 @@
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="config.js"></script>
   <script src="app.js"></script>
 </body>
