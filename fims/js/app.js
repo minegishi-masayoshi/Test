@@ -51,7 +51,6 @@ function activateSummaryLayer(key) {
 }
 
 function initializeUi() {
-  $("#environmentLabel").textContent = CONFIG.environment;
   $("#versionText").textContent = `${CONFIG.appName} ${CONFIG.version}`;
   renderMenu($("#mainMenu"), (item) => {
     setView(item.title, item.subtitle);

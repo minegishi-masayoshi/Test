@@ -1,6 +1,6 @@
 export const CONFIG = Object.freeze({
   appName: "FIMS Cloud",
-  version: "Ver.1.0.0",
+  version: "Ver.1.2.0",
   environment: "MVP environment",
   urls: {
     portal: "../index.html",
