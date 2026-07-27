@@ -1,29 +1,38 @@
-# FIMS Cloud MVP Ver.0.1
+# FIMS Cloud Ver.1.0.0
 
-This folder contains the first GitHub Pages prototype for the FIMS Cloud top page.
+Production-oriented GitHub Pages structure for the FIMS Cloud top page.
 
-## Files
+## Structure
 
-- `index.html`: FIMS top page
-- `style.css`: responsive layout and visual design
-- `app.js`: Supabase session check, Leaflet map, menu, summary cards and WMS controls
-- `config.js`: URLs, map settings and GeoServer layer names
+- `index.html`: application shell only
+- `css/main.css`: common layout and responsive design
+- `js/config.js`: environment, GeoServer and layer configuration
+- `js/app.js`: application initialization and UI coordination
+- `js/map.js`: Leaflet and GeoServer WMS integration
+- `js/menu.js`: main-menu definitions and rendering
+- `js/summary.js`: clickable Summary definitions and rendering
+- `views/`: reserved for future functional screens
+- `assets/`: reserved for PNGFA logo, icons and images
+- `docs/`: implementation notes
 
-## GeoServer connection
+## GeoServer setup
 
-Edit `config.js` and set `geoserverWmsUrl`.
+Edit `js/config.js`:
 
 ```javascript
-geoserverWmsUrl: "https://YOUR-OCI-HOST/geoserver/fims/wms"
+geoserver: {
+  wmsUrl: "https://YOUR-OCI-HOST/geoserver/fims/wms",
+  workspace: "fims",
+  version: "1.1.1"
+}
 ```
 
-Then replace the layer names in `layers` with the actual GeoServer workspace/layer names.
+Replace the layer `name` values with the actual GeoServer layer names.
 
-## Current behavior
+## Current scope
 
-- Uses the same Supabase login session as the root portal.
-- Redirects unauthenticated users to `../index.html`.
-- Displays OpenStreetMap as the temporary base map.
+- Authentication is disabled for the current MVP.
+- OpenStreetMap is used as a temporary base map.
+- FIMS overlays are loaded from GeoServer WMS when configured.
 - Summary cards are clickable.
-- Summary counts are placeholders until database/API endpoints are connected.
-- FIMS WMS layers become available after GeoServer configuration.
+- Counts remain placeholders until a FIMS API is connected.

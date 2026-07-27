@@ -4,26 +4,15 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>FIMS Cloud</title>
-
+  <meta name="description" content="Papua New Guinea Forest Information Mapping System" />
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <meta http-equiv="Content-Security-Policy" content="
-    default-src 'self';
-    script-src 'self' https://unpkg.com https://cdn.jsdelivr.net;
-    style-src 'self' 'unsafe-inline' https://unpkg.com;
-    connect-src 'self' https://pncvddqeuxlkplwgvxgk.supabase.co https://*.tile.openstreetmap.org https:;
-    img-src 'self' data: blob: https://*.tile.openstreetmap.org https:;
-    font-src 'self' data:;
-    object-src 'none';
-    base-uri 'self';
-    form-action 'self';
-  " />
-
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com; connect-src 'self' https://*.tile.openstreetmap.org https:; img-src 'self' data: blob: https://*.tile.openstreetmap.org https:; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self';" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="./css/main.css" />
 </head>
 <body>
   <div id="app" class="app-shell">
@@ -35,28 +24,17 @@
           <h1>FIMS Cloud</h1>
         </div>
       </div>
-
       <div class="header-actions">
-        <span id="userLabel" class="user-label">Prototype mode</span>
+        <span id="environmentLabel" class="environment-label">MVP environment</span>
         <a class="header-link" href="../index.html">Portal</a>
-        <a class="logout-button" href="../index.html">Exit</a>
+        <a class="exit-button" href="../index.html">Exit</a>
       </div>
     </header>
 
     <main class="workspace">
       <aside class="sidebar" aria-label="Main menu">
         <div class="sidebar-title">Main Menu</div>
-        <nav id="mainMenu" class="main-menu">
-          <button class="menu-item active" data-view="map" type="button"><span>▣</span> Map Explorer</button>
-          <button class="menu-item" data-view="forest" type="button"><span>♣</span> Forest Resources</button>
-          <button class="menu-item" data-view="logging" type="button"><span>▤</span> Logging</button>
-          <button class="menu-item" data-view="analysis" type="button"><span>◎</span> Analysis</button>
-          <button class="menu-item" data-view="reports" type="button"><span>▥</span> Reports</button>
-          <button class="menu-item" data-view="data" type="button"><span>◆</span> Data</button>
-          <button class="menu-item" data-view="administration" type="button"><span>⚙</span> Administration</button>
-          <button class="menu-item" data-view="help" type="button"><span>?</span> Help</button>
-        </nav>
-
+        <nav id="mainMenu" class="main-menu"></nav>
         <div class="module-links">
           <p>PNG-FRIMS Modules</p>
           <a href="../lanmap/index.html">Open LANMAP</a>
@@ -76,77 +54,37 @@
               <button id="clearLayersButton" type="button">Clear overlays</button>
             </div>
           </div>
-
           <div class="map-body">
             <div id="map" aria-label="Interactive map of Papua New Guinea"></div>
-
             <aside class="layer-panel" aria-label="Layer control">
               <div class="layer-panel-header">Map Layers</div>
-              <label><input type="checkbox" data-layer="province" /> Provinces</label>
-              <label><input type="checkbox" data-layer="concession" /> Concessions</label>
-              <label><input type="checkbox" data-layer="fmu" /> FMUs</label>
-              <label><input type="checkbox" data-layer="forestBaseMap" /> Forest Base Map</label>
-              <label><input type="checkbox" data-layer="protectedArea" /> Protected Areas</label>
-              <label><input type="checkbox" data-layer="loggingArea" /> Logging Areas</label>
-              <p id="layerHint" class="layer-hint">Configure the GeoServer WMS URL in <code>config.js</code> to load FIMS layers.</p>
+              <div id="layerList"></div>
+              <p id="layerHint" class="layer-hint">Configure the GeoServer WMS URL and layer names in <code>js/config.js</code>.</p>
             </aside>
           </div>
         </section>
 
-        <section class="summary-section" aria-labelledby="summaryTitle">
+        <section class="summary-section" aria-labelledby="summaryHeading">
           <div class="section-heading">
             <div>
-              <h2 id="summaryTitle">Summary</h2>
+              <h2 id="summaryHeading">Summary</h2>
               <p>Select a card to open the corresponding dataset or function.</p>
             </div>
             <span id="summaryStatus" class="summary-status">Prototype data</span>
           </div>
-
-          <div class="summary-grid">
-            <button class="summary-card" data-target="concession" type="button">
-              <span class="summary-icon">▰</span>
-              <span><strong>Concessions</strong><small>View concession areas</small></span>
-              <b id="countConcessions">—</b>
-            </button>
-            <button class="summary-card" data-target="fmu" type="button">
-              <span class="summary-icon">⬡</span>
-              <span><strong>FMUs</strong><small>Forest management units</small></span>
-              <b id="countFmus">—</b>
-            </button>
-            <button class="summary-card" data-target="forestBaseMap" type="button">
-              <span class="summary-icon">♣</span>
-              <span><strong>Forest Base Map</strong><small>Forest resource layers</small></span>
-              <b id="countFbm">—</b>
-            </button>
-            <button class="summary-card" data-target="protectedArea" type="button">
-              <span class="summary-icon">⬟</span>
-              <span><strong>Protected Areas</strong><small>Environmental constraints</small></span>
-              <b id="countProtected">—</b>
-            </button>
-            <button class="summary-card" data-target="loggingArea" type="button">
-              <span class="summary-icon">▥</span>
-              <span><strong>Logging Areas</strong><small>Logging information</small></span>
-              <b id="countLogging">—</b>
-            </button>
-            <button class="summary-card" data-link="../fips/surveys.html" type="button">
-              <span class="summary-icon">▤</span>
-              <span><strong>Inventory Surveys</strong><small>Open FIPS surveys</small></span>
-              <b id="countSurveys">FIPS</b>
-            </button>
-          </div>
+          <div id="summaryGrid" class="summary-grid"></div>
         </section>
       </section>
     </main>
 
     <footer class="status-bar">
-      <span id="statusText">Ready</span>
+      <span id="statusText">Starting FIMS Cloud…</span>
       <span id="coordinateText">Lat: — / Lon: —</span>
-      <span>FIMS Cloud MVP Ver.0.1</span>
+      <span id="versionText">FIMS Cloud</span>
     </footer>
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="config.js"></script>
-  <script src="app.js"></script>
+  <script type="module" src="./js/app.js"></script>
 </body>
 </html>
