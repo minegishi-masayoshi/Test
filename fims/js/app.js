@@ -1,3 +1,5 @@
+{ key: "district", label: "Districts", name: "districts" },
+
 import { CONFIG } from "./config.js";
 import { renderMenu } from "./menu.js";
 import { renderSummary } from "./summary.js";
@@ -70,8 +72,19 @@ function initializeUi() {
 
 function start() {
   try {
-    fimsMap = new FimsMap({ elementId: "map", config: CONFIG, onCoordinate: setCoordinate, onStatus: setStatus });
+    fimsMap = new FimsMap({
+      elementId: "map",
+      config: CONFIG,
+      onCoordinate: setCoordinate,
+      onStatus: setStatus
+    });
+
     initializeUi();
+
+    // Districtを初期表示
+    fimsMap.setLayerVisible("district", true);
+    document.querySelector('input[data-layer="district"]').checked = true;
+
     setStatus("FIMS Cloud ready");
   } catch (error) {
     console.error(error);

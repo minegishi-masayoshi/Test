@@ -9,8 +9,7 @@ export const CONFIG = Object.freeze({
     lanmap: "../lanmap/index.html"
   },
   geoserver: {
-    // Example: "https://YOUR-OCI-HOST/geoserver/fims/wms"
-    wmsUrl: "",
+    wmsUrl: "https://portraits-administered-youth-commercial.trycloudflare.com/geoserver/fims/wms",
     workspace: "fims",
     version: "1.1.1"
   },
@@ -22,6 +21,7 @@ export const CONFIG = Object.freeze({
     pngBounds: [[-12.2, 140.5], [-0.5, 156.5]]
   },
   layers: [
+    { key: "district", label: "Districts", name: "districts" },
     { key: "province", label: "Provinces", name: "province" },
     { key: "concession", label: "Concessions", name: "concession" },
     { key: "fmu", label: "FMUs", name: "fmu" },
