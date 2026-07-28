@@ -1,6 +1,6 @@
 export const CONFIG = Object.freeze({
   appName: "FIMS Cloud",
-  version: "Ver.1.2.0",
+  version: "Ver.1.2.1",
   environment: "MVP environment",
 
   urls: {
@@ -11,8 +11,8 @@ export const CONFIG = Object.freeze({
   },
 
   geoserver: {
-    wmsUrl:
-      "https://portraits-administered-youth-commercial.trycloudflare.com/geoserver/fims/wms",
+    // HTTPS版 GeoServer
+    wmsUrl: "https://140-245-124-203.sslip.io/geoserver/fims/wms",
     workspace: "fims",
     version: "1.1.1"
   },
