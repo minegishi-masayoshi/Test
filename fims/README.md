@@ -1,38 +1,23 @@
-# FIMS Cloud Ver.1.0.0
+# FIMS Cloud Ver.1.0 — GitHub Pages package
 
-Production-oriented GitHub Pages structure for the FIMS Cloud top page.
+This package is a static front-end prototype for the Papua New Guinea Forest Information Mapping System.
 
-## Structure
+## Deployment
 
-- `index.html`: application shell only
-- `css/main.css`: common layout and responsive design
-- `js/config.js`: environment, GeoServer and layer configuration
-- `js/app.js`: application initialization and UI coordination
-- `js/map.js`: Leaflet and GeoServer WMS integration
-- `js/menu.js`: main-menu definitions and rendering
-- `js/summary.js`: clickable Summary definitions and rendering
-- `views/`: reserved for future functional screens
-- `assets/`: reserved for PNGFA logo, icons and images
-- `docs/`: implementation notes
+1. Upload all files and folders in this directory to the `fims/` directory of the GitHub Pages repository.
+2. Keep the relative paths (`css/`, `js/`, `views/`) unchanged.
+3. Confirm the GeoServer WMS URL and layer names in `js/config.js`.
+4. Open `fims/index.html` through GitHub Pages.
 
-## GeoServer setup
+## Current implementation
 
-Edit `js/config.js`:
+- Legacy-FIMS-inspired top-page layout
+- Province list and FMU table
+- Leaflet overview map and GeoServer WMS layers
+- Navigation to Province, Concession, FIPS, LANMAP and Administration
+- Summary values and report list
+- Responsive layout
 
-```javascript
-geoserver: {
-  wmsUrl: "https://YOUR-OCI-HOST/geoserver/fims/wms",
-  workspace: "fims",
-  version: "1.1.1"
-}
-```
+## Prototype limitations
 
-Replace the layer `name` values with the actual GeoServer layer names.
-
-## Current scope
-
-- Authentication is disabled for the current MVP.
-- OpenStreetMap is used as a temporary base map.
-- FIMS overlays are loaded from GeoServer WMS when configured.
-- Summary cards are clickable.
-- Counts remain placeholders until a FIMS API is connected.
+Province/FMUs and summary values are demonstration data. Update, analysis, preview and export actions are placeholders until the OCI/PostGIS/Python API and reporting engine are connected.

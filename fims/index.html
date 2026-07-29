@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FIMS Cloud</title>
+  <title>FIMS Cloud Ver.1.0</title>
   <meta name="description" content="Papua New Guinea Forest Information Mapping System" />
   <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
   <meta name="referrer" content="strict-origin-when-cross-origin" />
@@ -18,64 +18,90 @@
   <div id="app" class="app-shell">
     <header class="app-header">
       <div class="brand-block">
-        <div class="brand-title">FIMS</div>
-        <div class="brand-subtitle">Authorized access only</div>
+        <div class="brand-title">FIMS Cloud</div>
+        <div class="brand-subtitle">Forest Information and Mapping System</div>
       </div>
-      <div class="user-box">
-        <span id="userStatus">Access granted</span>
+      <div class="header-meta">
+        <span>PNG Forest Authority</span>
+        <strong id="versionText">Ver.1.0</strong>
       </div>
     </header>
 
-    <main class="workspace">
-      <aside class="sidebar" aria-label="Main menu">
-        <div class="sidebar-title">Main Menu</div>
-        <nav id="mainMenu" class="main-menu"></nav>
-        <div class="module-links">
-          <p>PNG-FRIMS Modules</p>
-          <a href="../lanmap/index.html">Open LANMAP</a>
-          <a href="../fips/index.html">Open FIPS</a>
-        </div>
-      </aside>
+    <main class="main-screen">
+      <section class="top-grid">
+        <article class="panel province-panel">
+          <div class="panel-header"><h2>Provinces</h2><span id="provinceCount">0</span></div>
+          <label class="search-box">
+            <span class="sr-only">Search provinces</span>
+            <input id="provinceSearch" type="search" placeholder="Search province" autocomplete="off" />
+          </label>
+          <div id="provinceList" class="select-list" role="listbox" aria-label="Province list"></div>
+        </article>
 
-      <section class="main-content">
-        <section class="map-panel" aria-label="FIMS map">
-          <div class="map-toolbar">
-            <div>
-              <strong id="viewTitle">Map Explorer</strong>
-              <span id="viewSubtitle">FIMS spatial information</span>
-            </div>
-            <div class="toolbar-actions">
+        <article class="panel fmu-panel">
+          <div class="panel-header">
+            <div><h2>FMUs</h2><small id="selectedProvinceLabel">Select a province</small></div>
+            <span id="fmuCount">0</span>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>FMU</th><th>Zone</th><th>Timber</th><th>Veg. Area</th></tr></thead>
+              <tbody id="fmuTableBody"></tbody>
+            </table>
+          </div>
+          <div class="panel-actions">
+            <button id="updateZoneButton" type="button">Update Timber Volume for Zone</button>
+            <button id="updateFmuButton" type="button">Update Timber Volume for FMU</button>
+          </div>
+        </article>
+
+        <article class="panel map-panel">
+          <div class="panel-header"><div><h2>Overview Map</h2><small id="mapSubtitle">Papua New Guinea</small></div></div>
+          <div id="map" aria-label="Interactive map of Papua New Guinea"></div>
+          <div class="map-footer">
+            <div id="layerList" class="compact-layers"></div>
+            <div class="map-actions">
               <button id="homeExtentButton" type="button">PNG extent</button>
-              <button id="clearLayersButton" type="button">Clear overlays</button>
+              <button id="clearLayersButton" type="button">Clear</button>
             </div>
           </div>
-          <div class="map-body">
-            <div id="map" aria-label="Interactive map of Papua New Guinea"></div>
-            <aside class="layer-panel" aria-label="Layer control">
-              <div class="layer-panel-header">Map Layers</div>
-              <div id="layerList"></div>
-              <p id="layerHint" class="layer-hint">Configure the GeoServer WMS URL and layer names in <code>js/config.js</code>.</p>
-            </aside>
-          </div>
-        </section>
+        </article>
+      </section>
 
-        <section class="summary-section" aria-labelledby="summaryHeading">
-          <div class="section-heading">
-            <div>
-              <h2 id="summaryHeading">Summary</h2>
-              <p>Select a card to open the corresponding dataset or function.</p>
-            </div>
-            <span id="summaryStatus" class="summary-status">Prototype data</span>
+      <section class="bottom-grid">
+        <article class="panel navigation-panel">
+          <div class="panel-header"><h2>Navigation</h2></div>
+          <div class="tab-row" role="tablist" aria-label="Analysis unit">
+            <button class="tab-button active" type="button" data-mode="province">Province</button>
+            <button class="tab-button" type="button" data-mode="concession">Concession</button>
           </div>
-          <div id="summaryGrid" class="summary-grid"></div>
-        </section>
+          <div id="mainMenu" class="navigation-grid"></div>
+          <div class="module-buttons">
+            <a href="../fips/index.html">Open FIPS</a>
+            <a href="../lanmap/index.html">Open LANMAP</a>
+          </div>
+        </article>
+
+        <article class="panel summary-panel">
+          <div class="panel-header"><div><h2>Summary</h2><small id="summaryScope">National totals</small></div><span id="summaryStatus">Prototype data</span></div>
+          <div id="summaryTable" class="summary-table"></div>
+        </article>
+
+        <article class="panel reports-panel">
+          <div class="panel-header"><h2>Reports</h2></div>
+          <div id="reportList" class="report-list"></div>
+          <div class="report-actions">
+            <button id="previewReportButton" type="button">Preview</button>
+            <button id="exportReportButton" type="button">Export</button>
+          </div>
+        </article>
       </section>
     </main>
 
     <footer class="status-bar">
       <span id="statusText">Starting FIMS Cloud…</span>
       <span id="coordinateText">Lat: — / Lon: —</span>
-      <span id="versionText">FIMS Cloud</span>
+      <span>Authorized access only</span>
     </footer>
   </div>
 
