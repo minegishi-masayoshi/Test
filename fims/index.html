@@ -30,17 +30,17 @@
     <main class="main-screen">
       <section class="top-grid">
         <article class="panel province-panel">
-          <div class="panel-header"><h2>Provinces</h2><span id="provinceCount">0</span></div>
+          <div class="panel-header"><h2 id="unitListTitle">Provinces</h2><span id="unitCount">0</span></div>
           <label class="search-box">
-            <span class="sr-only">Search provinces</span>
-            <input id="provinceSearch" type="search" placeholder="Search province" autocomplete="off" />
+            <span id="unitSearchLabel" class="sr-only">Search provinces</span>
+            <input id="unitSearch" type="search" placeholder="Search province" autocomplete="off" />
           </label>
-          <div id="provinceList" class="select-list" role="listbox" aria-label="Province list"></div>
+          <div id="unitList" class="select-list" role="listbox" aria-label="Province list"></div>
         </article>
 
         <article class="panel fmu-panel">
           <div class="panel-header">
-            <div><h2>FMUs</h2><small id="selectedProvinceLabel">Select a province</small></div>
+            <div><h2>FMUs</h2><small id="selectedUnitLabel">Select a province</small></div>
             <span id="fmuCount">0</span>
           </div>
           <div class="table-wrap">
@@ -72,8 +72,8 @@
         <article class="panel navigation-panel">
           <div class="panel-header"><h2>Navigation</h2></div>
           <div class="tab-row" role="tablist" aria-label="Analysis unit">
-            <button class="tab-button active" type="button" data-mode="province">Province</button>
-            <button class="tab-button" type="button" data-mode="concession">Concession</button>
+            <button id="provinceModeButton" class="tab-button active" type="button" data-mode="province">Province</button>
+            <button id="concessionModeButton" class="tab-button" type="button" data-mode="concession">Concession</button>
           </div>
           <div id="mainMenu" class="navigation-grid"></div>
           <div class="module-buttons">

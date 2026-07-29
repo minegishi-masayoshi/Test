@@ -21,3 +21,14 @@ This package is a static front-end prototype for the Papua New Guinea Forest Inf
 ## Prototype limitations
 
 Province/FMUs and summary values are demonstration data. Update, analysis, preview and export actions are placeholders until the OCI/PostGIS/Python API and reporting engine are connected.
+
+
+## Province / Concession switch
+
+Use the two buttons in the lower-left Navigation panel:
+
+- **Province**: upper-left list shows provinces.
+- **Concession**: upper-left list shows concessions by PLAN_ID.
+
+The concession master in `js/data.js` is prototype data. Replace it with
+PostGIS/API results when the backend is implemented.
