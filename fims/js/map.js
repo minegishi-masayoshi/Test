@@ -147,7 +147,6 @@ export class FimsMap {
     });
 
     this.map.fitBounds(this.config.map.pngBounds);
-
     this.onStatus("Map returned to Papua New Guinea extent");
   }
 }
