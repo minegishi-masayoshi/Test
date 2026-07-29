@@ -1,27 +1,22 @@
 export const MENU_ITEMS = Object.freeze([
-  { id: "map", label: "Map Explorer", icon: "▣", title: "Map Explorer", subtitle: "FIMS spatial information" },
-  { id: "forest", label: "Forest Resources", icon: "♣", title: "Forest Resources", subtitle: "Concessions, FMUs and Forest Base Map" },
-  { id: "logging", label: "Logging", icon: "▤", title: "Logging", subtitle: "Logging-area and operational information" },
-  { id: "analysis", label: "Analysis", icon: "◎", title: "Analysis", subtitle: "Timber volume, spatial analysis and AAC" },
-  { id: "reports", label: "Reports", icon: "▥", title: "Reports", subtitle: "Preview and export FIMS reports" },
-  { id: "data", label: "Data", icon: "◆", title: "Data", subtitle: "Layer, file and FIPS data management" },
-  { id: "administration", label: "Administration", icon: "⚙", title: "Administration", subtitle: "Users, roles and system settings" },
-  { id: "help", label: "Help", icon: "?", title: "Help", subtitle: "FIMS user guidance and system information" }
+  { id:"province", label:"Province", icon:"▤", title:"Province information" },
+  { id:"concession", label:"Concession", icon:"▰", title:"Concession information" },
+  { id:"proposed", label:"Proposed Concession", icon:"◇", title:"Proposed concession information" },
+  { id:"assessment", label:"Assessment by FIPS", icon:"◎", title:"Open forest inventory assessment" },
+  { id:"largeMap", label:"Large Map", icon:"▣", title:"Open full map" },
+  { id:"admin", label:"Administration", icon:"⚙", title:"Administration" },
+  { id:"exit", label:"Exit", icon:"×", title:"Return to FRIMS portal" }
 ]);
 
 export function renderMenu(container, onSelect) {
   container.replaceChildren();
-  MENU_ITEMS.forEach((item, index) => {
+  MENU_ITEMS.forEach((item) => {
     const button = document.createElement("button");
     button.type = "button";
-    button.className = `menu-item${index === 0 ? " active" : ""}`;
-    button.dataset.view = item.id;
+    button.className = "nav-button";
     button.innerHTML = `<span aria-hidden="true">${item.icon}</span>${item.label}`;
-    button.addEventListener("click", () => {
-      container.querySelectorAll(".menu-item").forEach((node) => node.classList.remove("active"));
-      button.classList.add("active");
-      onSelect(item);
-    });
+    button.title = item.title;
+    button.addEventListener("click", () => onSelect(item));
     container.appendChild(button);
   });
 }
