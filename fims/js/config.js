@@ -21,7 +21,7 @@ export const CONFIG = Object.freeze({
      * GitHub PagesはHTTPSで配信されるため、ブラウザによっては
      * HTTPのlocalhost WMSがMixed Contentとして遮断される場合があります。
      */
-    wmsUrl: "https://140-245-124-203.sslip.io/geoserver/fims/wms"
+    wmsUrl: "https://140-245-124-203.sslip.io/geoserver/fims/wms",
     workspace: "fims",
     version: "1.1.1"
   },
