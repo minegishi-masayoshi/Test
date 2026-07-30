@@ -11,8 +11,17 @@ export const CONFIG = Object.freeze({
   },
 
   geoserver: {
-    // HTTPS版 GeoServer
-    wmsUrl: "https://140-245-124-203.sslip.io/geoserver/fims/wms",
+    /*
+     * 開発中は、Windows側でSSHトンネルを起動した状態で使用します。
+     *
+     * ssh -N -i "秘密鍵のパス" \
+     *   -L 18080:127.0.0.1:8080 \
+     *   ubuntu@140.245.124.203
+     *
+     * GitHub PagesはHTTPSで配信されるため、ブラウザによっては
+     * HTTPのlocalhost WMSがMixed Contentとして遮断される場合があります。
+     */
+    wmsUrl: "http://localhost:18080/geoserver/fims/wms",
     workspace: "fims",
     version: "1.1.1"
   },
@@ -37,12 +46,12 @@ export const CONFIG = Object.freeze({
     {
       key: "province",
       label: "Provinces",
-      name: "province"
+      name: "prov"
     },
     {
       key: "concession",
       label: "Concessions",
-      name: "concession"
+      name: "concessionarea"
     },
     {
       key: "fmu",
