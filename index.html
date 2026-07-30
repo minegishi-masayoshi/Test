@@ -1,325 +1,232 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <title>Restricted Access Portal</title>
-  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
-  <meta name="referrer" content="no-referrer" />
-  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
+  <title>FIMS Cloud Ver.1.1</title>
+  <meta
+    name="description"
+    content="Papua New Guinea Forest Information and Mapping System"
+  />
+  <meta
+    name="robots"
+    content="noindex, nofollow, noarchive, nosnippet, noimageindex"
+  />
+  <meta name="referrer" content="strict-origin-when-cross-origin" />
+  <meta
+    http-equiv="Cache-Control"
+    content="no-store, no-cache, must-revalidate, max-age=0"
+  />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
   <meta
     http-equiv="Content-Security-Policy"
-    content="
-      default-src 'self';
-      script-src 'self' 'unsafe-inline' https://esm.sh;
-      style-src 'self' 'unsafe-inline';
-      connect-src https://pncvddqeuxlkplwgvxgk.supabase.co;
-      img-src 'self' data:;
-      font-src 'self';
-      object-src 'none';
-      base-uri 'self';
-      frame-ancestors 'none';
-      form-action 'self';
-    "
+    content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com; connect-src 'self' https://*.tile.openstreetmap.org https:; img-src 'self' data: blob: https://*.tile.openstreetmap.org https:; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self';"
   />
 
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f5f7fa;
-      color: #1f2937;
-    }
-
-    header {
-      background: #1f4b99;
-      color: white;
-      padding: 24px 32px;
-    }
-
-    header h1 {
-      margin: 0 0 8px 0;
-      font-size: 28px;
-    }
-
-    header p {
-      margin: 0;
-      font-size: 15px;
-      opacity: 0.95;
-    }
-
-    .container {
-      max-width: 1100px;
-      margin: 32px auto;
-      padding: 0 20px;
-    }
-
-    #loginBox {
-      max-width: 420px;
-      margin: 48px auto 0;
-      background: white;
-      padding: 24px;
-      border-radius: 14px;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
-      display: none;
-    }
-
-    #loginBox input {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 10px 12px;
-      margin-top: 12px;
-      margin-bottom: 12px;
-      border: 1px solid #cbd5e1;
-      border-radius: 8px;
-      font-size: 14px;
-    }
-
-    #loginBox button {
-      border: none;
-      background: #1f4b99;
-      color: white;
-      padding: 10px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-
-    #loginBox button:disabled {
-      opacity: 0.65;
-      cursor: not-allowed;
-    }
-
-    #loginMsg {
-      margin-top: 12px;
-      font-size: 14px;
-      color: #374151;
-      white-space: pre-line;
-      min-height: 20px;
-    }
-
-    #appArea {
-      display: none;
-    }
-
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 24px;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-
-    .status {
-      background: white;
-      border-radius: 10px;
-      padding: 14px 18px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-    }
-
-    .logout-btn {
-      border: none;
-      background: #d64545;
-      color: white;
-      padding: 10px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-      gap: 20px;
-    }
-
-    .card {
-      background: white;
-      border-radius: 14px;
-      padding: 24px;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      min-height: 200px;
-    }
-
-    .card h2 {
-      margin-top: 0;
-      margin-bottom: 12px;
-      font-size: 22px;
-    }
-
-    .card p {
-      line-height: 1.6;
-      font-size: 14px;
-      color: #4b5563;
-      flex-grow: 1;
-    }
-
-    .card a {
-      display: inline-block;
-      margin-top: 18px;
-      text-decoration: none;
-      background: #1f4b99;
-      color: white;
-      padding: 12px 16px;
-      border-radius: 8px;
-      font-size: 14px;
-      text-align: center;
-    }
-
-    .note {
-      margin-top: 28px;
-      padding: 16px 18px;
-      background: #eef4ff;
-      border-left: 4px solid #1f4b99;
-      border-radius: 8px;
-      font-size: 14px;
-      line-height: 1.6;
-    }
-  </style>
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+  <link rel="stylesheet" href="./css/main.css?v=1.1.0" />
 </head>
+
 <body>
+  <div id="app" class="app-shell">
+    <header class="app-header">
+      <div class="brand-block">
+        <div class="brand-title">FIMS Cloud</div>
+        <div class="brand-subtitle">
+          Forest Information and Mapping System
+        </div>
+      </div>
 
-<header>
-  <h1>Restricted Access Portal</h1>
-  <p>Authorized users only</p>
-</header>
+      <div class="header-meta">
+        <span>PNG Forest Authority</span>
+        <strong id="versionText">Ver.1.1</strong>
+      </div>
+    </header>
 
-<div class="container">
+    <main class="main-screen">
+      <section class="top-grid">
+        <article class="panel province-panel">
+          <div class="panel-header">
+            <h2 id="unitListTitle">Provinces</h2>
+            <span id="unitCount">0</span>
+          </div>
 
-  <div id="loginBox">
-    <h2>Login</h2>
-    <p>Please sign in with your assigned account.</p>
+          <label class="search-box">
+            <span id="unitSearchLabel" class="sr-only">
+              Search provinces
+            </span>
+            <input
+              id="unitSearch"
+              type="search"
+              placeholder="Search province"
+              autocomplete="off"
+            />
+          </label>
 
-    <input id="email" type="email" placeholder="Email" autocomplete="username" />
-    <input id="password" type="password" placeholder="Password" autocomplete="current-password" />
+          <div
+            id="unitList"
+            class="select-list"
+            role="listbox"
+            aria-label="Province list"
+          ></div>
+        </article>
 
-    <button id="loginBtn" type="button">Login</button>
+        <article class="panel fmu-panel">
+          <div class="panel-header">
+            <div>
+              <h2 id="objectListTitle">FMUs</h2>
+              <small id="selectedUnitLabel">
+                Select Province mode, then select a province
+              </small>
+            </div>
+            <span id="fmuCount">0</span>
+          </div>
 
-    <div id="loginMsg" aria-live="polite"></div>
+          <div class="table-wrap">
+            <table
+              id="objectTable"
+              class="data-table"
+              aria-label="Selected object attribute list"
+            >
+              <thead id="objectTableHead"></thead>
+              <tbody id="fmuTableBody"></tbody>
+            </table>
+          </div>
+
+          <div class="panel-actions">
+            <button id="updateZoneButton" type="button">
+              Update Timber Volume for Zone
+            </button>
+            <button id="updateFmuButton" type="button">
+              Update Timber Volume for FMU
+            </button>
+          </div>
+        </article>
+
+        <article class="panel map-panel">
+          <div class="panel-header">
+            <div>
+              <h2>Overview Map</h2>
+              <small id="mapSubtitle">Papua New Guinea</small>
+            </div>
+          </div>
+
+          <div
+            id="map"
+            aria-label="Interactive map of Papua New Guinea"
+          ></div>
+
+          <div class="map-footer">
+            <div id="layerList" class="compact-layers"></div>
+
+            <div class="map-actions">
+              <button id="homeExtentButton" type="button">
+                PNG extent
+              </button>
+              <button id="clearLayersButton" type="button">
+                Clear
+              </button>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="bottom-grid">
+        <article class="panel navigation-panel">
+          <div class="panel-header">
+            <h2>Navigation</h2>
+          </div>
+
+          <div
+            class="tab-row"
+            role="tablist"
+            aria-label="Data list mode"
+          >
+            <button
+              id="provinceModeButton"
+              class="tab-button active"
+              type="button"
+              role="tab"
+              aria-selected="true"
+              data-mode="province"
+            >
+              Province
+            </button>
+
+            <button
+              id="concessionModeButton"
+              class="tab-button"
+              type="button"
+              role="tab"
+              aria-selected="false"
+              data-mode="concession"
+            >
+              Concession
+            </button>
+
+            <button
+              id="proposedConcessionModeButton"
+              class="tab-button"
+              type="button"
+              role="tab"
+              aria-selected="false"
+              data-mode="proposed-concession"
+            >
+              Proposed Concession
+            </button>
+          </div>
+
+          <div id="mainMenu" class="navigation-grid"></div>
+
+          <div class="module-buttons">
+            <a href="../fips/index.html">Open FIPS</a>
+            <a href="../lanmap/index.html">Open LANMAP</a>
+          </div>
+        </article>
+
+        <article class="panel summary-panel">
+          <div class="panel-header">
+            <div>
+              <h2>Summary</h2>
+              <small id="summaryScope">National totals</small>
+            </div>
+            <span id="summaryStatus">Prototype data</span>
+          </div>
+
+          <div id="summaryTable" class="summary-table"></div>
+        </article>
+
+        <article class="panel reports-panel">
+          <div class="panel-header">
+            <h2>Reports</h2>
+          </div>
+
+          <div id="reportList" class="report-list"></div>
+
+          <div class="report-actions">
+            <button id="previewReportButton" type="button">
+              Preview
+            </button>
+            <button id="exportReportButton" type="button">
+              Export
+            </button>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <footer class="status-bar">
+      <span id="statusText">Starting FIMS Cloud…</span>
+      <span id="coordinateText">Lat: — / Lon: —</span>
+      <span>Authorized access only</span>
+    </footer>
   </div>
 
-  <div id="appArea">
-    <div class="topbar">
-      <div class="status" id="userStatus">Access granted</div>
-      <button class="logout-btn" id="logoutBtn" type="button">Logout</button>
-    </div>
-
-    <div class="cards">
-      <div class="card">
-        <h2>1. LANMAP</h2>
-        <p>Restricted module</p>
-        <a href="lanmap/index.html?v=20260324">Open</a>
-      </div>
-
-      <div class="card">
-        <h2>2. FIMS</h2>
-        <p>Restricted module</p>
-        <a href="fims/index.html">Open</a>
-      </div>
-
-      <div class="card">
-        <h2>3. FIPS</h2>
-        <p>Restricted module</p>
-        <a href="fips/index.html">Open</a>
-      </div>
-    </div>
-
-    <div class="note">
-      Access is limited to authorized users.
-    </div>
-  </div>
-
-</div>
-
-<script type="module">
-  import { createClient } from 'https://esm.sh/@supabase/supabase-js'
-
-  const supabaseUrl = 'https://pncvddqeuxlkplwgvxgk.supabase.co'
-  const supabaseKey = 'sb_publishable_bOTwr6mBCgp_jUS2FAF-DQ_WXlMvdrT'
-  const supabase = createClient(supabaseUrl, supabaseKey)
-
-  const loginBox = document.getElementById('loginBox')
-  const appArea = document.getElementById('appArea')
-  const loginBtn = document.getElementById('loginBtn')
-  const loginMsg = document.getElementById('loginMsg')
-  const emailInput = document.getElementById('email')
-  const passInput = document.getElementById('password')
-  const userStatus = document.getElementById('userStatus')
-  const logoutBtn = document.getElementById('logoutBtn')
-
-  function showLogin() {
-    loginBox.style.display = 'block'
-    appArea.style.display = 'none'
-    loginBtn.disabled = false
-    passInput.value = ''
-  }
-
-  function showApp() {
-    userStatus.textContent = 'Access granted'
-    loginBox.style.display = 'none'
-    appArea.style.display = 'block'
-    loginMsg.textContent = ''
-  }
-
-  function showGenericError() {
-    loginMsg.textContent = 'Login failed. Please check your credentials or contact the administrator.'
-  }
-
-  loginBtn.addEventListener('click', async () => {
-    loginMsg.textContent = ''
-
-    const email = emailInput.value.trim()
-    const password = passInput.value
-
-    if (!email || !password) {
-      loginMsg.textContent = 'Please enter both email and password.'
-      return
-    }
-
-    loginBtn.disabled = true
-
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      })
-
-      if (error) {
-        showGenericError()
-        loginBtn.disabled = false
-        return
-      }
-    } catch (_e) {
-      showGenericError()
-      loginBtn.disabled = false
-    }
-  })
-
-  logoutBtn.addEventListener('click', async () => {
-    try {
-      await supabase.auth.signOut()
-    } finally {
-      showLogin()
-    }
-  })
-
-  const { data: { session } } = await supabase.auth.getSession()
-
-  if (session) showApp()
-  else showLogin()
-
-  supabase.auth.onAuthStateChange((_event, session) => {
-    if (session) showApp()
-    else showLogin()
-  })
-</script>
-
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script type="module" src="./js/app.js?v=1.1.0"></script>
 </body>
 </html>
