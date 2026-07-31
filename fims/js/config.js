@@ -663,7 +663,7 @@ const CONFIG = {
       sortField: "code",
       secondarySortField: "name",
       sortDirection: "asc",
-      maximumRecords: 5000,
+      maximumRecords: 20000,
       searchable: true,
 
       /*
