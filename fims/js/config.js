@@ -40,7 +40,7 @@ const CONFIG = {
     name: "FIMS Cloud",
     fullName: "Forest Information and Mapping System",
     organization: "PNG Forest Authority",
-    version: "Ver.2.3.1",
+    version: "Ver.2.3.2",
     build: "2.0.0",
     environment: "MVP",
     language: "en",
@@ -1313,10 +1313,10 @@ const CONFIG = {
 
     styles: {
       province: {
-        color: "#1f4e79",
+        color: "#2f6f46",
         weight: 2,
         opacity: 1,
-        fillColor: "#d9e8f5",
+        fillColor: "#dcefe0",
         fillOpacity: 0.25
       },
 

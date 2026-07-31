@@ -59,7 +59,7 @@ import {
  * ============================================================
  */
 
-export const APP_VERSION = "2.3.1";
+export const APP_VERSION = "2.3.2";
 
 export const APP_STATUS = Object.freeze({
   IDLE: "idle",
