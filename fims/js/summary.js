@@ -56,7 +56,7 @@ import {
 /**
  * Summary module version.
  */
-export const SUMMARY_MODULE_VERSION = "2.0.0";
+export const SUMMARY_MODULE_VERSION = "2.0.1";
 
 /**
  * Default Summary container ID.
@@ -2439,94 +2439,85 @@ export class ProvinceSummaryManager {
       document.createElement("div");
 
     wrapper.className =
-      "summary-table-wrapper";
+      "summary-table-wrapper legacy-summary-wrapper";
 
     wrapper.dataset.summaryStatus =
       summary?.status ||
       SUMMARY_STATUS.EMPTY;
 
     const heading =
-      this.createSummaryHeading(
-        summary
-      );
-
-    const tableWrap =
-      document.createElement("div");
-
-    tableWrap.className =
-      "table-wrap summary-table-wrap";
-
-    const table =
-      document.createElement("table");
-
-    table.className =
-      "data-table summary-table old-fims-summary-table";
-
-    table.setAttribute(
-      "aria-label",
-      "Province FMU Summary"
-    );
-
-    const colgroup =
-      document.createElement("colgroup");
-
-    const itemColumn =
-      document.createElement("col");
-
-    itemColumn.className =
-      "summary-item-column";
-
-    const valueColumn =
-      document.createElement("col");
-
-    valueColumn.className =
-      "summary-value-column";
-
-    const descriptionColumn =
-      document.createElement("col");
-
-    descriptionColumn.className =
-      "summary-description-column";
-
-    colgroup.append(
-      itemColumn,
-      valueColumn,
-      descriptionColumn
-    );
-
-    const thead =
-      this.createSummaryTableHead();
-
-    const tbody =
-      document.createElement("tbody");
-
-    tbody.id =
-      "province-summary-table-body";
+      this.createSummaryHeading(summary);
 
     const rows =
       Array.isArray(summary?.rows)
         ? summary.rows
         : [];
 
-    for (const row of rows) {
-      tbody.appendChild(
-        this.createSummaryTableRow(
+    const rowMap =
+      new Map(
+        rows.map((row) => [
+          row.key,
           row
-        )
+        ])
       );
-    }
 
-    table.append(
-      colgroup,
-      thead,
-      tbody
+    /*
+     * Old FIMS Province Summary layout.
+     * The left and right arrays reproduce the field placement
+     * shown in the legacy FIM-ADMIN Province screen.
+     */
+    const leftFields = [
+      ["vegArea", "Area(ha)"],
+      ["protectedArea", "Protected"],
+      ["extSlope", "Ext Slope"],
+      ["extAltitude", "Ext Altitude"],
+      ["extKarst", "Ext Karst"],
+      ["extInund", "Ext Inundation"],
+      ["extMangrove", "Ext Mangrove"],
+      ["serSlopeRelief", "Ser Slope"],
+      ["serInund", "Ser Inundation"]
+    ];
+
+    const rightFields = [
+      ["grossFrstArea75", "Gross Forest Area '75"],
+      ["adjFrstArea75", "Adjusted Forest Area '75"],
+      ["grossFrstVol75", "Gross Forest Volume '75"],
+      ["loggedLUse", "Logged Land Use"],
+      ["revGrossFrstArea", "Revised Gross Forest Area"],
+      ["revAdjFrstArea", "Rev Adj Forest Area"],
+      ["revGrossFrstVol", "Rev Gross Forest Vol"]
+    ];
+
+    const grid =
+      document.createElement("div");
+
+    grid.className =
+      "legacy-summary-grid";
+
+    grid.append(
+      this.createLegacySummaryColumn(
+        leftFields,
+        rowMap
+      ),
+      this.createLegacySummaryColumn(
+        rightFields,
+        rowMap
+      )
     );
 
-    tableWrap.appendChild(table);
+    const note =
+      document.createElement("p");
+
+    note.className =
+      "legacy-summary-note";
+
+    note.textContent =
+      "Please refer to reports for detailed data.";
 
     wrapper.append(
       heading,
-      tableWrap
+      grid,
+      note
     );
 
     if (
@@ -2538,19 +2529,108 @@ export class ProvinceSummaryManager {
     }
 
     const metadata =
-      this.createSummaryMetadata(
-        summary
-      );
+      this.createSummaryMetadata(summary);
 
     if (metadata) {
       wrapper.appendChild(metadata);
     }
 
-    this.container.appendChild(
-      wrapper
-    );
+    this.container.appendChild(wrapper);
 
     return wrapper;
+  }
+
+  /**
+   * Creates one column of the legacy two-column Summary layout.
+   *
+   * @param {Array<Array<string>>} definitions
+   * @param {Map<string, object>} rowMap
+   * @returns {HTMLElement}
+   */
+  createLegacySummaryColumn(
+    definitions,
+    rowMap
+  ) {
+    const column =
+      document.createElement("div");
+
+    column.className =
+      "legacy-summary-column";
+
+    for (
+      const [key, label]
+      of definitions
+    ) {
+      const sourceRow =
+        rowMap.get(key);
+
+      column.appendChild(
+        this.createLegacySummaryItem(
+          key,
+          label,
+          sourceRow
+        )
+      );
+    }
+
+    return column;
+  }
+
+  /**
+   * Creates one label/value row in the legacy Summary layout.
+   *
+   * @param {string} key
+   * @param {string} label
+   * @param {object|undefined} sourceRow
+   * @returns {HTMLElement}
+   */
+  createLegacySummaryItem(
+    key,
+    label,
+    sourceRow
+  ) {
+    const item =
+      document.createElement("div");
+
+    item.className =
+      "legacy-summary-item";
+
+    item.dataset.summaryKey = key;
+    item.dataset.empty =
+      String(
+        sourceRow?.isEmpty ?? true
+      );
+
+    const labelElement =
+      document.createElement("span");
+
+    labelElement.className =
+      "legacy-summary-label";
+
+    labelElement.textContent = label;
+    labelElement.title = label;
+
+    const valueElement =
+      document.createElement("span");
+
+    valueElement.className =
+      "legacy-summary-value number-cell numeric";
+
+    valueElement.dataset.rawValue =
+      this.serializeDataValue(
+        sourceRow?.rawValue ?? null
+      );
+
+    valueElement.textContent =
+      sourceRow?.formattedValue ??
+      this.emptyValue;
+
+    item.append(
+      labelElement,
+      valueElement
+    );
+
+    return item;
   }
 
   /**
