@@ -547,6 +547,7 @@ const CONFIG = {
       ],
 
       provinceCode: [
+        "province",
         "province_code",
         "provincecode",
         "prov_code",
