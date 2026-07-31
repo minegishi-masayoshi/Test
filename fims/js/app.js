@@ -394,6 +394,122 @@ function escapeSelector(value) {
     );
 }
 
+
+/**
+ * Returns Polygon coordinate arrays from Polygon/MultiPolygon geometry.
+ */
+function getPolygonCoordinates(geometry) {
+  if (!geometry || !Array.isArray(geometry.coordinates)) {
+    return [];
+  }
+
+  if (geometry.type === "Polygon") {
+    return [geometry.coordinates];
+  }
+
+  if (geometry.type === "MultiPolygon") {
+    return geometry.coordinates;
+  }
+
+  return [];
+}
+
+function pointOnSegment(point, start, end) {
+  const [px, py] = point;
+  const [ax, ay] = start;
+  const [bx, by] = end;
+  const cross = (px - ax) * (by - ay) - (py - ay) * (bx - ax);
+  if (Math.abs(cross) > 1e-10) return false;
+  const dot = (px - ax) * (bx - ax) + (py - ay) * (by - ay);
+  if (dot < 0) return false;
+  const lengthSquared = (bx - ax) ** 2 + (by - ay) ** 2;
+  return dot <= lengthSquared;
+}
+
+function pointInRing(point, ring) {
+  if (!Array.isArray(ring) || ring.length < 3) return false;
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const a = ring[i];
+    const b = ring[j];
+    if (pointOnSegment(point, a, b)) return true;
+    const intersects =
+      ((a[1] > point[1]) !== (b[1] > point[1])) &&
+      (point[0] <
+        ((b[0] - a[0]) * (point[1] - a[1])) /
+          ((b[1] - a[1]) || Number.EPSILON) +
+        a[0]);
+    if (intersects) inside = !inside;
+  }
+  return inside;
+}
+
+function orientation(a, b, c) {
+  const value =
+    (b[1] - a[1]) * (c[0] - b[0]) -
+    (b[0] - a[0]) * (c[1] - b[1]);
+  if (Math.abs(value) < 1e-10) return 0;
+  return value > 0 ? 1 : 2;
+}
+
+function segmentsIntersect(a1, a2, b1, b2) {
+  const o1 = orientation(a1, a2, b1);
+  const o2 = orientation(a1, a2, b2);
+  const o3 = orientation(b1, b2, a1);
+  const o4 = orientation(b1, b2, a2);
+  if (o1 !== o2 && o3 !== o4) return true;
+  return (
+    (o1 === 0 && pointOnSegment(b1, a1, a2)) ||
+    (o2 === 0 && pointOnSegment(b2, a1, a2)) ||
+    (o3 === 0 && pointOnSegment(a1, b1, b2)) ||
+    (o4 === 0 && pointOnSegment(a2, b1, b2))
+  );
+}
+
+function ringsIntersect(leftRing, rightRing) {
+  for (let i = 0; i < leftRing.length - 1; i += 1) {
+    for (let j = 0; j < rightRing.length - 1; j += 1) {
+      if (
+        segmentsIntersect(
+          leftRing[i],
+          leftRing[i + 1],
+          rightRing[j],
+          rightRing[j + 1]
+        )
+      ) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+/**
+ * Lightweight Polygon/MultiPolygon intersection test.
+ * It covers boundary crossings and full containment, which is sufficient
+ * for matching FMU polygons with Concession polygons.
+ */
+function geometriesIntersect(leftGeometry, rightGeometry) {
+  const leftPolygons = getPolygonCoordinates(leftGeometry);
+  const rightPolygons = getPolygonCoordinates(rightGeometry);
+
+  for (const leftPolygon of leftPolygons) {
+    const leftOuter = leftPolygon?.[0];
+    if (!Array.isArray(leftOuter) || leftOuter.length < 3) continue;
+
+    for (const rightPolygon of rightPolygons) {
+      const rightOuter = rightPolygon?.[0];
+      if (!Array.isArray(rightOuter) || rightOuter.length < 3) continue;
+
+      if (ringsIntersect(leftOuter, rightOuter)) return true;
+      if (pointInRing(leftOuter[0], rightOuter)) return true;
+      if (pointInRing(rightOuter[0], leftOuter)) return true;
+    }
+  }
+
+  return false;
+}
+
 /* ============================================================
  * 4. ApplicationController
  * ============================================================
@@ -417,11 +533,13 @@ export class ApplicationController {
     this.provinces = [];
     this.fmus = [];
     this.concessions = [];
+    this.concessionFmus = [];
 
     this.filteredProvinces = [];
 
     this.selectedProvince = null;
     this.selectedFmu = null;
+    this.selectedConcession = null;
 
     this.selectedReportId = null;
 
@@ -1979,10 +2097,21 @@ export class ApplicationController {
     );
 
     try {
-      this.concessions =
-        await this.loadConcessionsForProvince(
-          province
-        );
+      const [concessions, fmus] =
+        await Promise.all([
+          this.loadConcessionsForProvince(
+            province
+          ),
+          this.loadFmusForProvince(
+            province
+          )
+        ]);
+
+      this.concessions = concessions;
+      this.fmus = fmus;
+      this.concessionFmus = [];
+      this.selectedConcession = null;
+      this.selectedFmu = null;
 
       this.renderFmuTable();
 
@@ -2043,6 +2172,9 @@ export class ApplicationController {
       return true;
     } catch (error) {
       this.concessions = [];
+      this.fmus = [];
+      this.concessionFmus = [];
+      this.selectedConcession = null;
       this.renderFmuTable();
 
       this.handleError(
@@ -2065,7 +2197,10 @@ export class ApplicationController {
   clearProvinceSelection() {
     this.selectedProvince = null;
     this.selectedFmu = null;
+    this.selectedConcession = null;
     this.fmus = [];
+    this.concessions = [];
+    this.concessionFmus = [];
     this.concessions = [];
 
     setText(
@@ -2110,7 +2245,11 @@ export class ApplicationController {
       this.activeView ===
       APP_VIEW.CONCESSION
     ) {
-      this.renderConcessionTable();
+      if (this.selectedConcession) {
+        this.renderConcessionFmuTable();
+      } else {
+        this.renderConcessionTable();
+      }
       return;
     }
 
@@ -2354,7 +2493,150 @@ export class ApplicationController {
         row.appendChild(cell);
       }
 
+      row.tabIndex = 0;
+      row.dataset.concessionId =
+        String(concession.id);
+      row.classList.toggle(
+        "selected",
+        this.selectedConcession?.id === concession.id
+      );
+
+      const select = () => {
+        this.selectConcession(concession);
+      };
+
+      row.addEventListener("click", select);
+      row.addEventListener(
+        "keydown",
+        (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            select();
+          }
+        }
+      );
+
       body.appendChild(row);
+    }
+  }
+
+  /**
+   * Selects a Concession, finds spatially intersecting FMUs, and updates
+   * the shared table, map and Summary.
+   */
+  selectConcession(concession) {
+    if (!concession) return false;
+
+    this.selectedConcession = concession;
+    this.selectedFmu = null;
+
+    this.concessionFmus = this.fmus.filter(
+      (fmu) =>
+        geometriesIntersect(
+          concession.geometry,
+          fmu.geometry
+        )
+    );
+
+    this.renderFmuTable();
+
+    this.updateMapFmuData(
+      this.concessionFmus
+    );
+    this.ensureMapLayerVisible(
+      "fmu",
+      true
+    );
+
+    if (
+      typeof this.mapManager?.setWmsLayerFilter ===
+      "function"
+    ) {
+      const escapedName = String(concession.name)
+        .replace(/'/g, "''");
+      this.mapManager.setWmsLayerFilter(
+        "concession",
+        `NAME='${escapedName}'`
+      );
+    }
+
+    this.ensureMapLayerVisible(
+      "concession",
+      true
+    );
+
+    const concessionSummaryScope = {
+      ...this.selectedProvince,
+      name: concession.name,
+      provinceName: concession.name
+    };
+
+    const result = this.summaryManager?.update(
+      concessionSummaryScope,
+      this.concessionFmus,
+      {
+        render: true,
+        notify: false
+      }
+    );
+
+    setText(
+      this.dom.summaryScope,
+      `${concession.name} FMU totals`
+    );
+
+    const count =
+      result?.metadata?.fmuCount ??
+      this.concessionFmus.length;
+
+    this.setSummaryStatus(
+      `${count} FMU record(s) intersect the selected Concession.`
+    );
+
+    this.setStatus(
+      `${concession.name} selected; ${count} related FMU record(s) loaded.`
+    );
+
+    return true;
+  }
+
+  /**
+   * Renders FMUs spatially related to the selected Concession.
+   */
+  renderConcessionFmuTable() {
+    this.configureObjectPanelForFmus();
+
+    setText(
+      first("#fmuListTitle"),
+      `FMUs in ${this.selectedConcession?.name || "Concession"}`
+    );
+
+    const search = first("#fmuSearch");
+    if (search) {
+      search.placeholder = "Search FMU";
+      search.disabled = true;
+    }
+
+    const body = this.dom.fmuTableBody;
+    if (!body) return;
+
+    body.replaceChildren();
+    setText(
+      this.dom.fmuCount,
+      this.concessionFmus.length
+    );
+
+    if (this.concessionFmus.length === 0) {
+      this.renderFmuEmptyRow(
+        "No FMU polygons intersect the selected Concession."
+      );
+      return;
+    }
+
+    for (const fmu of this.concessionFmus) {
+      body.appendChild(
+        this.createFmuTableRow(fmu)
+      );
     }
   }
 
