@@ -489,6 +489,86 @@ function ringsIntersect(leftRing, rightRing) {
  * It covers boundary crossings and full containment, which is sufficient
  * for matching FMU polygons with Concession polygons.
  */
+
+/**
+ * Returns true when a representative point of an FMU polygon lies inside
+ * a Concession polygon. This produces a stable one-to-one spatial
+ * classification and avoids selecting every FMU that merely touches a
+ * Concession boundary.
+ */
+function geometryContainsRepresentativePoint(containerGeometry, itemGeometry) {
+  const containerPolygons = getPolygonCoordinates(containerGeometry);
+  const itemPolygons = getPolygonCoordinates(itemGeometry);
+
+  if (containerPolygons.length === 0 || itemPolygons.length === 0) {
+    return false;
+  }
+
+  const pointInsidePolygon = (point, polygon) => {
+    const outer = polygon?.[0];
+    if (!Array.isArray(outer) || !pointInRing(point, outer)) {
+      return false;
+    }
+
+    // A point in an interior ring is outside the polygon.
+    for (let index = 1; index < polygon.length; index += 1) {
+      if (pointInRing(point, polygon[index])) {
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  const pointInsideContainer = (point) =>
+    containerPolygons.some((polygon) =>
+      pointInsidePolygon(point, polygon)
+    );
+
+  for (const polygon of itemPolygons) {
+    const outer = polygon?.[0];
+    if (!Array.isArray(outer) || outer.length < 4) {
+      continue;
+    }
+
+    // Area-weighted polygon centroid.
+    let twiceArea = 0;
+    let centroidX = 0;
+    let centroidY = 0;
+
+    for (let index = 0; index < outer.length - 1; index += 1) {
+      const [x1, y1] = outer[index];
+      const [x2, y2] = outer[index + 1];
+      const cross = x1 * y2 - x2 * y1;
+      twiceArea += cross;
+      centroidX += (x1 + x2) * cross;
+      centroidY += (y1 + y2) * cross;
+    }
+
+    if (Math.abs(twiceArea) > 1e-12) {
+      const centroid = [
+        centroidX / (3 * twiceArea),
+        centroidY / (3 * twiceArea)
+      ];
+
+      if (pointInsideContainer(centroid)) {
+        return true;
+      }
+    }
+
+    // Fallback samples for highly concave polygons whose centroid may lie
+    // outside the polygon itself.
+    const sampleStep = Math.max(1, Math.floor((outer.length - 1) / 12));
+    for (let index = 0; index < outer.length - 1; index += sampleStep) {
+      if (pointInsideContainer(outer[index])) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
 function geometriesIntersect(leftGeometry, rightGeometry) {
   const leftPolygons = getPolygonCoordinates(leftGeometry);
   const rightPolygons = getPolygonCoordinates(rightGeometry);
@@ -2532,7 +2612,7 @@ export class ApplicationController {
 
     this.concessionFmus = this.fmus.filter(
       (fmu) =>
-        geometriesIntersect(
+        geometryContainsRepresentativePoint(
           concession.geometry,
           fmu.geometry
         )
@@ -2552,11 +2632,15 @@ export class ApplicationController {
       typeof this.mapManager?.setWmsLayerFilter ===
       "function"
     ) {
+      const planId = Number(concession.planId);
       const escapedName = String(concession.name)
         .replace(/'/g, "''");
+
       this.mapManager.setWmsLayerFilter(
         "concession",
-        `NAME='${escapedName}'`
+        Number.isFinite(planId)
+          ? `PLAN_ID=${planId}`
+          : `NAME='${escapedName}'`
       );
     }
 
