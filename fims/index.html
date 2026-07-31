@@ -2,110 +2,807 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FIMS Cloud Ver.1.0</title>
-  <meta name="description" content="Papua New Guinea Forest Information Mapping System" />
-  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
-  <meta name="referrer" content="strict-origin-when-cross-origin" />
-  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com; connect-src 'self' https://*.tile.openstreetmap.org https:; img-src 'self' data: blob: https://*.tile.openstreetmap.org https:; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self';" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="./css/main.css?v=1.0.2" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>FIMS Cloud - Province Selection</title>
+
+  <meta
+    name="description"
+    content="PNG Forest Authority Forest Information and Mapping System Cloud Version 2.0"
+  />
+
+  <meta
+    name="robots"
+    content="noindex, nofollow, noarchive, nosnippet, noimageindex"
+  />
+
+  <meta
+    name="referrer"
+    content="strict-origin-when-cross-origin"
+  />
+
+  <meta
+    http-equiv="Cache-Control"
+    content="no-store, no-cache, must-revalidate, max-age=0"
+  />
+
+  <meta
+    http-equiv="Pragma"
+    content="no-cache"
+  />
+
+  <meta
+    http-equiv="Expires"
+    content="0"
+  />
+
+  <!--
+    FIMS Cloud is hosted on GitHub Pages.
+
+    The Content-Security-Policy allows:
+    - Local FIMS files
+    - Leaflet from unpkg.com
+    - OpenStreetMap tiles
+    - HTTPS access to GeoServer
+  -->
+  <meta
+    http-equiv="Content-Security-Policy"
+    content="
+      default-src 'self';
+      script-src 'self' https://unpkg.com;
+      style-src 'self' 'unsafe-inline' https://unpkg.com;
+      connect-src 'self' https:;
+      img-src 'self' data: blob: https:;
+      font-src 'self' data:;
+      object-src 'none';
+      frame-src 'none';
+      base-uri 'self';
+      form-action 'self';
+    "
+  />
+
+  <!-- Leaflet -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIINfQ3yn8igWg2mMZroXfB1f7VZJpMZrY0="
+    crossorigin=""
+  />
+
+  <!-- FIMS Cloud -->
+  <link
+    rel="stylesheet"
+    href="./css/main.css?v=2.0.0"
+  />
 </head>
+
 <body>
-  <div id="app" class="app-shell">
+  <!--
+    ============================================================
+    FIMS Cloud Ver.2.0
+    Province Selection Screen
+    ============================================================
+  -->
+  <div
+    id="fims-app"
+    class="app-shell"
+  >
+    <!-- ======================================================
+         Application header
+         ====================================================== -->
     <header class="app-header">
       <div class="brand-block">
-        <div class="brand-title">FIMS Cloud</div>
-        <div class="brand-subtitle">Forest Information and Mapping System</div>
+        <div class="brand-title-row">
+          <h1 class="brand-title">
+            FIMS Cloud
+          </h1>
+
+          <span
+            id="application-version"
+            class="version-badge"
+          >
+            Ver.2.0
+          </span>
+        </div>
+
+        <p class="brand-subtitle">
+          Forest Information and Mapping System
+        </p>
       </div>
+
       <div class="header-meta">
-        <span>PNG Forest Authority</span>
-        <strong id="versionText">Ver.1.0</strong>
+        <strong>
+          PNG Forest Authority
+        </strong>
+
+        <span>
+          Forest Inventory and Mapping
+        </span>
       </div>
     </header>
 
+    <!-- ======================================================
+         Screen title and application status
+         ====================================================== -->
+    <section class="screen-heading">
+      <div>
+        <h2 id="page-title">
+          Province Selection
+        </h2>
+
+        <p class="screen-description">
+          Select a Province to display its FMUs, summary,
+          map and reports.
+        </p>
+      </div>
+
+      <div
+        id="application-status"
+        class="application-status"
+        role="status"
+        aria-live="polite"
+      >
+        Starting FIMS Cloud Ver.2.0…
+      </div>
+    </section>
+
+    <!-- ======================================================
+         Main Province screen
+         ====================================================== -->
     <main class="main-screen">
+      <!-- ====================================================
+           Upper section
+           Province list / FMU table / Province map
+           ==================================================== -->
       <section class="top-grid">
-        <article class="panel province-panel">
-          <div class="panel-header"><h2 id="unitListTitle">Provinces</h2><span id="unitCount">0</span></div>
-          <label class="search-box">
-            <span id="unitSearchLabel" class="sr-only">Search provinces</span>
-            <input id="unitSearch" type="search" placeholder="Search province" autocomplete="off" />
-          </label>
-          <div id="unitList" class="select-list" role="listbox" aria-label="Province list"></div>
-        </article>
-
-        <article class="panel fmu-panel">
+        <!-- ==================================================
+             Province list
+             Old FIMS No.1
+             ================================================== -->
+        <article
+          id="province-panel"
+          class="panel province-panel"
+        >
           <div class="panel-header">
-            <div><h2>FMUs</h2><small id="selectedUnitLabel">Select a province</small></div>
-            <span id="fmuCount">0</span>
+            <div>
+              <h3>
+                Provinces
+              </h3>
+
+              <small>
+                Select one Province
+              </small>
+            </div>
+
+            <span
+              id="province-count"
+              class="count-badge"
+            >
+              0
+            </span>
           </div>
-          <div class="table-wrap">
-            <table class="data-table">
-              <thead><tr><th>FMU</th><th>Zone</th><th>Timber</th><th>Veg. Area</th></tr></thead>
-              <tbody id="fmuTableBody"></tbody>
-            </table>
-          </div>
-          <div class="panel-actions">
-            <button id="updateZoneButton" type="button">Update Timber Volume for Zone</button>
-            <button id="updateFmuButton" type="button">Update Timber Volume for FMU</button>
+
+          <div class="panel-body province-panel-body">
+            <label
+              class="search-box"
+              for="province-search"
+            >
+              <span class="sr-only">
+                Search Provinces
+              </span>
+
+              <input
+                id="province-search"
+                type="search"
+                placeholder="Search Province"
+                autocomplete="off"
+                spellcheck="false"
+              />
+            </label>
+
+            <div class="table-wrap province-table-wrap">
+              <table
+                id="province-table"
+                class="data-table province-table"
+              >
+                <thead>
+                  <tr>
+                    <th scope="col">
+                      Code
+                    </th>
+
+                    <th scope="col">
+                      Provinces
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody id="province-table-body">
+                  <!-- Rendered by app.js -->
+                </tbody>
+              </table>
+            </div>
+
+            <div
+              id="province-empty-message"
+              class="empty-message"
+              hidden
+            >
+              No Province records were found.
+            </div>
           </div>
         </article>
 
-        <article class="panel map-panel">
-          <div class="panel-header"><div><h2>Overview Map</h2><small id="mapSubtitle">Papua New Guinea</small></div></div>
-          <div id="map" aria-label="Interactive map of Papua New Guinea"></div>
-          <div class="map-footer">
-            <div id="layerList" class="compact-layers"></div>
-            <div class="map-actions">
-              <button id="homeExtentButton" type="button">PNG extent</button>
-              <button id="clearLayersButton" type="button">Clear</button>
+        <!-- ==================================================
+             FMU list
+             Old FIMS No.9 and No.10
+             ================================================== -->
+        <article
+          id="fmu-panel"
+          class="panel fmu-panel"
+        >
+          <div class="panel-header">
+            <div>
+              <h3>
+                FMUs
+              </h3>
+
+              <div class="selected-province-line">
+                <span>
+                  Province:
+                </span>
+
+                <strong id="selected-province-name">
+                  Not yet selected.
+                </strong>
+
+                <span
+                  id="selected-province-code"
+                  class="selected-code"
+                ></span>
+              </div>
+            </div>
+
+            <span
+              id="fmu-count"
+              class="count-badge"
+            >
+              0
+            </span>
+          </div>
+
+          <div class="panel-body fmu-panel-body">
+            <label
+              class="search-box"
+              for="fmu-search"
+            >
+              <span class="sr-only">
+                Search FMUs
+              </span>
+
+              <input
+                id="fmu-search"
+                type="search"
+                placeholder="Search FMU"
+                autocomplete="off"
+                spellcheck="false"
+                disabled
+              />
+            </label>
+
+            <div class="table-wrap fmu-table-wrap">
+              <table
+                id="fmu-table"
+                class="data-table fmu-table"
+              >
+                <thead id="fmu-table-head">
+                  <tr>
+                    <th scope="col">
+                      FMU
+                    </th>
+
+                    <th scope="col">
+                      FMU Name
+                    </th>
+
+                    <th scope="col">
+                      Zone
+                    </th>
+
+                    <th scope="col">
+                      Area (ha)
+                    </th>
+
+                    <th scope="col">
+                      Timber Volume (m³)
+                    </th>
+                  </tr>
+                </thead>
+
+                <tbody id="fmu-table-body">
+                  <!-- Rendered by app.js -->
+                </tbody>
+              </table>
+            </div>
+
+            <div
+              id="fmu-empty-message"
+              class="empty-message"
+            >
+              Select a Province to display its FMUs.
+            </div>
+          </div>
+
+          <!-- ================================================
+               Timber Volume controls
+               Old FIMS No.11-No.14
+               Initially disabled in Ver.2 Phase 1
+               ================================================ -->
+          <div
+            id="timber-volume-panel"
+            class="timber-volume-panel"
+          >
+            <div class="timber-volume-actions">
+              <button
+                id="update-zone-volume"
+                type="button"
+                class="secondary-button"
+                disabled
+                title="This function requires a secured server-side API."
+              >
+                Update Timber Volumes for Zone
+              </button>
+
+              <button
+                id="update-fmu-volume"
+                type="button"
+                class="secondary-button"
+                disabled
+                title="This function requires a secured server-side API."
+              >
+                Update Timber Volume for FMU
+              </button>
+            </div>
+
+            <div class="new-volume-control">
+              <label for="new-volume-input">
+                New Vol.
+              </label>
+
+              <input
+                id="new-volume-input"
+                type="number"
+                min="0"
+                step="0.01"
+                inputmode="decimal"
+                disabled
+              />
+
+              <button
+                id="apply-volume-update"
+                type="button"
+                class="primary-button"
+                disabled
+              >
+                Update
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- ==================================================
+             Province overview map
+             Old FIMS No.16
+             ================================================== -->
+        <article
+          id="province-map-panel"
+          class="panel map-panel"
+        >
+          <div class="panel-header">
+            <div>
+              <h3>
+                Province Map
+              </h3>
+
+              <small id="map-subtitle">
+                Papua New Guinea
+              </small>
+            </div>
+          </div>
+
+          <div class="panel-body map-panel-body">
+            <div class="map-container-wrap">
+              <div
+                id="map"
+                class="map-container"
+                role="application"
+                aria-label="Interactive map of Papua New Guinea Provinces and FMUs"
+              ></div>
+
+              <div
+                id="map-loading"
+                class="map-overlay"
+                hidden
+              >
+                Loading map…
+              </div>
+
+              <div
+                id="map-error"
+                class="map-overlay map-error"
+                hidden
+              >
+                The map could not be displayed.
+              </div>
+            </div>
+
+            <div class="map-footer">
+              <div
+                id="layer-list"
+                class="compact-layers"
+                aria-label="Map layers"
+              >
+                <!-- Rendered by map.js -->
+              </div>
+
+              <div class="map-actions">
+                <button
+                  id="home-extent-button"
+                  type="button"
+                  class="secondary-button"
+                >
+                  PNG Extent
+                </button>
+
+                <button
+                  id="clear-map-selection-button"
+                  type="button"
+                  class="secondary-button"
+                >
+                  Clear Selection
+                </button>
+              </div>
             </div>
           </div>
         </article>
       </section>
 
+      <!-- ====================================================
+           Lower section
+           Main menu / Summary / Reports
+           ==================================================== -->
       <section class="bottom-grid">
+        <!-- ==================================================
+             Main function menu
+             Old FIMS No.2-No.8
+             ================================================== -->
         <article class="panel navigation-panel">
-          <div class="panel-header"><h2>Navigation</h2></div>
-          <div class="tab-row" role="tablist" aria-label="Analysis unit">
-            <button id="provinceModeButton" class="tab-button active" type="button" data-mode="province">Province</button>
-            <button id="concessionModeButton" class="tab-button" type="button" data-mode="concession">Concession</button>
+          <div class="panel-header">
+            <div>
+              <h3>
+                Main
+              </h3>
+
+              <small>
+                Function Selection
+              </small>
+            </div>
           </div>
-          <div id="mainMenu" class="navigation-grid"></div>
-          <div class="module-buttons">
-            <a href="../fips/index.html">Open FIPS</a>
-            <a href="../lanmap/index.html">Open LANMAP</a>
+
+          <div class="panel-body">
+            <nav
+              id="module-menu"
+              class="module-menu"
+              aria-label="FIMS main functions"
+            >
+              <button
+                id="module-province"
+                type="button"
+                class="module-button active"
+                data-module="province"
+                aria-current="page"
+              >
+                Province
+              </button>
+
+              <button
+                id="module-concession"
+                type="button"
+                class="module-button"
+                data-module="concession"
+                disabled
+              >
+                Concession
+              </button>
+
+              <button
+                id="module-proposed-concession"
+                type="button"
+                class="module-button"
+                data-module="proposed-concession"
+                disabled
+              >
+                Proposed Concession
+              </button>
+
+              <button
+                id="module-large-map"
+                type="button"
+                class="module-button"
+                data-module="large-map"
+                disabled
+              >
+                Large Map
+              </button>
+
+              <a
+                id="module-assessment"
+                class="module-button module-link"
+                href="../fips/index.html"
+              >
+                Assessment by FIPS
+              </a>
+
+              <button
+                id="module-administration"
+                type="button"
+                class="module-button"
+                data-module="administration"
+                disabled
+              >
+                ADMIN
+              </button>
+
+              <a
+                id="module-exit"
+                class="module-button module-link exit-button"
+                href="../index.html"
+              >
+                EXIT
+              </a>
+            </nav>
           </div>
         </article>
 
-        <article class="panel summary-panel">
-          <div class="panel-header"><div><h2>Summary</h2><small id="summaryScope">National totals</small></div><span id="summaryStatus">Prototype data</span></div>
-          <div id="summaryTable" class="summary-table"></div>
+        <!-- ==================================================
+             Province / FMU summary
+             Old FIMS No.15
+             ================================================== -->
+        <article
+          id="province-summary-panel"
+          class="panel summary-panel"
+        >
+          <div class="panel-header">
+            <div>
+              <h3>
+                Summary
+              </h3>
+
+              <small id="summary-scope">
+                No Province selected
+              </small>
+            </div>
+          </div>
+
+          <div class="panel-body summary-panel-body">
+            <div
+              id="province-summary"
+              class="summary-container"
+            >
+              <!-- Rendered by summary.js -->
+            </div>
+
+            <div
+              id="summary-empty-message"
+              class="empty-message"
+            >
+              Select a Province to display summary information.
+            </div>
+          </div>
         </article>
 
-        <article class="panel reports-panel">
-          <div class="panel-header"><h2>Reports</h2></div>
-          <div id="reportList" class="report-list"></div>
-          <div class="report-actions">
-            <button id="previewReportButton" type="button">Preview</button>
-            <button id="exportReportButton" type="button">Export</button>
+        <!-- ==================================================
+             Reports
+             Old FIMS No.17-No.20
+             ================================================== -->
+        <article
+          id="reports-panel"
+          class="panel reports-panel"
+        >
+          <div class="panel-header">
+            <div>
+              <h3>
+                Reports
+              </h3>
+
+              <small>
+                Province Reports
+              </small>
+            </div>
+          </div>
+
+          <div class="panel-body reports-panel-body">
+            <div
+              id="report-list"
+              class="report-list"
+              role="radiogroup"
+              aria-label="Province reports"
+            >
+              <label class="report-option">
+                <input
+                  type="radio"
+                  name="province-report"
+                  value="province-fmu-list"
+                  checked
+                />
+
+                <span>
+                  FMU List by Province
+                </span>
+              </label>
+
+              <label class="report-option">
+                <input
+                  type="radio"
+                  name="province-report"
+                  value="province-fmu-summary"
+                />
+
+                <span>
+                  FMU Summary by Province
+                </span>
+              </label>
+
+              <label class="report-option">
+                <input
+                  type="radio"
+                  name="province-report"
+                  value="province-timber-volume"
+                />
+
+                <span>
+                  Timber Volume by Province
+                </span>
+              </label>
+            </div>
+
+            <div class="report-toolbar">
+              <button
+                id="report-print"
+                type="button"
+                class="secondary-button"
+                disabled
+              >
+                Print
+              </button>
+
+              <button
+                id="report-preview-button"
+                type="button"
+                class="primary-button"
+                disabled
+              >
+                Preview
+              </button>
+
+              <button
+                id="report-export"
+                type="button"
+                class="secondary-button"
+                disabled
+              >
+                Export CSV
+              </button>
+            </div>
+
+            <div
+              id="report-preview"
+              class="report-preview"
+            >
+              <div
+                id="report-empty-message"
+                class="empty-message"
+              >
+                Select a Province and preview a report.
+              </div>
+            </div>
           </div>
         </article>
       </section>
     </main>
 
+    <!-- ======================================================
+         Notification area
+         ====================================================== -->
+    <div
+      id="notification-area"
+      class="notification-area"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    ></div>
+
+    <!-- ======================================================
+         Footer status bar
+         ====================================================== -->
     <footer class="status-bar">
-      <span id="statusText">Starting FIMS Cloud…</span>
-      <span id="coordinateText">Lat: — / Lon: —</span>
-      <span>Authorized access only</span>
+      <span id="status-text">
+        Starting FIMS Cloud Ver.2.0…
+      </span>
+
+      <span id="coordinate-text">
+        Lat: — / Lon: —
+      </span>
+
+      <span>
+        Authorized access only
+      </span>
     </footer>
+
+    <!-- ======================================================
+         Loading overlay
+         ====================================================== -->
+    <div
+      id="loading-overlay"
+      class="loading-overlay"
+      hidden
+      aria-hidden="true"
+    >
+      <div class="loading-dialog">
+        <div
+          class="loading-spinner"
+          aria-hidden="true"
+        ></div>
+
+        <p id="loading-message">
+          Loading…
+        </p>
+      </div>
+    </div>
+
+    <!-- ======================================================
+         Error dialog
+         ====================================================== -->
+    <dialog
+      id="error-dialog"
+      class="error-dialog"
+    >
+      <form method="dialog">
+        <h2>
+          FIMS Cloud
+        </h2>
+
+        <p id="error-dialog-message">
+          An unexpected error occurred.
+        </p>
+
+        <div class="dialog-actions">
+          <button
+            type="submit"
+            class="primary-button"
+          >
+            Close
+          </button>
+        </div>
+      </form>
+    </dialog>
   </div>
 
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script type="module" src="./js/app.js?v=1.0.2"></script>
+  <!-- Leaflet -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+    crossorigin=""
+  ></script>
+
+  <!-- FIMS Cloud Ver.2 -->
+  <script
+    type="module"
+    src="./js/app.js?v=2.0.0"
+  ></script>
 </body>
 </html>
