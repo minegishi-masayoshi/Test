@@ -3675,30 +3675,18 @@ export class ApplicationController {
    * Sends FMU selection to map.js.
    */
   updateMapFmuSelection(fmu) {
-    if (
-      typeof this.mapManager
-        ?.selectFmu ===
-      "function"
-    ) {
-      this.mapManager.selectFmu(
-        fmu,
-        {
-          zoom: false,
-          notify: false
-        }
-      );
-
-      return;
-    }
-
-    if (
-      typeof this.mapManager
-        ?.setSelectedFmu ===
-      "function"
-    ) {
-      this.mapManager
-        .setSelectedFmu(fmu);
-    }
+    /*
+     * Ver.2.2.4 map extent policy:
+     * - Province mode stops at the selected Province boundary.
+     * - Concession mode stops at the selected Concession boundary.
+     * - Clicking an FMU only selects the table row.
+     *
+     * Client-side FMU geometry may use coordinates that do not align
+     * with the displayed WMS layer. Highlighting or opening its popup
+     * can therefore pan or distort the Leaflet view even when zoom is
+     * disabled. No map-side FMU selection is performed here.
+     */
+    return Boolean(fmu);
   }
 
   /**
@@ -3759,7 +3747,7 @@ export class ApplicationController {
    * Zooms to one FMU.
    *
    * Retained as a compatibility method, but it is not called by
-   * the Ver.2.2.3 user interface.
+   * the Ver.2.2.4 user interface.
    */
   zoomToFmu(fmu) {
     const methods = [
