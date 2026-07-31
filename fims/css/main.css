@@ -1843,3 +1843,48 @@ input:focus:not(:focus-visible) {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Province list: one Province per row */
+.province-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+  overflow-y: auto;
+}
+
+.province-list-item {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  width: 100%;
+  min-height: 28px;
+  padding: 4px 8px;
+  border: 0;
+  border-bottom: 1px solid var(--color-border-light);
+  border-radius: 0;
+  background: #ffffff;
+  color: var(--color-text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.province-list-item:hover {
+  background: var(--color-row-hover);
+}
+
+.province-list-item.active,
+.province-list-item[aria-selected="true"] {
+  color: #ffffff;
+  background: var(--color-success);
+}
+
+.province-list-item .list-code {
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+}
+
+.province-list-item .list-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
