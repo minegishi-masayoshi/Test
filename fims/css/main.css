@@ -1176,6 +1176,84 @@ input:focus:not(:focus-visible) {
   text-align: right;
 }
 
+
+
+/* Old FIMS-compatible Province Summary arrangement */
+.legacy-summary-wrapper {
+  min-width: 0;
+}
+
+.legacy-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(280px, 1fr));
+  gap: 5px 18px;
+  align-items: start;
+  margin-top: 8px;
+}
+
+.legacy-summary-column {
+  display: grid;
+  gap: 5px;
+  align-content: start;
+  min-width: 0;
+}
+
+.legacy-summary-item {
+  display: grid;
+  grid-template-columns: minmax(155px, 1fr) minmax(105px, 0.72fr);
+  min-width: 0;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: #ffffff;
+}
+
+.legacy-summary-label,
+.legacy-summary-value {
+  min-width: 0;
+  padding: 6px 8px;
+  line-height: 1.2;
+}
+
+.legacy-summary-label {
+  overflow: hidden;
+  color: #40515e;
+  background: #f3f6f8;
+  border-right: 1px solid var(--color-border-light);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.legacy-summary-value {
+  color: #1c3446;
+  background: #ffffff;
+  font-size: var(--font-size-sm);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.legacy-summary-item[data-empty="true"] .legacy-summary-value {
+  color: #87929b;
+  font-weight: 400;
+}
+
+.legacy-summary-note {
+  margin: 10px 0 0;
+  color: #52636f;
+  font-size: var(--font-size-xs);
+  text-align: center;
+}
+
+@media (max-width: 950px) {
+  .legacy-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* ============================================================
    18. Reports
    ============================================================ */
