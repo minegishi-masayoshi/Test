@@ -32,3 +32,7 @@ Use the two buttons in the lower-left Navigation panel:
 
 The concession master in `js/data.js` is prototype data. Replace it with
 PostGIS/API results when the backend is implemented.
+
+
+## Ver.2.2.5
+Automatic zoom on Province, Concession and FMU selection is disabled.

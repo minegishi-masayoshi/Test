@@ -2160,9 +2160,6 @@ export class ApplicationController {
         true
       );
 
-      this.zoomToProvince(
-        normalizedProvince
-      );
 
       if (options.notify !== false) {
         this.setStatus(
@@ -2262,9 +2259,6 @@ export class ApplicationController {
         true
       );
 
-      this.zoomToProvince(
-        province
-      );
 
       this.summaryManager?.clear({
         notify: false
@@ -2682,10 +2676,10 @@ export class ApplicationController {
     );
 
     /*
-     * Concession mode drills down only as far as the selected
-     * Concession boundary. FMU selection never changes extent.
+     * Ver.2.2.5 policy: selections do not change the map extent.
+     * Province, Concession and FMU actions only update layers,
+     * filters, table data and summary values.
      */
-    this.zoomToConcession(concession);
 
     const concessionSummaryScope = {
       ...this.selectedProvince,
@@ -3676,7 +3670,7 @@ export class ApplicationController {
    */
   updateMapFmuSelection(fmu) {
     /*
-     * Ver.2.2.4 map extent policy:
+     * Ver.2.2.5 map extent policy:
      * - Province mode stops at the selected Province boundary.
      * - Concession mode stops at the selected Concession boundary.
      * - Clicking an FMU only selects the table row.
@@ -3747,7 +3741,7 @@ export class ApplicationController {
    * Zooms to one FMU.
    *
    * Retained as a compatibility method, but it is not called by
-   * the Ver.2.2.4 user interface.
+   * the Ver.2.2.5 user interface.
    */
   zoomToFmu(fmu) {
     const methods = [
