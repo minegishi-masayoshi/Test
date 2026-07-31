@@ -1052,15 +1052,21 @@ export class ApplicationController {
     const features =
       this.extractRecords(records);
 
-    
     return features
-    .map(...)
-    .filter(Boolean)
-    .sort(
-        (left, right) =>
-            this.getProvinceCode(left) -
-            this.getProvinceCode(right)
-    );
+  .map(
+    (record, index) =>
+      this.normalizeProvince(
+        record,
+        index
+      )
+  )
+  .filter(Boolean)
+  .sort(
+    (left, right) =>
+      Number(this.getProvinceCode(left)) -
+      Number(this.getProvinceCode(right))
+  );
+
   }
 
   /**
