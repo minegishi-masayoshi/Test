@@ -1827,61 +1827,394 @@ export class ApplicationController {
    * @returns {HTMLTableRowElement}
    */
   createFmuTableRow(fmu) {
-    const selected =
-      this.isSameFmu(
+  const selected =
+    this.isSameFmu(
+      fmu,
+      this.selectedFmu
+    );
+
+  const row =
+    document.createElement("tr");
+
+  row.className =
+    "fmu-table-row";
+
+  row.dataset.fmuId =
+    String(
+      this.getFmuId(fmu)
+    );
+
+  row.tabIndex = 0;
+
+  row.setAttribute(
+    "aria-selected",
+    String(selected)
+  );
+
+  row.classList.toggle(
+    "selected",
+    selected
+  );
+
+  /*
+   * FMU table fields
+   *
+   * The order must match the <th> order in index.html.
+   */
+  const displayedValues = [
+    /*
+     * 1. FMU
+     */
+    this.getFmuDisplayId(fmu),
+
+    /*
+     * 2. Zone
+     */
+    this.getFmuZone(fmu),
+
+    /*
+     * 3. Zone Name
+     *
+     * In the current dataset, the Province represents
+     * the Zone name used for Province-level aggregation.
+     */
+    this.selectedProvince
+      ? this.getProvinceName(
+          this.selectedProvince
+        )
+      : DEFAULT_EMPTY_VALUE,
+
+    /*
+     * 4. Veg Type
+     */
+    this.readFmuField(
+      fmu,
+      [
+        "vegetationType",
+        "vegetation_type",
+        "vegType",
+        "veg_type"
+      ]
+    ),
+
+    /*
+     * 5. Timber Volume
+     */
+    this.formatFmuNumber(
+      this.readFmuField(
         fmu,
-        this.selectedFmu
-      );
-
-    const row =
-      document.createElement("tr");
-
-    row.className =
-      "fmu-table-row";
-
-    row.dataset.fmuId =
-      String(
-        this.getFmuId(fmu)
-      );
-
-    row.tabIndex = 0;
-
-    row.setAttribute(
-      "aria-selected",
-      String(selected)
-    );
-
-    row.classList.toggle(
-      "selected",
-      selected
-    );
-
-    const displayedValues = [
-      this.getFmuDisplayId(fmu),
-      this.getFmuZone(fmu),
-      this.formatFmuNumber(
-        this.readFmuField(
-          fmu,
-          [
-            "timberVolume",
-            "timber_volume",
-            "timber",
-            "volume"
-          ]
-        )
-      ),
-      this.formatFmuNumber(
-        this.readFmuField(
-          fmu,
-          [
-            "vegArea",
-            "veg_area",
-            "vegetation_area",
-            "area"
-          ]
-        )
+        [
+          "timberVolume",
+          "timber_volume",
+          "timber",
+          "volume"
+        ]
       )
-    ];
+    ),
+
+    /*
+     * 6. Veg Area
+     */
+    this.formatFmuNumber(
+      this.readFmuField(
+        fmu,
+        [
+          "vegetationArea",
+          "vegetation_area",
+          "vegArea",
+          "veg_area"
+        ]
+      )
+    ),
+
+    /*
+     * 7. Protected Area
+     */
+    this.formatFmuNumber(
+      this.readFmuField(
+        fmu,
+        [
+          "protectedArea",
+          "protected_area",
+          "protected",
+          "area"
+        ]
+      )
+    ),
+
+    /*
+     * 8. Ext Altitude
+     */
+    this.formatFmuNumber(
+      this.readFmuField(
+        fmu,
+        [
+          "extAltitude",
+          "ext_altitude",
+          "ext_alt",
+          "altitude"
+        ]
+      )
+    ),
+
+    /*
+     * 9. Ext Slope
+     */
+    this.formatFmuNumber(
+      this.readFmuField(
+        fmu,
+        [
+          "extSlope",
+          "ext_slope",
+          "ext_sl",
+          "slope"
+        ]
+      )
+    ),
+
+    /*
+     * 10. Ext Karst
+     */
+    this.formatFmuNumber(
+      this.readFmuField(
+        fmu,
+        [
+          "extKarst",
+          "ext_karst",
+          "ext_kst",
+          "karst"
+        ]
+      )
+    ),
+
+    /*
+     * 11. Ext Inund
+     */
+    this.formatFmuNumber(
+      this.readFmuField(
+        fmu,
+        [
+          "extInund",
+          "ext_inund",
+          "ext_in",
+          "inundation"
+        ]
+      )
+    ),
+
+    /*
+     * 12. Ext Mangrove
+     */
+    this.formatFmuNumber(
+      this.readFmuField(
+        fmu,
+        [
+          "extMangrove",
+          "ext_mangrove",
+          "ext_man",
+          "mangrove"
+        ]
+      )
+    ),
+
+    /*
+     * 13. Ser Slope Relief
+     */
+    this.formatFmuNumber(
+      this.readFmuField(
+        fmu,
+        [
+          "serSlopeRelief",
+          "ser_slope_relief",
+          "ser_sl",
+          "sloperelie"
+        ]
+      )
+    ),
+
+    /*
+     * 14. Ser Inund
+     */
+    this.formatFmuNumber(
+      this.readFmuField(
+        fmu,
+        [
+          "serInund",
+          "ser_inund",
+          "ser_in",
+          "inundati0"
+        ]
+      )
+    ),
+
+    /*
+     * 15. Gross Frst Area 75
+     */
+    this.formatFmuNumber(
+      this.readFmuField(
+        fmu,
+        [
+          "grossForestArea75",
+          "gross_forest_area_75",
+          "gross_frst_area_75",
+          "area_75"
+        ]
+      )
+    ),
+
+    /*
+     * 16. Adj Frst Area 75
+     */
+    this.formatFmuNumber(
+      this.readFmuField(
+        fmu,
+        [
+          "adjustedForestArea75",
+          "adjusted_forest_area_75",
+          "adj_frst_area_75",
+          "area_750"
+        ]
+      )
+    ),
+
+    /*
+     * 17. Gross Frst Vol 75
+     */
+    this.formatFmuNumber(
+      this.readFmuField(
+        fmu,
+        [
+          "grossForestVolume75",
+          "gross_forest_volume_75",
+          "gross_frst_vol_75",
+          "vol_75"
+        ]
+      )
+    ),
+
+    /*
+     * 18. Logged LUse
+     */
+    this.formatFmuNumber(
+      this.readFmuField(
+        fmu,
+        [
+          "loggedLandUse",
+          "logged_land_use",
+          "logged_luse",
+          "to96"
+        ]
+      )
+    ),
+
+    /*
+     * 19. Rev Gross Frst Area
+     */
+    this.formatFmuNumber(
+      this.readFmuField(
+        fmu,
+        [
+          "revisedGrossForestArea",
+          "revised_gross_forest_area",
+          "rev_gross_frst_area",
+          "current_"
+        ]
+      )
+    ),
+
+    /*
+     * 20. Rev Adj Frst Area
+     */
+    this.formatFmuNumber(
+      this.readFmuField(
+        fmu,
+        [
+          "revisedAdjustedForestArea",
+          "revised_adjusted_forest_area",
+          "rev_adj_frst_area",
+          "current0"
+        ]
+      )
+    ),
+
+    /*
+     * 21. Rev Gross Frst Vol
+     */
+    this.formatFmuNumber(
+      this.readFmuField(
+        fmu,
+        [
+          "revisedGrossForestVolume",
+          "revised_gross_forest_volume",
+          "rev_gross_frst_vol",
+          "forest_vol",
+          "current2",
+          "current1"
+        ]
+      )
+    )
+  ];
+
+  for (
+    const [index, value]
+    of displayedValues.entries()
+  ) {
+    const cell =
+      document.createElement("td");
+
+    cell.textContent =
+      hasValue(value)
+        ? String(value)
+        : DEFAULT_EMPTY_VALUE;
+
+    /*
+     * Columns 5–21 are numeric.
+     * Array index starts from zero, so index 4 is column 5.
+     */
+    if (index >= 4) {
+      cell.classList.add(
+        "number-cell",
+        "numeric"
+      );
+    }
+
+    row.appendChild(cell);
+  }
+
+  row.addEventListener(
+    "click",
+    () => {
+      this.selectFmu(
+        fmu,
+        {
+          source: "table"
+        }
+      );
+    }
+  );
+
+  row.addEventListener(
+    "keydown",
+    (event) => {
+      if (
+        event.key === "Enter" ||
+        event.key === " "
+      ) {
+        event.preventDefault();
+
+        this.selectFmu(
+          fmu,
+          {
+            source: "keyboard"
+          }
+        );
+      }
+    }
+  );
+
+  return row;
+}
+
 
     for (
       const [index, value]
