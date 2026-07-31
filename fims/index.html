@@ -41,13 +41,17 @@
   />
 
   <!--
-    FIMS Cloud is hosted on GitHub Pages.
+    ============================================================
+    FIMS Cloud Ver.2.0
+    GitHub Pages Content Security Policy
+    ============================================================
 
-    The Content-Security-Policy allows:
+    Allowed resources:
     - Local FIMS files
     - Leaflet from unpkg.com
-    - OpenStreetMap tiles
-    - HTTPS access to GeoServer
+    - OpenStreetMap and other HTTPS map tiles
+    - GeoServer WMS/WFS over HTTPS
+    - Blob URLs used for CSV export
   -->
   <meta
     http-equiv="Content-Security-Policy"
@@ -62,10 +66,13 @@
       frame-src 'none';
       base-uri 'self';
       form-action 'self';
+      worker-src 'self' blob:;
     "
   />
 
-  <!-- Leaflet -->
+  <!-- ========================================================
+       Leaflet
+       ======================================================== -->
   <link
     rel="stylesheet"
     href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -73,7 +80,9 @@
     crossorigin=""
   />
 
-  <!-- FIMS Cloud -->
+  <!-- ========================================================
+       FIMS Cloud styles
+       ======================================================== -->
   <link
     rel="stylesheet"
     href="./css/main.css?v=2.0.0"
@@ -85,11 +94,26 @@
     ============================================================
     FIMS Cloud Ver.2.0
     Province Selection Screen
+
+    Current implementation:
+      1. Province selection
+      2. FMU listing
+      3. Province map
+      4. Province Summary
+      5. Province Reports
+
+    Deferred modules:
+      - Concession
+      - Proposed Concession
+      - Administration
+      - Timber Volume update API
     ============================================================
   -->
+
   <div
     id="fims-app"
     class="app-shell"
+    data-fims-version="2.0.0"
   >
     <!-- ======================================================
          Application header
@@ -102,8 +126,9 @@
           </h1>
 
           <span
-            id="application-version"
+            id="versionText"
             class="version-badge"
+            data-app-version
           >
             Ver.2.0
           </span>
@@ -126,9 +151,12 @@
     </header>
 
     <!-- ======================================================
-         Screen title and application status
+         Screen heading
          ====================================================== -->
-    <section class="screen-heading">
+    <section
+      class="screen-heading"
+      aria-labelledby="page-title"
+    >
       <div>
         <h2 id="page-title">
           Province Selection
@@ -145,6 +173,8 @@
         class="application-status"
         role="status"
         aria-live="polite"
+        aria-atomic="true"
+        data-app-status
       >
         Starting FIMS Cloud Ver.2.0…
       </div>
@@ -153,23 +183,31 @@
     <!-- ======================================================
          Main Province screen
          ====================================================== -->
-    <main class="main-screen">
+    <main
+      id="provinceScreen"
+      class="main-screen"
+      data-panel="province-screen"
+    >
       <!-- ====================================================
            Upper section
-           Province list / FMU table / Province map
+           Province / FMU / Map
            ==================================================== -->
-      <section class="top-grid">
+      <section
+        class="top-grid"
+        aria-label="Province selection and map"
+      >
         <!-- ==================================================
              Province list
              Old FIMS No.1
              ================================================== -->
         <article
-          id="province-panel"
+          id="provincePanel"
           class="panel province-panel"
+          data-panel="province"
         >
           <div class="panel-header">
             <div>
-              <h3>
+              <h3 id="provinceListTitle">
                 Provinces
               </h3>
 
@@ -179,75 +217,116 @@
             </div>
 
             <span
-              id="province-count"
+              id="provinceCount"
               class="count-badge"
+              data-province-count
+              aria-label="Number of displayed Provinces"
             >
               0
             </span>
           </div>
 
           <div class="panel-body province-panel-body">
+            <!-- ==============================================
+                 Province search
+                 ============================================== -->
             <label
               class="search-box"
-              for="province-search"
+              for="provinceSearch"
             >
-              <span class="sr-only">
+              <span
+                id="provinceSearchLabel"
+                class="sr-only"
+              >
                 Search Provinces
               </span>
 
               <input
-                id="province-search"
+                id="provinceSearch"
                 type="search"
                 placeholder="Search Province"
                 autocomplete="off"
                 spellcheck="false"
+                enterkeyhint="search"
+                data-province-search
+                aria-describedby="province-search-help"
               />
             </label>
 
-            <div class="table-wrap province-table-wrap">
-              <table
-                id="province-table"
-                class="data-table province-table"
-              >
-                <thead>
-                  <tr>
-                    <th scope="col">
-                      Code
-                    </th>
+            <p
+              id="province-search-help"
+              class="sr-only"
+            >
+              Search by Province code or Province name.
+            </p>
 
-                    <th scope="col">
-                      Provinces
-                    </th>
-                  </tr>
-                </thead>
+            <!-- ==============================================
+                 Province list
 
-                <tbody id="province-table-body">
-                  <!-- Rendered by app.js -->
-                </tbody>
-              </table>
+                 app.js Ver.2 renders list-item buttons directly
+                 into this container.
+                 ============================================== -->
+            <div
+              id="provinceList"
+              class="province-list"
+              role="listbox"
+              aria-label="Province list"
+              aria-describedby="province-list-help"
+              data-province-list
+            >
+              <!-- Rendered by app.js -->
             </div>
 
+            <p
+              id="province-list-help"
+              class="sr-only"
+            >
+              Select a Province to load its FMUs and summary.
+            </p>
+
             <div
-              id="province-empty-message"
+              id="provinceEmptyMessage"
               class="empty-message"
               hidden
             >
               No Province records were found.
             </div>
+
+            <!--
+              Compatibility note:
+
+              app.js Ver.2 renders Province buttons into
+              #provinceList. A table body is intentionally not
+              used because app.js manages keyboard-accessible
+              listbox buttons.
+            -->
           </div>
         </article>
 
         <!-- ==================================================
+             Part 1 ends here.
+
+             Paste Part 2 immediately below this comment.
+             Do not add closing tags for:
+               - section.top-grid
+               - main.main-screen
+               - div#fims-app
+               - body
+               - html
+             ================================================== -->
+
+                <!-- ==================================================
              FMU list
              Old FIMS No.9 and No.10
              ================================================== -->
         <article
-          id="fmu-panel"
+          id="fmuPanel"
           class="panel fmu-panel"
+          data-panel="fmu"
         >
           <div class="panel-header">
             <div>
-              <h3>
+              <h3 id="fmuListTitle">
                 FMUs
               </h3>
 
@@ -256,57 +335,85 @@
                   Province:
                 </span>
 
-                <strong id="selected-province-name">
-                  Not yet selected.
+                <strong
+                  id="selectedProvinceLabel"
+                  data-selected-province
+                >
+                  No Province selected
                 </strong>
 
                 <span
-                  id="selected-province-code"
+                  id="selectedProvinceCode"
                   class="selected-code"
+                  aria-label="Selected Province code"
                 ></span>
               </div>
             </div>
 
             <span
-              id="fmu-count"
+              id="fmuCount"
               class="count-badge"
+              data-fmu-count
+              aria-label="Number of FMUs"
             >
               0
             </span>
           </div>
 
           <div class="panel-body fmu-panel-body">
+            <!-- ==============================================
+                 FMU search
+                 ============================================== -->
             <label
               class="search-box"
-              for="fmu-search"
+              for="fmuSearch"
             >
-              <span class="sr-only">
+              <span
+                id="fmuSearchLabel"
+                class="sr-only"
+              >
                 Search FMUs
               </span>
 
               <input
-                id="fmu-search"
+                id="fmuSearch"
                 type="search"
                 placeholder="Search FMU"
                 autocomplete="off"
                 spellcheck="false"
+                enterkeyhint="search"
+                aria-describedby="fmu-search-help"
                 disabled
               />
             </label>
 
+            <p
+              id="fmu-search-help"
+              class="sr-only"
+            >
+              Search by FMU identifier, name or Zone.
+            </p>
+
+            <!-- ==============================================
+                 FMU table
+                 ============================================== -->
             <div class="table-wrap fmu-table-wrap">
               <table
-                id="fmu-table"
+                id="fmuTable"
                 class="data-table fmu-table"
+                aria-describedby="fmu-table-description"
               >
-                <thead id="fmu-table-head">
+                <caption
+                  id="fmu-table-description"
+                  class="sr-only"
+                >
+                  FMUs belonging to the selected Province.
+                </caption>
+
+                <thead id="fmuTableHead">
                   <tr>
                     <th scope="col">
                       FMU
-                    </th>
-
-                    <th scope="col">
-                      FMU Name
                     </th>
 
                     <th scope="col">
@@ -314,54 +421,72 @@
                     </th>
 
                     <th scope="col">
-                      Area (ha)
+                      Timber Volume
                     </th>
 
                     <th scope="col">
-                      Timber Volume (m³)
+                      Veg Area
                     </th>
                   </tr>
                 </thead>
 
-                <tbody id="fmu-table-body">
-                  <!-- Rendered by app.js -->
+                <tbody
+                  id="fmuTableBody"
+                  data-fmu-table-body
+                >
+                  <tr class="empty-row">
+                    <td colspan="4">
+                      Select a Province to display FMUs.
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             </div>
 
             <div
-              id="fmu-empty-message"
+              id="fmuEmptyMessage"
               class="empty-message"
+              hidden
             >
-              Select a Province to display its FMUs.
+              No FMU records are available for the selected Province.
             </div>
           </div>
 
           <!-- ================================================
                Timber Volume controls
                Old FIMS No.11-No.14
-               Initially disabled in Ver.2 Phase 1
+
+               Phase 1:
+               - Buttons are visible
+               - Operations remain backend placeholders
+               - app.js displays a status message
                ================================================ -->
           <div
-            id="timber-volume-panel"
+            id="timberVolumePanel"
             class="timber-volume-panel"
+            aria-labelledby="timber-volume-title"
           >
+            <h4
+              id="timber-volume-title"
+              class="sr-only"
+            >
+              Timber Volume update controls
+            </h4>
+
             <div class="timber-volume-actions">
               <button
-                id="update-zone-volume"
+                id="updateZoneButton"
                 type="button"
                 class="secondary-button"
-                disabled
                 title="This function requires a secured server-side API."
               >
                 Update Timber Volumes for Zone
               </button>
 
               <button
-                id="update-fmu-volume"
+                id="updateFmuButton"
                 type="button"
                 class="secondary-button"
-                disabled
                 title="This function requires a secured server-side API."
               >
                 Update Timber Volume for FMU
@@ -369,28 +494,34 @@
             </div>
 
             <div class="new-volume-control">
-              <label for="new-volume-input">
+              <label for="newVolumeInput">
                 New Vol.
               </label>
 
               <input
-                id="new-volume-input"
+                id="newVolumeInput"
                 type="number"
                 min="0"
                 step="0.01"
                 inputmode="decimal"
                 disabled
+                aria-disabled="true"
               />
 
               <button
-                id="apply-volume-update"
+                id="applyVolumeUpdateButton"
                 type="button"
                 class="primary-button"
                 disabled
+                aria-disabled="true"
               >
                 Update
               </button>
             </div>
+
+            <p class="control-note">
+              Timber Volume update requires a secured backend API.
+            </p>
           </div>
         </article>
 
@@ -399,8 +530,9 @@
              Old FIMS No.16
              ================================================== -->
         <article
-          id="province-map-panel"
+          id="provinceMapPanel"
           class="panel map-panel"
+          data-panel="map"
         >
           <div class="panel-header">
             <div>
@@ -408,7 +540,10 @@
                 Province Map
               </h3>
 
-              <small id="map-subtitle">
+              <small
+                id="mapSubtitle"
+                data-map-subtitle
+              >
                 Papua New Guinea
               </small>
             </div>
@@ -421,66 +556,126 @@
                 class="map-container"
                 role="application"
                 aria-label="Interactive map of Papua New Guinea Provinces and FMUs"
+                aria-expanded="false"
+                data-fims-map
               ></div>
 
               <div
-                id="map-loading"
+                id="mapLoading"
                 class="map-overlay"
+                role="status"
+                aria-live="polite"
                 hidden
               >
                 Loading map…
               </div>
 
               <div
-                id="map-error"
+                id="mapError"
                 class="map-overlay map-error"
+                role="alert"
                 hidden
               >
                 The map could not be displayed.
               </div>
             </div>
 
+            <!-- ==============================================
+                 Map footer
+                 ============================================== -->
             <div class="map-footer">
               <div
-                id="layer-list"
+                id="layerList"
                 class="compact-layers"
                 aria-label="Map layers"
+                data-layer-list
               >
-                <!-- Rendered by map.js -->
+                <!-- Rendered by map.js or app.js -->
               </div>
 
-              <div class="map-actions">
+              <div
+                class="map-actions"
+                aria-label="Map actions"
+              >
                 <button
-                  id="home-extent-button"
+                  id="homeExtentButton"
                   type="button"
                   class="secondary-button"
+                  data-action="home-extent"
                 >
                   PNG Extent
                 </button>
 
                 <button
-                  id="clear-map-selection-button"
+                  id="clearLayersButton"
                   type="button"
                   class="secondary-button"
+                  data-action="clear-layers"
+                  title="Hide optional map layers"
+                >
+                  Clear Layers
+                </button>
+
+                <button
+                  id="clearMapSelectionButton"
+                  type="button"
+                  class="secondary-button"
+                  data-action="clear-map-selection"
+                  title="Clear the selected Province and FMU"
                 >
                   Clear Selection
                 </button>
               </div>
             </div>
+
+            <!-- ==============================================
+                 Coordinate help
+                 ============================================== -->
+            <p
+              id="map-coordinate-help"
+              class="sr-only"
+            >
+              Pointer coordinates are displayed in the footer.
+            </p>
           </div>
         </article>
       </section>
 
       <!-- ====================================================
-           Lower section
-           Main menu / Summary / Reports
+           Upper section ends here.
+           Part 3 begins with the lower section:
+             - Main function menu
+             - Province Summary
+             - Reports
+
+           Paste Part 3 immediately below this comment.
+           Do not close:
+             - main#provinceScreen
+             - div#fims-app
+             - body
+             - html
            ==================================================== -->
-      <section class="bottom-grid">
+
+            <!-- ====================================================
+           Lower section
+           Main Menu / Summary / Reports
+           ==================================================== -->
+      <section
+        class="bottom-grid"
+        aria-label="Application modules and reports"
+      >
+
         <!-- ==================================================
-             Main function menu
+             Main Function Menu
              Old FIMS No.2-No.8
+             Rendered entirely by menu.js Ver2
              ================================================== -->
-        <article class="panel navigation-panel">
+        <article
+          id="navigationPanel"
+          class="panel navigation-panel"
+          data-panel="navigation"
+        >
+
           <div class="panel-header">
             <div>
               <h3>
@@ -494,115 +689,98 @@
           </div>
 
           <div class="panel-body">
+
             <nav
-              id="module-menu"
+              id="mainMenu"
               class="module-menu"
-              aria-label="FIMS main functions"
+              aria-label="FIMS Main Menu"
             >
-              <button
-                id="module-province"
-                type="button"
-                class="module-button active"
-                data-module="province"
-                aria-current="page"
-              >
-                Province
-              </button>
 
-              <button
-                id="module-concession"
-                type="button"
-                class="module-button"
-                data-module="concession"
-                disabled
-              >
-                Concession
-              </button>
+              <!--
+                menu.js Ver2 generates
 
-              <button
-                id="module-proposed-concession"
-                type="button"
-                class="module-button"
-                data-module="proposed-concession"
-                disabled
-              >
-                Proposed Concession
-              </button>
+                  Province
+                  Concession
+                  Proposed Concession
+                  Large Map
+                  Assessment by FIPS
+                  Administration
+                  Exit
 
-              <button
-                id="module-large-map"
-                type="button"
-                class="module-button"
-                data-module="large-map"
-                disabled
-              >
-                Large Map
-              </button>
+                automatically.
+              -->
 
-              <a
-                id="module-assessment"
-                class="module-button module-link"
-                href="../fips/index.html"
-              >
-                Assessment by FIPS
-              </a>
-
-              <button
-                id="module-administration"
-                type="button"
-                class="module-button"
-                data-module="administration"
-                disabled
-              >
-                ADMIN
-              </button>
-
-              <a
-                id="module-exit"
-                class="module-button module-link exit-button"
-                href="../index.html"
-              >
-                EXIT
-              </a>
             </nav>
+
           </div>
+
         </article>
 
         <!-- ==================================================
-             Province / FMU summary
+             Province Summary
              Old FIMS No.15
+             Rendered by summary.js Ver2
              ================================================== -->
         <article
-          id="province-summary-panel"
+          id="provinceSummaryPanel"
           class="panel summary-panel"
+          data-panel="summary"
         >
+
           <div class="panel-header">
+
             <div>
+
               <h3>
                 Summary
               </h3>
 
-              <small id="summary-scope">
+              <small
+                id="summaryScope"
+                data-summary-scope
+              >
                 No Province selected
               </small>
+
             </div>
+
           </div>
 
-          <div class="panel-body summary-panel-body">
+          <div
+            class="panel-body summary-panel-body"
+          >
+
+            <!--
+              summary.js renders the complete
+              Province Summary table here.
+            -->
+
             <div
               id="province-summary"
               class="summary-container"
             >
-              <!-- Rendered by summary.js -->
+
             </div>
 
             <div
-              id="summary-empty-message"
-              class="empty-message"
+              id="summaryStatus"
+              class="summary-status"
+              data-summary-status
             >
-              Select a Province to display summary information.
+              Waiting for Province selection.
             </div>
+
+            <div
+              id="summaryEmptyMessage"
+              class="empty-message"
+              hidden
+            >
+              Select a Province to calculate
+              Province Summary.
+            </div>
+
           </div>
+
         </article>
 
         <!-- ==================================================
@@ -610,11 +788,15 @@
              Old FIMS No.17-No.20
              ================================================== -->
         <article
-          id="reports-panel"
+          id="reportsPanel"
           class="panel reports-panel"
+          data-panel="reports"
         >
+
           <div class="panel-header">
+
             <div>
+
               <h3>
                 Reports
               </h3>
@@ -622,104 +804,118 @@
               <small>
                 Province Reports
               </small>
+
             </div>
+
           </div>
 
-          <div class="panel-body reports-panel-body">
+          <div
+            class="panel-body reports-panel-body"
+          >
+
+            <!-- ==========================================
+                 Report list
+                 Rendered by app.js
+                 ========================================== -->
+
             <div
-              id="report-list"
+              id="reportList"
               class="report-list"
               role="radiogroup"
               aria-label="Province reports"
             >
-              <label class="report-option">
-                <input
-                  type="radio"
-                  name="province-report"
-                  value="province-fmu-list"
-                  checked
-                />
 
-                <span>
-                  FMU List by Province
-                </span>
-              </label>
+              <!--
+                app.js renders
 
-              <label class="report-option">
-                <input
-                  type="radio"
-                  name="province-report"
-                  value="province-fmu-summary"
-                />
+                    FMU List
+                    Province Summary
+                    Timber Volume
 
-                <span>
-                  FMU Summary by Province
-                </span>
-              </label>
+                dynamically.
+              -->
 
-              <label class="report-option">
-                <input
-                  type="radio"
-                  name="province-report"
-                  value="province-timber-volume"
-                />
-
-                <span>
-                  Timber Volume by Province
-                </span>
-              </label>
             </div>
 
-            <div class="report-toolbar">
-              <button
-                id="report-print"
-                type="button"
-                class="secondary-button"
-                disabled
-              >
-                Print
-              </button>
+            <!-- ==========================================
+                 Report toolbar
+                 ========================================== -->
+
+            <div
+              class="report-toolbar"
+            >
 
               <button
-                id="report-preview-button"
+                id="previewReportButton"
                 type="button"
                 class="primary-button"
-                disabled
+                data-action="preview-report"
               >
                 Preview
               </button>
 
               <button
-                id="report-export"
+                id="exportReportButton"
                 type="button"
                 class="secondary-button"
-                disabled
+                data-action="export-report"
               >
                 Export CSV
               </button>
+
             </div>
 
-            <div
-              id="report-preview"
+            <!-- ==========================================
+                 Report preview
+                 ========================================== -->
+
+            <section
+              id="reportPreview"
               class="report-preview"
+              aria-label="Report preview"
             >
+
               <div
-                id="report-empty-message"
+                id="reportEmptyMessage"
                 class="empty-message"
               >
-                Select a Province and preview a report.
+
+                Select a Province
+                and choose a report.
+
               </div>
-            </div>
+
+            </section>
+
           </div>
+
         </article>
+
       </section>
-    </main>
+
+      <!-- ====================================================
+           Bottom section ends here.
+
+           Part4 contains
+
+             - Notification Area
+             - Status Bar
+             - Loading Overlay
+             - Error Dialog
+             - Leaflet
+             - app.js
+             - Closing tags
+
+           Paste Part4 immediately below.
+           ==================================================== -->
+
+          </main>
 
     <!-- ======================================================
          Notification area
          ====================================================== -->
     <div
-      id="notification-area"
+      id="notificationArea"
       class="notification-area"
       role="status"
       aria-live="polite"
@@ -729,12 +925,22 @@
     <!-- ======================================================
          Footer status bar
          ====================================================== -->
-    <footer class="status-bar">
-      <span id="status-text">
+    <footer
+      id="statusBar"
+      class="status-bar"
+      aria-label="Application status"
+    >
+      <span
+        id="statusText"
+        data-app-status
+      >
         Starting FIMS Cloud Ver.2.0…
       </span>
 
-      <span id="coordinate-text">
+      <span
+        id="coordinateText"
+        data-map-coordinate
+      >
         Lat: — / Lon: —
       </span>
 
@@ -744,21 +950,25 @@
     </footer>
 
     <!-- ======================================================
-         Loading overlay
+         Application loading overlay
          ====================================================== -->
     <div
-      id="loading-overlay"
+      id="loadingOverlay"
       class="loading-overlay"
       hidden
       aria-hidden="true"
+      aria-live="polite"
     >
-      <div class="loading-dialog">
+      <div
+        class="loading-dialog"
+        role="status"
+      >
         <div
           class="loading-spinner"
           aria-hidden="true"
         ></div>
 
-        <p id="loading-message">
+        <p id="loadingMessage">
           Loading…
         </p>
       </div>
@@ -768,22 +978,26 @@
          Error dialog
          ====================================================== -->
     <dialog
-      id="error-dialog"
+      id="errorDialog"
       class="error-dialog"
+      aria-labelledby="errorDialogTitle"
+      aria-describedby="errorDialogMessage"
     >
       <form method="dialog">
-        <h2>
+        <h2 id="errorDialogTitle">
           FIMS Cloud
         </h2>
 
-        <p id="error-dialog-message">
+        <p id="errorDialogMessage">
           An unexpected error occurred.
         </p>
 
         <div class="dialog-actions">
           <button
+            id="closeErrorDialogButton"
             type="submit"
             class="primary-button"
+            value="close"
           >
             Close
           </button>
@@ -792,14 +1006,18 @@
     </dialog>
   </div>
 
-  <!-- Leaflet -->
+  <!-- ========================================================
+       Leaflet JavaScript
+       ======================================================== -->
   <script
     src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
     crossorigin=""
   ></script>
 
-  <!-- FIMS Cloud Ver.2 -->
+  <!-- ========================================================
+       FIMS Cloud Ver.2 application
+       ======================================================== -->
   <script
     type="module"
     src="./js/app.js?v=2.0.0"
