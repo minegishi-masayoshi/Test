@@ -1,4 +1,4 @@
-# FIMS Cloud Ver.2.2.1
+# FIMS Cloud Ver.2.2.2
 
 ## Concession–FMU spatial classification fix
 

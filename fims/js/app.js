@@ -418,11 +418,43 @@ function pointOnSegment(point, start, end) {
   const [px, py] = point;
   const [ax, ay] = start;
   const [bx, by] = end;
-  const cross = (px - ax) * (by - ay) - (py - ay) * (bx - ax);
-  if (Math.abs(cross) > 1e-10) return false;
-  const dot = (px - ax) * (bx - ax) + (py - ay) * (by - ay);
-  if (dot < 0) return false;
-  const lengthSquared = (bx - ax) ** 2 + (by - ay) ** 2;
+
+  const dx = bx - ax;
+  const dy = by - ay;
+  const lengthSquared = dx ** 2 + dy ** 2;
+
+  /*
+   * GeoJSON polygon rings normally repeat the first coordinate as
+   * the final coordinate. That creates a zero-length segment between
+   * the last and first vertices in the point-in-polygon loop.
+   *
+   * A zero-length segment must match only the coincident point.
+   * Treating every point as lying on that segment caused every FMU in
+   * a Province to be selected for every Concession.
+   */
+  if (lengthSquared <= Number.EPSILON) {
+    return (
+      Math.abs(px - ax) <= 1e-10 &&
+      Math.abs(py - ay) <= 1e-10
+    );
+  }
+
+  const cross =
+    (px - ax) * dy -
+    (py - ay) * dx;
+
+  if (Math.abs(cross) > 1e-10) {
+    return false;
+  }
+
+  const dot =
+    (px - ax) * dx +
+    (py - ay) * dy;
+
+  if (dot < 0) {
+    return false;
+  }
+
   return dot <= lengthSquared;
 }
 
