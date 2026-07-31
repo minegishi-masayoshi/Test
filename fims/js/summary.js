@@ -56,7 +56,7 @@ import {
 /**
  * Summary module version.
  */
-export const SUMMARY_MODULE_VERSION = "2.0.1";
+export const SUMMARY_MODULE_VERSION = "2.0.3";
 
 /**
  * Default Summary container ID.
@@ -248,7 +248,8 @@ export const OLD_FIMS_SUMMARY_FIELDS = Object.freeze([
       "protection_area",
       "protectionarea",
       "prot_area",
-      "protarea"
+      "protarea",
+      "protected"
     ])
   }),
 
@@ -265,7 +266,9 @@ export const OLD_FIMS_SUMMARY_FIELDS = Object.freeze([
       "extent_altitude",
       "extentaltitude",
       "altitude_area",
-      "altitudearea"
+      "altitudearea",
+      "ext_alt",
+      "extalt"
     ])
   }),
 
@@ -282,7 +285,9 @@ export const OLD_FIMS_SUMMARY_FIELDS = Object.freeze([
       "extent_slope",
       "extentslope",
       "slope_area",
-      "slopearea"
+      "slopearea",
+      "ext_sl",
+      "extsl"
     ])
   }),
 
@@ -299,7 +304,9 @@ export const OLD_FIMS_SUMMARY_FIELDS = Object.freeze([
       "extent_karst",
       "extentkarst",
       "karst_area",
-      "karstarea"
+      "karstarea",
+      "ext_kst",
+      "extkst"
     ])
   }),
 
@@ -318,7 +325,9 @@ export const OLD_FIMS_SUMMARY_FIELDS = Object.freeze([
       "inundation_area",
       "inundationarea",
       "inund_area",
-      "inundarea"
+      "inundarea",
+      "ext_in",
+      "extin"
     ])
   }),
 
@@ -335,7 +344,9 @@ export const OLD_FIMS_SUMMARY_FIELDS = Object.freeze([
       "extent_mangrove",
       "extentmangrove",
       "mangrove_area",
-      "mangrovearea"
+      "mangrovearea",
+      "ext_man",
+      "extman"
     ])
   }),
 
@@ -352,7 +363,9 @@ export const OLD_FIMS_SUMMARY_FIELDS = Object.freeze([
       "ser_slope_relief",
       "service_slope_relief",
       "slope_relief_area",
-      "slopereliefarea"
+      "slopereliefarea",
+      "ser_sl",
+      "sersl"
     ])
   }),
 
@@ -369,7 +382,9 @@ export const OLD_FIMS_SUMMARY_FIELDS = Object.freeze([
       "service_inund",
       "serviceinund",
       "ser_inundation",
-      "service_inundation"
+      "service_inundation",
+      "ser_in",
+      "serin"
     ])
   }),
 
@@ -386,7 +401,9 @@ export const OLD_FIMS_SUMMARY_FIELDS = Object.freeze([
       "gross_forest_area_75",
       "grossforestarea75",
       "gross_area_75",
-      "grossarea75"
+      "grossarea75",
+      "area_75",
+      "area75"
     ])
   }),
 
@@ -404,7 +421,9 @@ export const OLD_FIMS_SUMMARY_FIELDS = Object.freeze([
       "adjusted_forest_area_75",
       "adjustedforestarea75",
       "adj_area_75",
-      "adjarea75"
+      "adjarea75",
+      "area_750",
+      "area750"
     ])
   }),
 
@@ -422,7 +441,9 @@ export const OLD_FIMS_SUMMARY_FIELDS = Object.freeze([
       "gross_forest_volume_75",
       "grossforestvolume75",
       "gross_vol_75",
-      "grossvol75"
+      "grossvol75",
+      "vol_75",
+      "vol75"
     ])
   }),
 
@@ -441,7 +462,8 @@ export const OLD_FIMS_SUMMARY_FIELDS = Object.freeze([
       "logged_landuse",
       "loggedland_use",
       "converted_land_use",
-      "convertedlanduse"
+      "convertedlanduse",
+      "to96"
     ])
   }),
 
@@ -457,7 +479,10 @@ export const OLD_FIMS_SUMMARY_FIELDS = Object.freeze([
       "revgrossfrstarea",
       "revised_gross_frst_area",
       "revised_gross_forest_area",
-      "revisedgrossforestarea"
+      "revisedgrossforestarea",
+      "to960",
+      "current_",
+      "current"
     ])
   }),
 
@@ -473,7 +498,9 @@ export const OLD_FIMS_SUMMARY_FIELDS = Object.freeze([
       "revadjfrstarea",
       "revised_adj_frst_area",
       "revised_adjusted_forest_area",
-      "revisedadjustedforestarea"
+      "revisedadjustedforestarea",
+      "to961",
+      "current0"
     ])
   }),
 
@@ -489,7 +516,11 @@ export const OLD_FIMS_SUMMARY_FIELDS = Object.freeze([
       "revgrossfrstvol",
       "revised_gross_frst_vol",
       "revised_gross_forest_volume",
-      "revisedgrossforestvolume"
+      "revisedgrossforestvolume",
+      "forest_vol",
+      "forestvol",
+      "current1",
+      "current2"
     ])
   })
 ]);
