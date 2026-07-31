@@ -2049,3 +2049,17 @@ input:focus:not(:focus-visible) {
 .report-list-button.selected small {
   color: #35566a;
 }
+
+
+/* ============================================================
+   18B. Report export toolbar (Ver.2.3.1)
+   ============================================================ */
+
+.report-toolbar {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.report-toolbar button {
+  min-width: 0;
+  white-space: nowrap;
+}

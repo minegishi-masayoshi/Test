@@ -59,7 +59,7 @@ import {
  * ============================================================
  */
 
-export const APP_VERSION = "2.3.0";
+export const APP_VERSION = "2.3.1";
 
 export const APP_STATUS = Object.freeze({
   IDLE: "idle",
@@ -80,6 +80,7 @@ export const APP_VIEW = Object.freeze({
 
 export const REPORT_ACTION = Object.freeze({
   PREVIEW: "preview",
+  PDF: "pdf",
   EXPORT: "export"
 });
 
@@ -234,6 +235,11 @@ const SELECTORS = Object.freeze({
   previewReportButton: [
     "#previewReportButton",
     "[data-action='preview-report']"
+  ],
+
+  pdfReportButton: [
+    "#pdfReportButton",
+    "[data-action='pdf-report']"
   ],
 
   exportReportButton: [
@@ -4200,10 +4206,15 @@ export class ApplicationController {
 
     document.dispatchEvent(event);
 
-    this.setStatus(
-      `${action === REPORT_ACTION.PREVIEW
+    const actionLabel =
+      action === REPORT_ACTION.PREVIEW
         ? "Preview"
-        : "Export"}: ` +
+        : action === REPORT_ACTION.PDF
+          ? "Export PDF"
+          : "Export CSV";
+
+    this.setStatus(
+      `${actionLabel}: ` +
       `${report.title} for ` +
       `${this.getProvinceName(
         this.selectedProvince
@@ -4438,6 +4449,16 @@ export class ApplicationController {
       () => {
         this.runReportAction(
           REPORT_ACTION.PREVIEW
+        );
+      }
+    );
+
+    this.bindEvent(
+      this.dom.pdfReportButton,
+      "click",
+      () => {
+        this.runReportAction(
+          REPORT_ACTION.PDF
         );
       }
     );
