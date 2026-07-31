@@ -1527,8 +1527,10 @@ export class ApplicationController {
         province
       );
 
-    button.textContent =
-    `${this.getProvinceCode(province)}  ${this.getProvinceName(province)}`;
+    button.append(
+      code,
+      name
+    );
 
     button.addEventListener(
       "click",
