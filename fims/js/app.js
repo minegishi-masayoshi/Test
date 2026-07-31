@@ -2216,62 +2216,6 @@ export class ApplicationController {
 }
 
 
-    for (
-      const [index, value]
-      of displayedValues.entries()
-    ) {
-      const cell =
-        document.createElement("td");
-
-      cell.textContent =
-        hasValue(value)
-          ? String(value)
-          : DEFAULT_EMPTY_VALUE;
-
-      if (index >= 2) {
-        cell.classList.add(
-          "number-cell",
-          "numeric"
-        );
-      }
-
-      row.appendChild(cell);
-    }
-
-    row.addEventListener(
-      "click",
-      () => {
-        this.selectFmu(
-          fmu,
-          {
-            source: "table"
-          }
-        );
-      }
-    );
-
-    row.addEventListener(
-      "keydown",
-      (event) => {
-        if (
-          event.key === "Enter" ||
-          event.key === " "
-        ) {
-          event.preventDefault();
-
-          this.selectFmu(
-            fmu,
-            {
-              source: "keyboard"
-            }
-          );
-        }
-      }
-    );
-
-    return row;
-  }
-
   /**
    * Renders one full-width FMU empty row.
    *
