@@ -2681,6 +2681,12 @@ export class ApplicationController {
       true
     );
 
+    /*
+     * Concession mode drills down only as far as the selected
+     * Concession boundary. FMU selection never changes extent.
+     */
+    this.zoomToConcession(concession);
+
     const concessionSummaryScope = {
       ...this.selectedProvince,
       name: concession.name,
@@ -3282,9 +3288,13 @@ export class ApplicationController {
       matchingFmu
     );
 
-    this.zoomToFmu(
-      matchingFmu
-    );
+    /*
+     * FMU selection only highlights the feature and opens its popup.
+     * Map extent is intentionally retained in every application mode.
+     *
+     * Province mode:   Province extent is the maximum drill-down level.
+     * Concession mode: Concession extent is the maximum drill-down level.
+     */
 
     if (options.notify !== false) {
       this.setStatus(
@@ -3719,7 +3729,37 @@ export class ApplicationController {
   }
 
   /**
+   * Zooms to one Concession.
+   */
+  zoomToConcession(concession) {
+    const methods = [
+      "zoomToConcession",
+      "fitConcession",
+      "focusConcession"
+    ];
+
+    for (const method of methods) {
+      if (
+        typeof this.mapManager?.[
+          method
+        ] === "function"
+      ) {
+        return Boolean(
+          this.mapManager[method](
+            concession
+          )
+        );
+      }
+    }
+
+    return false;
+  }
+
+  /**
    * Zooms to one FMU.
+   *
+   * Retained as a compatibility method, but it is not called by
+   * the Ver.2.2.3 user interface.
    */
   zoomToFmu(fmu) {
     const methods = [

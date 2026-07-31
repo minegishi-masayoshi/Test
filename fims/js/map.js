@@ -1526,6 +1526,53 @@ export class FimsMap {
    */
 
   /**
+   * Fits the map to a Concession GeoJSON geometry.
+   *
+   * @param {object|null} concession
+   * @returns {boolean}
+   */
+  zoomToConcession(concession) {
+    const geometry =
+      concession?.geometry ??
+      concession?.raw?.geometry ??
+      concession?.properties?.geometry ??
+      null;
+
+    if (!geometry || typeof L === "undefined") {
+      return false;
+    }
+
+    try {
+      const layer = L.geoJSON({
+        type: "Feature",
+        properties: {},
+        geometry
+      });
+
+      const fitted = this.fitLayerBounds(
+        layer,
+        this.config.concession?.selection ??
+        this.config.province?.selection ??
+        {}
+      );
+
+      if (fitted) {
+        this.updateMapSubtitle(
+          concession?.name || "Concession"
+        );
+      }
+
+      return fitted;
+    } catch (error) {
+      this.emitError(
+        "Concession extent could not be displayed.",
+        error
+      );
+      return false;
+    }
+  }
+
+  /**
    * Returns to the configured Papua New Guinea extent.
    *
    * @param {object} [options]
