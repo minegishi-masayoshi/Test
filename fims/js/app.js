@@ -1052,21 +1052,15 @@ export class ApplicationController {
     const features =
       this.extractRecords(records);
 
+    
     return features
     .map(...)
     .filter(Boolean)
     .sort(
         (left, right) =>
-            this.getProvinceName(left)
-                .localeCompare(
-                    this.getProvinceName(right),
-                    "en",
-                    {
-                        numeric: true,
-                        sensitivity: "base"
-                    }
-                )
-    );　　
+            this.getProvinceCode(left) -
+            this.getProvinceCode(right)
+    );
   }
 
   /**
