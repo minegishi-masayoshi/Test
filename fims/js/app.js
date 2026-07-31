@@ -1,6 +1,6 @@
 /**
  * ============================================================
- * FIMS Cloud Ver.2.0
+ * FIMS Cloud Ver.2.0.1
  * Main Application Controller
  * ============================================================
  *
@@ -59,7 +59,7 @@ import {
  * ============================================================
  */
 
-export const APP_VERSION = "2.0.0";
+export const APP_VERSION = "2.0.1";
 
 export const APP_STATUS = Object.freeze({
   IDLE: "idle",
@@ -1817,11 +1817,9 @@ export class ApplicationController {
   /**
    * Creates one FMU table row.
    *
-   * The visible columns follow the current HTML:
-   *   FMU / Zone / Timber Volume / Veg Area
-   *
-   * Complete legacy attributes remain available to Summary and
-   * Reports through the FMU data objects.
+   * The visible columns follow the old-FIMS Summary fields.
+   * FMU is added as the record identifier, followed by the 20
+   * Province Summary-compatible fields.
    *
    * @param {object} fmu
    * @returns {HTMLTableRowElement}
@@ -4151,6 +4149,6 @@ export default ApplicationController;
 
 /**
  * ============================================================
- * End of app.js Ver.2.0
+ * End of app.js Ver.2.0.1
  * ============================================================
  */
