@@ -12,7 +12,7 @@
 
   <meta
     name="description"
-    content="PNG Forest Authority Forest Information and Mapping System Cloud Version 2.2.5"
+    content="PNG Forest Authority Forest Information and Mapping System Cloud Version 2.3.0"
   />
 
   <meta
@@ -42,7 +42,7 @@
 
   <!--
     ============================================================
-    FIMS Cloud Ver.2.2.5
+    FIMS Cloud Ver.2.3.0
     GitHub Pages Content Security Policy
     ============================================================
 
@@ -83,14 +83,14 @@
        ======================================================== -->
   <link
     rel="stylesheet"
-    href="./css/main.css?v=2.2.5"
+    href="./css/main.css?v=2.3.0"
   />
 </head>
 
 <body>
   <!--
     ============================================================
-    FIMS Cloud Ver.2.2.5
+    FIMS Cloud Ver.2.3.0
     Province Selection Screen
 
     Current implementation:
@@ -98,7 +98,7 @@
       2. FMU listing
       3. Province map
       4. Province Summary
-      5. Province Reports
+      5. Legacy FIMS Report Catalog
 
     Deferred modules:
       - Concession
@@ -111,7 +111,7 @@
   <div
     id="fims-app"
     class="app-shell"
-    data-fims-version="2.2.5"
+    data-fims-version="2.3.0"
   >
     <!-- ======================================================
          Application header
@@ -128,7 +128,7 @@
             class="version-badge"
             data-app-version
           >
-            Ver.2.2.5
+            Ver.2.3.0
           </span>
         </div>
 
@@ -174,7 +174,7 @@
         aria-atomic="true"
         data-app-status
       >
-        Starting FIMS Cloud Ver.2.2.5…
+        Starting FIMS Cloud Ver.2.3.0…
       </div>
     </section>
 
@@ -806,7 +806,7 @@
               </h3>
 
               <small>
-                Province Reports
+                Legacy FIMS Report Catalog
               </small>
 
             </div>
@@ -826,17 +826,13 @@
               id="reportList"
               class="report-list"
               role="radiogroup"
-              aria-label="Province reports"
+              aria-label="Legacy FIMS report catalog"
             >
 
               <!--
-                app.js renders
-
-                    FMU List
-                    Province Summary
-                    Timber Volume
-
-                dynamically.
+                app.js renders the legacy FIMS report catalog
+                grouped into National, Province, Concession
+                and Reference report buttons.
               -->
 
             </div>
@@ -938,7 +934,7 @@
         id="statusText"
         data-app-status
       >
-        Starting FIMS Cloud Ver.2.2.5…
+        Starting FIMS Cloud Ver.2.3.0…
       </span>
 
       <span
@@ -1024,7 +1020,7 @@
        ======================================================== -->
   <script
     type="module"
-    src="./js/app.js?v=2.2.5"
+    src="./js/app.js?v=2.3.0"
   ></script>
 </body>
 </html>

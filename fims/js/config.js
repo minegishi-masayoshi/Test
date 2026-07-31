@@ -40,7 +40,7 @@ const CONFIG = {
     name: "FIMS Cloud",
     fullName: "Forest Information and Mapping System",
     organization: "PNG Forest Authority",
-    version: "Ver.2.2.5",
+    version: "Ver.2.3.0",
     build: "2.0.0",
     environment: "MVP",
     language: "en",
@@ -929,47 +929,270 @@ const CONFIG = {
     scope: "selected-province",
     defaultReport: "province-fmu-list",
 
+
     definitions: [
+      /* National reports */
       {
-        key: "province-fmu-list",
-        label: "FMU List by Province",
-        description:
-          "List of FMUs belonging to the selected Province.",
-        enabled: true,
-        preview: true,
-        export: true,
-        print: true,
-        exportFormats: [
-          "csv"
-        ]
+        key: "national-change",
+        category: "National",
+        label: "National Change",
+        legacyReport: "rpt_National_Change",
+        description: "National forest-area change summary.",
+        enabled: true
+      },
+      {
+        key: "national-change-forest-type",
+        category: "National",
+        label: "National Change by Forest Type",
+        legacyReport: "rpt_National_Change_ForestType",
+        description: "National change summarized by forest type.",
+        enabled: true
+      },
+      {
+        key: "national-change-forest-type-by-province",
+        category: "National",
+        label: "National Change by Forest Type & Province",
+        legacyReport: "rpt_National_Change_ForestType_ByProv",
+        description: "Forest-type change summarized by Province.",
+        enabled: true
+      },
+      {
+        key: "national-concession-province-change",
+        category: "National",
+        label: "National Concession Change by Province",
+        legacyReport: "rpt_National_Concession_Province_Change",
+        description: "National Concession change summarized by Province.",
+        enabled: true
+      },
+      {
+        key: "national-constraint-2011",
+        category: "National",
+        label: "National Constraint Summary (2011)",
+        legacyReport: "rpt_National_Constraint_2011",
+        description: "National constraint summary for the 2011 baseline.",
+        enabled: true
+      },
+      {
+        key: "national-constraint-extreme",
+        category: "National",
+        label: "National Constraint – Extreme",
+        legacyReport: "rpt_National_Constraint_Extreme",
+        description: "National extreme-constraint summary.",
+        enabled: true
+      },
+      {
+        key: "national-constraint-extreme-nonforest",
+        category: "National",
+        label: "National Extreme Constraint – Non-Forest",
+        legacyReport: "rpt_National_Constraint_Extreme_NonForestType",
+        description: "Extreme constraints outside forest types.",
+        enabled: true
       },
 
+      /* Province reports */
       {
-        key: "province-fmu-summary",
-        label: "FMU Summary by Province",
-        description:
-          "Summary of FMU count, area and timber volume for the selected Province.",
-        enabled: true,
-        preview: true,
-        export: true,
-        print: true,
-        exportFormats: [
-          "csv"
-        ]
+        key: "province-fmu-2011",
+        category: "Province",
+        label: "Province FMU Summary (2011)",
+        legacyReport: "rpt_Province_FMU_2011",
+        description: "FMU summary for the selected Province using the 2011 baseline.",
+        enabled: true
       },
-
+      {
+        key: "province-fmu-current",
+        category: "Province",
+        label: "Province FMU Summary – Current",
+        legacyReport: "rpt_Province_FMU_Current",
+        description: "Current FMU summary for the selected Province.",
+        enabled: true
+      },
+      {
+        key: "province-fmu-change",
+        category: "Province",
+        label: "Province FMU Change",
+        legacyReport: "rpt_Province_FMU_Change",
+        description: "FMU change within the selected Province.",
+        enabled: true
+      },
       {
         key: "province-timber-volume",
-        label: "Timber Volume by Province",
-        description:
-          "Timber Volume summary for all FMUs in the selected Province.",
-        enabled: true,
-        preview: true,
-        export: true,
-        print: true,
-        exportFormats: [
-          "csv"
-        ]
+        category: "Province",
+        label: "Province Timber Volume",
+        legacyReport: "rpt_Province_Timber_Volume",
+        description: "Timber-volume summary for the selected Province.",
+        enabled: true
+      },
+      {
+        key: "province-change-forest-type",
+        category: "Province",
+        label: "Province Change by Forest Type",
+        legacyReport: "rpt_Province_Change_ForestType",
+        description: "Forest-type change within the selected Province.",
+        enabled: true
+      },
+      {
+        key: "province-constraint",
+        category: "Province",
+        label: "Province Constraint",
+        legacyReport: "rpt_Province_Constraint",
+        description: "Constraint summary for the selected Province.",
+        enabled: true
+      },
+      {
+        key: "province-constraint-extreme",
+        category: "Province",
+        label: "Province Constraint – Extreme",
+        legacyReport: "rpt_Province_Constraint_Extreme",
+        description: "Extreme constraints for the selected Province.",
+        enabled: true
+      },
+      {
+        key: "province-constraint-extreme-nonforest",
+        category: "Province",
+        label: "Province Extreme Constraint – Non-Forest",
+        legacyReport: "rpt_Province_Constraint_Extreme_NonForestType",
+        description: "Extreme non-forest constraints for the selected Province.",
+        enabled: true
+      },
+      {
+        key: "province-constraint-serious",
+        category: "Province",
+        label: "Province Constraint – Serious",
+        legacyReport: "rpt_Province_Constraint_Serious",
+        description: "Serious constraints for the selected Province.",
+        enabled: true
+      },
+      {
+        key: "province-concession-change",
+        category: "Province",
+        label: "Province Concession Change",
+        legacyReport: "rpt_Province_Concession_Change",
+        description: "Concession change within the selected Province.",
+        enabled: true
+      },
+      {
+        key: "province-concession-unallocated-forest-type",
+        category: "Province",
+        label: "Province Concession / Unallocated by Forest Type",
+        legacyReport: "rpt_Prov_Cons_Unalloc_ForestType",
+        description: "Concession and unallocated areas by forest type.",
+        enabled: true
+      },
+      {
+        key: "province-unallocated-vegetation-type",
+        category: "Province",
+        label: "Province Unallocated by Vegetation Type",
+        legacyReport: "rpt_Prov_Unalloc_VegType",
+        description: "Unallocated areas by vegetation type.",
+        enabled: true
+      },
+
+      /* Concession reports */
+      {
+        key: "concession-fmu-list",
+        category: "Concession",
+        label: "FMUs in Concession",
+        legacyReport: "rpt_FMU(in Concession)",
+        description: "FMUs spatially associated with the selected Concession.",
+        enabled: true
+      },
+      {
+        key: "concession-fmu-change",
+        category: "Concession",
+        label: "Concession FMU Change",
+        legacyReport: "rpt_Concession_FMU_Change",
+        description: "FMU change within the selected Concession.",
+        enabled: true
+      },
+      {
+        key: "concession-fmu-constraint",
+        category: "Concession",
+        label: "Concession FMU Constraint",
+        legacyReport: "rpt_Concession_FMU_Constraint",
+        description: "FMU constraints within the selected Concession.",
+        enabled: true
+      },
+      {
+        key: "concession-fmu-constraint-extreme",
+        category: "Concession",
+        label: "Concession FMU Constraint – Extreme",
+        legacyReport: "rpt_Concession_FMU_Constraint_Extreme",
+        description: "Extreme FMU constraints within the selected Concession.",
+        enabled: true
+      },
+      {
+        key: "concession-fmu-constraint-serious",
+        category: "Concession",
+        label: "Concession FMU Constraint – Serious",
+        legacyReport: "rpt_Concession_FMU_Constraint_Serious",
+        description: "Serious FMU constraints within the selected Concession.",
+        enabled: true
+      },
+      {
+        key: "concession-province-change",
+        category: "Concession",
+        label: "Concession Change by Province",
+        legacyReport: "rpt_Concession_Province_Change",
+        description: "Concession change summarized by Province.",
+        enabled: true
+      },
+      {
+        key: "concession-province-constraint",
+        category: "Concession",
+        label: "Concession Province Constraint",
+        legacyReport: "rpt_Concession_Province_Constraint",
+        description: "Concession constraints summarized by Province.",
+        enabled: true
+      },
+      {
+        key: "concession-province-constraint-extreme",
+        category: "Concession",
+        label: "Concession Province Constraint – Extreme",
+        legacyReport: "rpt_Concession_Province_Constraint_Extreme",
+        description: "Extreme Concession constraints summarized by Province.",
+        enabled: true
+      },
+      {
+        key: "concession-province-constraint-serious",
+        category: "Concession",
+        label: "Concession Province Constraint – Serious",
+        legacyReport: "rpt_Concession_Province_Constraint_Serious",
+        description: "Serious Concession constraints summarized by Province.",
+        enabled: true
+      },
+
+      /* Reference reports */
+      {
+        key: "reference-fmu",
+        category: "Reference",
+        label: "FMU Register",
+        legacyReport: "rpt_FMU",
+        description: "FMU reference register.",
+        enabled: true
+      },
+      {
+        key: "reference-species-province",
+        category: "Reference",
+        label: "Species by Province",
+        legacyReport: "rptSpeciesProvince",
+        description: "Species reference summarized by Province.",
+        enabled: true
+      },
+      {
+        key: "reference-vegetation-types",
+        category: "Reference",
+        label: "Vegetation Types",
+        legacyReport: "rptVegTypes",
+        description: "Vegetation-type reference list.",
+        enabled: true
+      },
+      {
+        key: "reference-vegetation-types-grouped",
+        category: "Reference",
+        label: "Vegetation Types – Grouped",
+        legacyReport: "rptVegTypesGrouped",
+        description: "Grouped vegetation-type reference list.",
+        enabled: true
       }
     ],
 

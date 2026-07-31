@@ -1966,3 +1966,86 @@ input:focus:not(:focus-visible) {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+
+/* ============================================================
+   18A. Legacy report catalog buttons (Ver.2.3.0)
+   ============================================================ */
+
+.report-list {
+  display: block;
+  max-height: 280px;
+  overflow: auto;
+  padding-right: 3px;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  background: #f7f9fb;
+}
+
+.report-category + .report-category {
+  border-top: 1px solid #c9d4dc;
+}
+
+.report-category-title {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  margin: 0;
+  padding: 6px 8px;
+  color: #ffffff;
+  background: linear-gradient(#36789f, #24668e);
+  font-size: var(--font-size-xs);
+  line-height: 1.2;
+}
+
+.report-button-list {
+  display: grid;
+  gap: 3px;
+  padding: 5px;
+}
+
+.report-list-button {
+  width: 100%;
+  min-height: 34px;
+  padding: 5px 7px;
+  color: #2d414f;
+  text-align: left;
+  background: #ffffff;
+  border: 1px solid #cbd6dd;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.report-list-button:hover {
+  background: #edf5fa;
+  border-color: #7fa2b8;
+}
+
+.report-list-button.selected,
+.report-list-button[aria-pressed="true"] {
+  color: #123f5c;
+  background: #dcecf5;
+  border-color: #4f88aa;
+  box-shadow: inset 4px 0 0 #f28c00;
+}
+
+.report-list-button strong,
+.report-list-button small {
+  display: block;
+}
+
+.report-list-button strong {
+  font-size: var(--font-size-xs);
+  line-height: 1.25;
+}
+
+.report-list-button small {
+  margin-top: 2px;
+  color: #667783;
+  font-size: 9px;
+  line-height: 1.2;
+}
+
+.report-list-button.selected small {
+  color: #35566a;
+}

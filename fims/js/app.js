@@ -59,7 +59,7 @@ import {
  * ============================================================
  */
 
-export const APP_VERSION = "2.0.1";
+export const APP_VERSION = "2.3.0";
 
 export const APP_STATUS = Object.freeze({
   IDLE: "idle",
@@ -3815,6 +3815,7 @@ export class ApplicationController {
    */
   getProvinceReports() {
     const configured =
+      this.config.reports?.definitions ??
       this.config.reports?.province ??
       this.config.provinceScreen
         ?.reports;
@@ -3893,6 +3894,8 @@ export class ApplicationController {
     }
 
     return {
+      ...report,
+
       id:
         report.id ||
         report.key ||
@@ -3902,6 +3905,16 @@ export class ApplicationController {
         report.title ||
         report.label ||
         `Report ${index + 1}`,
+
+      category:
+        report.category ||
+        report.group ||
+        "Other",
+
+      legacyReport:
+        report.legacyReport ||
+        report.legacyName ||
+        "",
 
       description:
         report.description ||
@@ -3922,75 +3935,213 @@ export class ApplicationController {
     }
 
     const reports =
-      this.getProvinceReports();
+      this.getProvinceReports()
+        .filter(
+          (report) =>
+            report.enabled !== false
+        );
 
     container.replaceChildren();
 
-    for (
-      const [index, report]
-      of reports.entries()
-    ) {
-      const option =
-        document.createElement("label");
+    const categoryOrder = [
+      "National",
+      "Province",
+      "Concession",
+      "Reference",
+      "Other"
+    ];
 
-      option.className =
-        "report-option";
+    const grouped =
+      new Map();
 
-      const radio =
-        document.createElement("input");
+    for (const report of reports) {
+      const category =
+        report.category ||
+        "Other";
 
-      radio.type = "radio";
-      radio.name =
-        "province-report";
-
-      radio.value =
-        report.id;
-
-      radio.checked =
-        index === 0;
-
-      if (radio.checked) {
-        this.selectedReportId =
-          report.id;
+      if (!grouped.has(category)) {
+        grouped.set(
+          category,
+          []
+        );
       }
 
-      radio.addEventListener(
-        "change",
-        () => {
-          if (radio.checked) {
-            this.selectedReportId =
-              report.id;
+      grouped.get(category)
+        .push(report);
+    }
+
+    let firstReport = null;
+
+    for (const category of categoryOrder) {
+      const categoryReports =
+        grouped.get(category);
+
+      if (
+        !categoryReports ||
+        categoryReports.length === 0
+      ) {
+        continue;
+      }
+
+      const section =
+        document.createElement("section");
+
+      section.className =
+        "report-category";
+
+      const heading =
+        document.createElement("h4");
+
+      heading.className =
+        "report-category-title";
+
+      heading.textContent =
+        `${category} Reports`;
+
+      section.appendChild(heading);
+
+      const buttons =
+        document.createElement("div");
+
+      buttons.className =
+        "report-button-list";
+
+      for (const report of categoryReports) {
+        firstReport ||= report;
+
+        const button =
+          document.createElement("button");
+
+        button.type = "button";
+        button.className =
+          "report-list-button";
+
+        button.dataset.reportId =
+          report.id;
+
+        button.setAttribute(
+          "aria-pressed",
+          "false"
+        );
+
+        const title =
+          document.createElement("strong");
+
+        title.textContent =
+          report.title;
+
+        const legacy =
+          document.createElement("small");
+
+        legacy.className =
+          "report-legacy-name";
+
+        legacy.textContent =
+          report.legacyReport
+            ? `Legacy: ${report.legacyReport}`
+            : report.description;
+
+        button.append(
+          title,
+          legacy
+        );
+
+        button.title =
+          report.description ||
+          report.title;
+
+        button.addEventListener(
+          "click",
+          () => {
+            this.selectReport(
+              report.id
+            );
           }
+        );
+
+        buttons.appendChild(button);
+      }
+
+      section.appendChild(buttons);
+      container.appendChild(section);
+    }
+
+    const defaultReportId =
+      this.config.reports
+        ?.defaultReport;
+
+    const initialReport =
+      reports.find(
+        (report) =>
+          report.id ===
+          defaultReportId
+      ) ||
+      firstReport;
+
+    if (initialReport) {
+      this.selectReport(
+        initialReport.id,
+        {
+          notify: false
         }
       );
-
-      const text =
-        document.createElement("span");
-
-      const title =
-        document.createElement("strong");
-
-      title.textContent =
-        report.title;
-
-      const description =
-        document.createElement("small");
-
-      description.textContent =
-        report.description;
-
-      text.append(
-        title,
-        description
-      );
-
-      option.append(
-        radio,
-        text
-      );
-
-      container.appendChild(option);
     }
+  }
+
+  /**
+   * Selects one report button.
+   *
+   * @param {string} reportId
+   * @param {object} [options]
+   * @returns {boolean}
+   */
+  selectReport(
+    reportId,
+    options = {}
+  ) {
+    const report =
+      this.getProvinceReports()
+        .find(
+          (candidate) =>
+            candidate.id ===
+            reportId
+        );
+
+    if (!report) {
+      return false;
+    }
+
+    this.selectedReportId =
+      report.id;
+
+    for (
+      const button
+      of document.querySelectorAll(
+        ".report-list-button"
+      )
+    ) {
+      const selected =
+        button.dataset.reportId ===
+        report.id;
+
+      button.classList.toggle(
+        "selected",
+        selected
+      );
+
+      button.setAttribute(
+        "aria-pressed",
+        String(selected)
+      );
+    }
+
+    if (options.notify !== false) {
+      this.setStatus(
+        `${report.title} selected.`
+      );
+    }
+
+    return true;
   }
 
   /**
@@ -4072,8 +4223,8 @@ export class ApplicationController {
       );
 
     const reportId =
-      checked?.value ||
-      this.selectedReportId;
+      this.selectedReportId ||
+      checked?.value;
 
     return (
       this.getProvinceReports()
