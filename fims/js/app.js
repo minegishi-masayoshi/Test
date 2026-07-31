@@ -1053,26 +1053,20 @@ export class ApplicationController {
       this.extractRecords(records);
 
     return features
-      .map(
-        (record, index) =>
-          this.normalizeProvince(
-            record,
-            index
-          )
-      )
-      .filter(Boolean)
-      .sort(
+    .map(...)
+    .filter(Boolean)
+    .sort(
         (left, right) =>
-          this.getProvinceName(left)
-            .localeCompare(
-              this.getProvinceName(right),
-              "en",
-              {
-                numeric: true,
-                sensitivity: "base"
-              }
-            )
-      );
+            this.getProvinceName(left)
+                .localeCompare(
+                    this.getProvinceName(right),
+                    "en",
+                    {
+                        numeric: true,
+                        sensitivity: "base"
+                    }
+                )
+    );　　
   }
 
   /**
