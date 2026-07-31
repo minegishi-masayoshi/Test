@@ -137,7 +137,7 @@ export const MENU_ITEMS = Object.freeze([
     description:
       "Display and manage forest Concession information.",
     type: MENU_ITEM_TYPE.MODULE,
-    enabledByDefault: false,
+    enabledByDefault: true,
     activeByDefault: false,
     cssClass: "concession-menu-button"
   }),

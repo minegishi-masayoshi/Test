@@ -416,6 +416,7 @@ export class ApplicationController {
 
     this.provinces = [];
     this.fmus = [];
+    this.concessions = [];
 
     this.filteredProvinces = [];
 
@@ -759,19 +760,12 @@ export class ApplicationController {
   async handleMenuSelection(item) {
     switch (item.id) {
       case MENU_MODULE_ID.PROVINCE:
-        this.activeView =
-          APP_VIEW.PROVINCE;
-
-        this.showProvinceView();
-
+        await this.activateProvinceView();
         return true;
 
       case MENU_MODULE_ID.CONCESSION:
-        this.setStatus(
-          "Concession module is reserved for a later implementation phase."
-        );
-
-        return false;
+        await this.activateConcessionView();
+        return true;
 
       case MENU_MODULE_ID.PROPOSED_CONCESSION:
         this.setStatus(
@@ -806,6 +800,80 @@ export class ApplicationController {
 
     this.setStatus(
       "Province module selected."
+    );
+  }
+
+  /**
+   * Activates the Province / FMU view.
+   */
+  async activateProvinceView() {
+    this.activeView =
+      APP_VIEW.PROVINCE;
+
+    this.showProvinceView();
+
+    this.configureObjectPanelForFmus();
+
+    this.ensureMapLayerVisible(
+      "concession",
+      false
+    );
+
+    this.ensureMapLayerVisible(
+      "fmu",
+      true
+    );
+
+    if (this.selectedProvince) {
+      await this.selectProvince(
+        this.selectedProvince,
+        {
+          source: "menu",
+          notify: false
+        }
+      );
+    }
+  }
+
+  /**
+   * Activates the Concession view for the selected Province.
+   */
+  async activateConcessionView() {
+    this.activeView =
+      APP_VIEW.CONCESSION;
+
+    if (this.dom.provincePanel) {
+      this.dom.provincePanel.hidden =
+        false;
+    }
+
+    this.configureObjectPanelForConcessions();
+
+    this.ensureMapLayerVisible(
+      "fmu",
+      false
+    );
+
+    if (this.selectedProvince) {
+      await this.selectProvince(
+        this.selectedProvince,
+        {
+          source: "menu",
+          notify: false
+        }
+      );
+    } else if (this.provinces.length > 0) {
+      await this.selectProvince(
+        this.provinces[0],
+        {
+          source: "menu",
+          notify: false
+        }
+      );
+    }
+
+    this.setStatus(
+      "Concession module selected."
     );
   }
 
@@ -1035,6 +1103,160 @@ export class ApplicationController {
       records,
       province
     );
+  }
+
+  /**
+   * Loads and filters Concessions for one Province.
+   *
+   * GeoServer layer:
+   *   fims:concessionarea
+   *
+   * @param {object} province
+   * @returns {Promise<object[]>}
+   */
+  async loadConcessionsForProvince(
+    province
+  ) {
+    if (!province) {
+      return [];
+    }
+
+    if (
+      typeof DataModule.fetchWfsFeatureCollection !==
+      "function"
+    ) {
+      throw new ApplicationError(
+        "data.js does not expose fetchWfsFeatureCollection()."
+      );
+    }
+
+    const collection =
+      await DataModule.fetchWfsFeatureCollection({
+        layerKey: "concession",
+        count: 10000
+      });
+
+    const provinceCode =
+      normalizeText(
+        this.getProvinceCode(province)
+      );
+
+    return this.extractRecords(collection)
+      .map(
+        (feature, index) =>
+          this.normalizeConcession(
+            feature,
+            index
+          )
+      )
+      .filter(Boolean)
+      .filter(
+        (record) =>
+          normalizeText(
+            record.province
+          ) === provinceCode
+      )
+      .sort(
+        (left, right) =>
+          String(left.name)
+            .localeCompare(
+              String(right.name),
+              "en",
+              {
+                numeric: true,
+                sensitivity: "base"
+              }
+            )
+      );
+  }
+
+  /**
+   * Normalizes one Concession feature.
+   */
+  normalizeConcession(
+    feature,
+    index
+  ) {
+    if (!feature) {
+      return null;
+    }
+
+    const properties =
+      feature.properties || {};
+
+    const read = (...keys) => {
+      for (const key of keys) {
+        if (
+          Object.prototype.hasOwnProperty.call(
+            properties,
+            key
+          )
+        ) {
+          return properties[key];
+        }
+
+        const matchedKey =
+          Object.keys(properties)
+            .find(
+              (candidate) =>
+                normalizeText(candidate) ===
+                normalizeText(key)
+            );
+
+        if (matchedKey) {
+          return properties[matchedKey];
+        }
+      }
+
+      return null;
+    };
+
+    return {
+      id:
+        feature.id ??
+        read("fid", "FID") ??
+        index + 1,
+
+      name:
+        read("NAME", "name") ??
+        `Concession ${index + 1}`,
+
+      area:
+        read("AREA", "area"),
+
+      purchase:
+        read("PURCHASE", "purchase"),
+
+      expiry:
+        read("EXP", "exp", "expiry"),
+
+      concessionType:
+        read("CONSTYPE", "constype"),
+
+      status:
+        read("STATUS", "status"),
+
+      scale:
+        read("SCALE", "scale"),
+
+      province:
+        read("PROVINCE", "province"),
+
+      remarks:
+        read("REMARKS", "remarks"),
+
+      remarks2:
+        read("REMARKS2", "remarks2"),
+
+      planId:
+        read("PLAN_ID", "plan_id"),
+
+      geometry:
+        feature.geometry ?? null,
+
+      properties,
+      raw: feature
+    };
   }
 
   /* ==========================================================
@@ -1665,6 +1887,16 @@ export class ApplicationController {
       `${provinceName} Province totals`
     );
 
+    if (
+      this.activeView ===
+      APP_VIEW.CONCESSION
+    ) {
+      return await this.selectProvinceForConcessions(
+        normalizedProvince,
+        options
+      );
+    }
+
     this.setFmuLoadingState(
       true,
       `Loading FMUs for ${provinceName}…`
@@ -1732,12 +1964,109 @@ export class ApplicationController {
   }
 
   /**
+   * Loads Concessions and updates the table/map for a Province.
+   */
+  async selectProvinceForConcessions(
+    province,
+    options = {}
+  ) {
+    const provinceName =
+      this.getProvinceName(province);
+
+    this.setFmuLoadingState(
+      true,
+      `Loading Concessions for ${provinceName}…`
+    );
+
+    try {
+      this.concessions =
+        await this.loadConcessionsForProvince(
+          province
+        );
+
+      this.renderFmuTable();
+
+      this.updateMapProvinceSelection(
+        province
+      );
+
+      this.ensureMapLayerVisible(
+        "fmu",
+        false
+      );
+
+      if (
+        typeof this.mapManager
+          ?.setWmsLayerFilter ===
+        "function"
+      ) {
+        const code =
+          Number(
+            this.getProvinceCode(
+              province
+            )
+          );
+
+        this.mapManager
+          .setWmsLayerFilter(
+            "concession",
+            Number.isFinite(code)
+              ? `PROVINCE=${code}`
+              : "INCLUDE"
+          );
+      }
+
+      this.ensureMapLayerVisible(
+        "concession",
+        true
+      );
+
+      this.zoomToProvince(
+        province
+      );
+
+      this.summaryManager?.clear({
+        notify: false
+      });
+
+      this.setSummaryStatus(
+        `${this.concessions.length} Concession record(s) loaded.`
+      );
+
+      if (options.notify !== false) {
+        this.setStatus(
+          `${provinceName} Province selected; ` +
+          `${this.concessions.length} Concession record(s) loaded.`
+        );
+      }
+
+      return true;
+    } catch (error) {
+      this.concessions = [];
+      this.renderFmuTable();
+
+      this.handleError(
+        `Concessions for ${provinceName} could not be loaded.`,
+        error,
+        {
+          fatal: false
+        }
+      );
+
+      return false;
+    } finally {
+      this.setFmuLoadingState(false);
+    }
+  }
+
+  /**
    * Clears Province selection.
    */
   clearProvinceSelection() {
     this.selectedProvince = null;
     this.selectedFmu = null;
     this.fmus = [];
+    this.concessions = [];
 
     setText(
       this.dom.selectedProvince,
@@ -1777,6 +2106,16 @@ export class ApplicationController {
    * Renders all FMUs for the selected Province.
    */
   renderFmuTable() {
+    if (
+      this.activeView ===
+      APP_VIEW.CONCESSION
+    ) {
+      this.renderConcessionTable();
+      return;
+    }
+
+    this.configureObjectPanelForFmus();
+
     const body =
       this.dom.fmuTableBody;
 
@@ -1811,6 +2150,211 @@ export class ApplicationController {
       body.appendChild(
         this.createFmuTableRow(fmu)
       );
+    }
+  }
+
+  /**
+   * Configures the shared object panel for FMUs.
+   */
+  configureObjectPanelForFmus() {
+    setText(
+      first("#fmuListTitle"),
+      "FMUs"
+    );
+
+    if (this.dom.fmuCount) {
+      this.dom.fmuCount.setAttribute(
+        "aria-label",
+        "Number of FMUs"
+      );
+    }
+
+    const search =
+      first("#fmuSearch");
+
+    if (search) {
+      search.placeholder =
+        "Search FMU";
+    }
+
+    this.setObjectTableHeaders([
+      "FMU",
+      "Zone",
+      "Zone Name",
+      "Veg Type",
+      "Timber Volume",
+      "Veg Area",
+      "Protected Area",
+      "Ext Altitude",
+      "Ext Slope",
+      "Ext Karst",
+      "Ext Inund",
+      "Ext Mangrove",
+      "Ser Slope Relief",
+      "Ser Inund",
+      "Gross Frst Area 75",
+      "Adj Frst Area 75",
+      "Gross Frst Vol 75",
+      "Logged LUse",
+      "Rev Gross Frst Area",
+      "Rev Adj Frst Area",
+      "Rev Gross Frst Vol"
+    ]);
+  }
+
+  /**
+   * Configures the shared object panel for Concessions.
+   */
+  configureObjectPanelForConcessions() {
+    setText(
+      first("#fmuListTitle"),
+      "Concessions"
+    );
+
+    if (this.dom.fmuCount) {
+      this.dom.fmuCount.setAttribute(
+        "aria-label",
+        "Number of Concessions"
+      );
+    }
+
+    const search =
+      first("#fmuSearch");
+
+    if (search) {
+      search.placeholder =
+        "Search Concession";
+      search.disabled = true;
+    }
+
+    this.setObjectTableHeaders([
+      "Name",
+      "Area (ha)",
+      "Purchase",
+      "Expiry",
+      "Type",
+      "Status",
+      "Scale",
+      "Province",
+      "Remarks",
+      "Remarks 2",
+      "Plan ID"
+    ]);
+  }
+
+  /**
+   * Replaces the shared table header.
+   */
+  setObjectTableHeaders(labels) {
+    const head =
+      first("#fmuTableHead");
+
+    if (!head) {
+      return;
+    }
+
+    const row =
+      document.createElement("tr");
+
+    for (const label of labels) {
+      const cell =
+        document.createElement("th");
+
+      cell.scope = "col";
+      cell.textContent = label;
+      row.appendChild(cell);
+    }
+
+    head.replaceChildren(row);
+  }
+
+  /**
+   * Renders Concessions for the selected Province.
+   */
+  renderConcessionTable() {
+    this.configureObjectPanelForConcessions();
+
+    const body =
+      this.dom.fmuTableBody;
+
+    if (!body) {
+      return;
+    }
+
+    body.replaceChildren();
+
+    setText(
+      this.dom.fmuCount,
+      this.concessions.length
+    );
+
+    if (!this.selectedProvince) {
+      this.renderFmuEmptyRow(
+        "Select a Province to display Concessions."
+      );
+      return;
+    }
+
+    if (this.concessions.length === 0) {
+      this.renderFmuEmptyRow(
+        "No Concession records are available for the selected Province."
+      );
+      return;
+    }
+
+    for (
+      const concession
+      of this.concessions
+    ) {
+      const row =
+        document.createElement("tr");
+
+      row.className =
+        "concession-table-row";
+
+      const values = [
+        concession.name,
+        this.formatFmuNumber(
+          concession.area
+        ),
+        concession.purchase,
+        concession.expiry,
+        concession.concessionType,
+        concession.status,
+        concession.scale,
+        concession.province,
+        concession.remarks,
+        concession.remarks2,
+        concession.planId
+      ];
+
+      for (
+        const [index, value]
+        of values.entries()
+      ) {
+        const cell =
+          document.createElement("td");
+
+        cell.textContent =
+          hasValue(value)
+            ? String(value)
+            : DEFAULT_EMPTY_VALUE;
+
+        if (
+          index === 1 ||
+          index === 7 ||
+          index === 10
+        ) {
+          cell.classList.add(
+            "number-cell",
+            "numeric"
+          );
+        }
+
+        row.appendChild(cell);
+      }
+
+      body.appendChild(row);
     }
   }
 
@@ -3930,6 +4474,9 @@ export class ApplicationController {
 
       fmuCount:
         this.fmus.length,
+
+      concessionCount:
+        this.concessions.length,
 
       selectedProvince:
         this.selectedProvince,

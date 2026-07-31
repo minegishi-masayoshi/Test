@@ -40,7 +40,7 @@ const CONFIG = {
     name: "FIMS Cloud",
     fullName: "Forest Information and Mapping System",
     organization: "PNG Forest Authority",
-    version: "Ver.2.0.3",
+    version: "Ver.2.1.0",
     build: "2.0.0",
     environment: "MVP",
     language: "en",
@@ -184,8 +184,8 @@ const CONFIG = {
     concession: {
       key: "concession",
       label: "Concession",
-      enabled: false,
-      implemented: false,
+      enabled: true,
+      implemented: true,
       initial: false,
       type: "internal"
     },
@@ -1164,7 +1164,7 @@ const CONFIG = {
       name: "concessionarea",
       qualifiedName: "fims:concessionarea",
       service: "wms-wfs",
-      enabled: false,
+      enabled: true,
       visible: false,
       queryable: true,
       opacity: 0.6,

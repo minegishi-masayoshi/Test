@@ -1277,6 +1277,51 @@ export class FimsMap {
   }
 
   /**
+   * Applies a CQL filter to an existing or future WMS layer.
+   *
+   * @param {string} layerKey
+   * @param {string|null} cqlFilter
+   * @returns {boolean}
+   */
+  setWmsLayerFilter(
+    layerKey,
+    cqlFilter
+  ) {
+    let layer =
+      this.wmsLayers.get(layerKey);
+
+    if (!layer) {
+      layer = this.createWmsLayer(layerKey);
+
+      if (!layer) {
+        return false;
+      }
+
+      this.wmsLayers.set(layerKey, layer);
+    }
+
+    if (
+      typeof layer.setParams === "function"
+    ) {
+      layer.setParams(
+        {
+          CQL_FILTER:
+            cqlFilter || "INCLUDE"
+        },
+        false
+      );
+
+      if (
+        typeof layer.redraw === "function"
+      ) {
+        layer.redraw();
+      }
+    }
+
+    return true;
+  }
+
+  /**
    * Compatibility alias for previous map.js.
    */
   setLayerVisible(
