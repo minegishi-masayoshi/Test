@@ -54,12 +54,20 @@ import {
   ProvinceSummaryManager
 } from "./summary.js";
 
+import {
+  TimberVolumeManager
+} from "./timberVolume.js";
+
+import {
+  ReportEngine
+} from "./reportEngine.js";
+
 /* ============================================================
  * 1. Application constants
  * ============================================================
  */
 
-export const APP_VERSION = "2.3.2";
+export const APP_VERSION = "2.4.0";
 
 export const APP_STATUS = Object.freeze({
   IDLE: "idle",
@@ -664,6 +672,8 @@ export class ApplicationController {
     this.mapManager = null;
     this.menuManager = null;
     this.summaryManager = null;
+    this.timberVolumeManager = null;
+    this.reportEngine = null;
 
     this.destroyed = false;
     this.initialized = false;
@@ -710,6 +720,10 @@ export class ApplicationController {
       this.initializeMenu();
 
       this.initializeSummary();
+
+      this.initializeTimberVolume();
+
+      this.initializeReportEngine();
 
       this.bindUiEvents();
 
@@ -921,6 +935,56 @@ export class ApplicationController {
     throw new ApplicationInitializationError(
       "A compatible map.js factory or class was not found."
     );
+  }
+
+  /**
+   * Initializes the Timber Volume Zone editor.
+   */
+  initializeTimberVolume() {
+    this.timberVolumeManager =
+      new TimberVolumeManager({
+        csvUrl:
+          this.config.timberVolume
+            ?.csvUrl ||
+          "./data/timber_volume_master.csv",
+
+        apiBaseUrl:
+          this.config.timberVolume
+            ?.apiBaseUrl ||
+          "",
+
+        getSelectedProvince:
+          () => this.selectedProvince,
+
+        onStatus:
+          (message) => {
+            this.setStatus(message);
+          },
+
+        onError:
+          (error) => {
+            this.handleError(
+              "Timber Volume operation failed.",
+              error,
+              {
+                fatal: false
+              }
+            );
+          }
+      });
+  }
+
+  /**
+   * Initializes the shared report engine boundary.
+   */
+  initializeReportEngine() {
+    this.reportEngine =
+      new ReportEngine({
+        onStatus:
+          (message) => {
+            this.setStatus(message);
+          }
+      });
   }
 
   /* ==========================================================
@@ -4253,24 +4317,19 @@ export class ApplicationController {
    */
 
   /**
-   * Placeholder for future Zone update API.
+   * Opens the Province Zone / Vegetation Type Timber Volume editor.
    */
-  requestZoneUpdate() {
-    if (!this.selectedFmu) {
+  async requestZoneUpdate() {
+    if (!this.selectedProvince) {
       this.setStatus(
-        "Select an FMU first."
+        "Select a Province first."
       );
 
       return false;
     }
 
-    this.setStatus(
-      `Zone ${this.getFmuZone(
-        this.selectedFmu
-      )}: update API is reserved for the backend implementation phase.`
-    );
-
-    return true;
+    return await this.timberVolumeManager
+      ?.open();
   }
 
   /**

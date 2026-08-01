@@ -12,7 +12,7 @@
 
   <meta
     name="description"
-    content="PNG Forest Authority Forest Information and Mapping System Cloud Version 2.3.2"
+    content="PNG Forest Authority Forest Information and Mapping System Cloud Version 2.4.0"
   />
 
   <meta
@@ -42,7 +42,7 @@
 
   <!--
     ============================================================
-    FIMS Cloud Ver.2.3.2
+    FIMS Cloud Ver.2.4.0
     GitHub Pages Content Security Policy
     ============================================================
 
@@ -83,14 +83,14 @@
        ======================================================== -->
   <link
     rel="stylesheet"
-    href="./css/main.css?v=2.3.2"
+    href="./css/main.css?v=2.4.0"
   />
 </head>
 
 <body>
   <!--
     ============================================================
-    FIMS Cloud Ver.2.3.2
+    FIMS Cloud Ver.2.4.0
     Province Selection Screen
 
     Current implementation:
@@ -111,7 +111,7 @@
   <div
     id="fims-app"
     class="app-shell"
-    data-fims-version="2.3.2"
+    data-fims-version="2.4.0"
   >
     <!-- ======================================================
          Application header
@@ -128,7 +128,7 @@
             class="version-badge"
             data-app-version
           >
-            Ver.2.3.2
+            Ver.2.4.0
           </span>
         </div>
 
@@ -174,7 +174,7 @@
         aria-atomic="true"
         data-app-status
       >
-        Starting FIMS Cloud Ver.2.3.2…
+        Starting FIMS Cloud Ver.2.4.0…
       </div>
     </section>
 
@@ -482,7 +482,7 @@
                 id="updateZoneButton"
                 type="button"
                 class="secondary-button"
-                title="This function requires a secured server-side API."
+                title="Open the Province Zone / Vegetation Type Timber Volume editor."
               >
                 Update Timber Volumes for Zone
               </button>
@@ -524,7 +524,7 @@
             </div>
 
             <p class="control-note">
-              Timber Volume update requires a secured backend API.
+              Zone values can be reviewed and saved as a browser draft. Database updates require the secured backend API.
             </p>
           </div>
         </article>
@@ -944,7 +944,7 @@
         id="statusText"
         data-app-status
       >
-        Starting FIMS Cloud Ver.2.3.2…
+        Starting FIMS Cloud Ver.2.4.0…
       </span>
 
       <span
@@ -958,6 +958,95 @@
         Authorized access only
       </span>
     </footer>
+
+
+    <!-- ======================================================
+         Timber Volume update dialog
+         ====================================================== -->
+    <dialog
+      id="timberVolumeDialog"
+      class="timber-volume-dialog"
+      aria-labelledby="timberVolumeDialogTitle"
+    >
+      <div class="timber-dialog-shell">
+        <header class="timber-dialog-header">
+          <div>
+            <h2 id="timberVolumeDialogTitle">
+              Update Timber Volumes for Zone
+            </h2>
+            <p>
+              Province:
+              <strong id="timberVolumeProvinceText">—</strong>
+            </p>
+          </div>
+
+          <button
+            id="closeTimberVolumeDialogButton"
+            type="button"
+            class="secondary-button"
+          >
+            Close
+          </button>
+        </header>
+
+        <div class="timber-dialog-toolbar">
+          <label for="timberVolumeSearchInput">
+            Filter
+          </label>
+
+          <input
+            id="timberVolumeSearchInput"
+            type="search"
+            placeholder="Zone, vegetation type or comments"
+          />
+
+          <span id="timberVolumeCountText">
+            0 rows
+          </span>
+        </div>
+
+        <div class="timber-table-scroll">
+          <table class="timber-update-table">
+            <thead>
+              <tr>
+                <th>Forest Zone</th>
+                <th>Vegetation Type</th>
+                <th>Orig Vol/ha</th>
+                <th>Current Vol/ha</th>
+                <th>Comments</th>
+              </tr>
+            </thead>
+            <tbody id="timberVolumeTableBody"></tbody>
+          </table>
+        </div>
+
+        <p class="timber-dialog-note">
+          Only Current Vol/ha and Comments are editable. Draft changes are
+          stored in this browser. PostgreSQL updates require the secured
+          backend API configured in <code>config.js</code>.
+        </p>
+
+        <footer class="timber-dialog-actions">
+          <button
+            id="saveTimberVolumeDraftButton"
+            type="button"
+            class="secondary-button"
+          >
+            Save Draft
+          </button>
+
+          <button
+            id="applyTimberVolumeUpdateButton"
+            type="button"
+            class="primary-button"
+            disabled
+            aria-disabled="true"
+          >
+            Apply to FMUs
+          </button>
+        </footer>
+      </div>
+    </dialog>
 
     <!-- ======================================================
          Application loading overlay
@@ -1030,7 +1119,7 @@
        ======================================================== -->
   <script
     type="module"
-    src="./js/app.js?v=2.3.2"
+    src="./js/app.js?v=2.4.0"
   ></script>
 </body>
 </html>

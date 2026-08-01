@@ -1678,7 +1678,24 @@ const CONFIG = {
     logSummaryCalculations: false,
 
     showDetailedErrors: true
-  }
+  },
+
+  /*
+   * ==========================================================
+   * 10A. Timber Volume
+   * ==========================================================
+   *
+   * GitHub Pages loads the migrated legacy master from CSV.
+   * Set apiBaseUrl only after a secured authenticated backend
+   * has been deployed in OCI.
+   */
+  timberVolume: {
+    csvUrl:
+      "./data/timber_volume_master.csv",
+
+    apiBaseUrl: ""
+  },
+
 };
 
 /*
