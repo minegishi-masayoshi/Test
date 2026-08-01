@@ -34,11 +34,11 @@ The concession master in `js/data.js` is prototype data. Replace it with
 PostGIS/API results when the backend is implemented.
 
 
-## Ver.2.5.0
+## Ver.2.6.0
 Automatic zoom on Province, Concession and FMU selection is disabled.
 
 
-## Ver.2.5.0 Timber Volume API
+## Ver.2.6.0 Timber Volume API
 
 The Timber Volume functions are connected to the OCI FastAPI service:
 
@@ -47,3 +47,11 @@ The Timber Volume functions are connected to the OCI FastAPI service:
 Zone updates use `PUT /timber-volumes/zone`. Individual FMU updates use
 `PUT /timber-volume/fmu`. The bundled CSV remains available only as a
 read-only fallback when the API cannot be reached.
+
+
+## Ver.2.6.0 — Individual FMU Timber Volume
+
+Select an FMU row, click **Update Timber Volume for FMU**, enter the revised
+value, and confirm. FIMS Cloud calls the secured FastAPI endpoint, recalculates
+the FMU, sets the individual-update protection flag, and refreshes the Province
+FMU list and Summary.

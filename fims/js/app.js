@@ -67,7 +67,7 @@ import {
  * ============================================================
  */
 
-export const APP_VERSION = "2.5.0";
+export const APP_VERSION = "2.6.0";
 
 export const APP_STATUS = Object.freeze({
   IDLE: "idle",
@@ -238,6 +238,34 @@ const SELECTORS = Object.freeze({
   updateFmuButton: [
     "#updateFmuButton",
     "[data-action='update-fmu']"
+  ],
+
+  fmuVolumeDialog: [
+    "#fmuVolumeDialog"
+  ],
+
+  fmuVolumeDialogFmu: [
+    "#fmuVolumeDialogFmu"
+  ],
+
+  fmuVolumeDialogZone: [
+    "#fmuVolumeDialogZone"
+  ],
+
+  fmuVolumeDialogVegType: [
+    "#fmuVolumeDialogVegType"
+  ],
+
+  fmuVolumeDialogCurrent: [
+    "#fmuVolumeDialogCurrent"
+  ],
+
+  fmuVolumeDialogProtected: [
+    "#fmuVolumeDialogProtected"
+  ],
+
+  cancelFmuVolumeButton: [
+    "#cancelFmuVolumeButton"
   ],
 
   newVolumeInput: [
@@ -4356,32 +4384,166 @@ export class ApplicationController {
   }
 
   /**
-   * Prepares the individual FMU update input.
+   * Opens the Old FIMS User Guide Section 1.4.2 dialog.
    */
   prepareFmuUpdate() {
     if (!this.selectedFmu) {
       this.setStatus(
-        "Select an FMU first."
+        "Select an FMU row before updating its Timber Volume."
       );
-
       return false;
     }
 
-    this.syncFmuUpdateControls({
-      focus: true
-    });
+    const vegType =
+      this.readFmuField(
+        this.selectedFmu,
+        [
+          "vegetationType",
+          "vegetation_type",
+          "vegType",
+          "veg_type"
+        ]
+      );
+
+    const currentVolume =
+      this.readFmuField(
+        this.selectedFmu,
+        [
+          "timberVolume",
+          "timber_volume",
+          "timber",
+          "volume"
+        ]
+      );
+
+    const protectedValue =
+      this.readFmuField(
+        this.selectedFmu,
+        [
+          "timberVolumeUpdateFmu",
+          "timber_volume_update_fmu"
+        ]
+      );
+
+    setText(
+      this.dom.fmuVolumeDialogFmu,
+      this.getFmuDisplayId(
+        this.selectedFmu
+      )
+    );
+
+    setText(
+      this.dom.fmuVolumeDialogZone,
+      this.getFmuZone(
+        this.selectedFmu
+      )
+    );
+
+    setText(
+      this.dom.fmuVolumeDialogVegType,
+      vegType || DEFAULT_EMPTY_VALUE
+    );
+
+    setText(
+      this.dom.fmuVolumeDialogCurrent,
+      this.formatFmuNumber(
+        currentVolume
+      )
+    );
+
+    const protectedText =
+      [
+        true,
+        1,
+        "1",
+        "t",
+        "true",
+        "yes"
+      ].includes(
+        typeof protectedValue === "string"
+          ? protectedValue
+              .trim()
+              .toLowerCase()
+          : protectedValue
+      )
+        ? "Yes"
+        : "No";
+
+    setText(
+      this.dom.fmuVolumeDialogProtected,
+      protectedText
+    );
+
+    if (this.dom.newVolumeInput) {
+      this.dom.newVolumeInput.value =
+        currentVolume ?? "";
+      this.dom.newVolumeInput.disabled =
+        false;
+      this.dom.newVolumeInput
+        .setAttribute(
+          "aria-disabled",
+          "false"
+        );
+    }
+
+    this.syncFmuUpdateControls();
+
+    if (
+      typeof this.dom
+        .fmuVolumeDialog
+        ?.showModal === "function"
+    ) {
+      if (!this.dom.fmuVolumeDialog.open) {
+        this.dom.fmuVolumeDialog.showModal();
+      }
+    } else if (this.dom.fmuVolumeDialog) {
+      this.dom.fmuVolumeDialog.hidden =
+        false;
+    }
+
+    window.setTimeout(
+      () => {
+        this.dom.newVolumeInput?.focus();
+        this.dom.newVolumeInput?.select();
+      },
+      0
+    );
 
     this.setStatus(
-      `Enter New Vol. for FMU ${this.getFmuDisplayId(
+      `FMU ${this.getFmuDisplayId(
         this.selectedFmu
-      )}, then click Update.`
+      )}: enter the revised Timber Volume.`
     );
 
     return true;
   }
 
   /**
-   * Synchronizes individual FMU update controls.
+   * Closes the individual FMU update dialog.
+   */
+  closeFmuVolumeDialog() {
+    const dialog =
+      this.dom.fmuVolumeDialog;
+
+    if (
+      typeof dialog?.close === "function" &&
+      dialog.open
+    ) {
+      dialog.close();
+    } else if (dialog) {
+      dialog.hidden = true;
+    }
+
+    if (this.dom.newVolumeInput) {
+      this.dom.newVolumeInput.value = "";
+    }
+
+    this.syncFmuUpdateControls();
+    return true;
+  }
+
+  /**
+   * Synchronizes the individual FMU update controls.
    */
   syncFmuUpdateControls(
     options = {}
@@ -4390,41 +4552,25 @@ export class ApplicationController {
       this.dom.newVolumeInput;
 
     const button =
-      this.dom
-        .applyVolumeUpdateButton;
+      this.dom.applyVolumeUpdateButton;
 
     const hasFmu =
-      Boolean(
-        this.selectedFmu
-      );
+      Boolean(this.selectedFmu);
 
     if (input) {
-      input.disabled =
-        !hasFmu;
+      if (options.resetValue) {
+        input.value = "";
+      }
 
+      input.disabled = !hasFmu;
       input.setAttribute(
         "aria-disabled",
         String(!hasFmu)
       );
-
-      if (
-        options.resetValue
-      ) {
-        input.value = "";
-      }
-
-      if (
-        options.focus &&
-        hasFmu
-      ) {
-        input.focus();
-      }
     }
 
     const rawValue =
-      String(
-        input?.value ?? ""
-      ).trim();
+      String(input?.value ?? "").trim();
 
     const value =
       Number(rawValue);
@@ -4436,9 +4582,7 @@ export class ApplicationController {
       value >= 0;
 
     if (button) {
-      button.disabled =
-        !valid;
-
+      button.disabled = !valid;
       button.setAttribute(
         "aria-disabled",
         String(!valid)
@@ -4447,14 +4591,13 @@ export class ApplicationController {
   }
 
   /**
-   * Updates one FMU through FastAPI.
+   * Updates one FMU through the secured FastAPI endpoint.
    */
   async requestFmuUpdate() {
     if (!this.selectedFmu) {
       this.setStatus(
         "Select an FMU first."
       );
-
       return false;
     }
 
@@ -4462,26 +4605,20 @@ export class ApplicationController {
       this.dom.newVolumeInput;
 
     const rawValue =
-      String(
-        input?.value ?? ""
-      ).trim();
+      String(input?.value ?? "").trim();
 
     const volPerHa =
       Number(rawValue);
 
     if (
       rawValue === "" ||
-      !Number.isFinite(
-        volPerHa
-      ) ||
+      !Number.isFinite(volPerHa) ||
       volPerHa < 0
     ) {
       this.setStatus(
-        "Enter a valid non-negative New Vol. value."
+        "Enter a valid non-negative New Timber Volume."
       );
-
       input?.focus();
-
       return false;
     }
 
@@ -4500,48 +4637,66 @@ export class ApplicationController {
       );
 
     if (
-      !Number.isFinite(
-        province
-      ) ||
+      !Number.isFinite(province) ||
       !Number.isFinite(fmu)
     ) {
       this.setStatus(
         "The selected Province or FMU code is invalid."
       );
+      return false;
+    }
 
+    const currentVolume =
+      Number(
+        this.readFmuField(
+          this.selectedFmu,
+          [
+            "timberVolume",
+            "timber_volume",
+            "timber",
+            "volume"
+          ]
+        )
+      );
+
+    if (
+      Number.isFinite(currentVolume) &&
+      currentVolume === volPerHa
+    ) {
+      this.setStatus(
+        "The New Timber Volume is the same as the current value."
+      );
+      input?.focus();
       return false;
     }
 
     const apiBaseUrl =
       String(
         this.config.timberVolume
-          ?.apiBaseUrl ||
-        ""
+          ?.apiBaseUrl || ""
       ).replace(/\/$/, "");
 
     if (!apiBaseUrl) {
       this.setStatus(
         "The secured Timber Volume API is not configured."
       );
-
       return false;
     }
 
     if (
       !window.confirm(
-        `Update FMU ${fmu} to ${volPerHa} m³/ha?`
+        `Are you sure you wish to update the Timber Volume for FMU ${fmu} from ${Number.isFinite(currentVolume) ? currentVolume : "—"} to ${volPerHa} m³/ha?`
       )
     ) {
       return false;
     }
 
-    if (
-      this.dom
-        .applyVolumeUpdateButton
-    ) {
-      this.dom
-        .applyVolumeUpdateButton
-        .disabled = true;
+    const button =
+      this.dom.applyVolumeUpdateButton;
+
+    if (button) {
+      button.disabled = true;
+      button.textContent = "Updating…";
     }
 
     try {
@@ -4556,8 +4711,7 @@ export class ApplicationController {
               "Accept":
                 "application/json"
             },
-            credentials:
-              "omit",
+            credentials: "omit",
             body:
               JSON.stringify({
                 province,
@@ -4570,9 +4724,7 @@ export class ApplicationController {
 
       const payload =
         await response.json()
-          .catch(
-            () => ({})
-          );
+          .catch(() => ({}));
 
       if (!response.ok) {
         throw new Error(
@@ -4581,14 +4733,13 @@ export class ApplicationController {
         );
       }
 
-      if (input) {
-        input.value = "";
-      }
+      this.closeFmuVolumeDialog();
 
-      await this.refreshSelectedProvinceAfterTimberUpdate();
+      await this
+        .refreshSelectedProvinceAfterTimberUpdate();
 
       this.setStatus(
-        `FMU ${fmu} updated to ${volPerHa} m³/ha and protected from later Zone updates.`
+        `FMU ${fmu} updated to ${volPerHa} m³/ha. All FMU volume calculations were recalculated and the FMU was protected from later Zone updates.`
       );
 
       return true;
@@ -4600,9 +4751,12 @@ export class ApplicationController {
           fatal: false
         }
       );
-
       return false;
     } finally {
+      if (button) {
+        button.textContent =
+          "Update Timber Volume";
+      }
       this.syncFmuUpdateControls();
     }
   }
@@ -4615,6 +4769,13 @@ export class ApplicationController {
       return;
     }
 
+    const selectedFmuId =
+      this.selectedFmu
+        ? this.getFmuId(
+            this.selectedFmu
+          )
+        : null;
+
     await this.selectProvince(
       this.selectedProvince,
       {
@@ -4624,6 +4785,29 @@ export class ApplicationController {
           false
       }
     );
+
+    if (selectedFmuId !== null) {
+      const refreshedFmu =
+        this.fmus.find(
+          (fmu) =>
+            String(
+              this.getFmuId(fmu)
+            ) ===
+            String(selectedFmuId)
+        );
+
+      if (refreshedFmu) {
+        this.selectFmu(
+          refreshedFmu,
+          {
+            source:
+              "timber-volume-update",
+            notify:
+              false
+          }
+        );
+      }
+    }
 
     this.setStatus(
       "Timber Volume update complete. FMUs and Summary were refreshed."
@@ -4792,6 +4976,23 @@ export class ApplicationController {
       "input",
       () => {
         this.syncFmuUpdateControls();
+      }
+    );
+
+    this.bindEvent(
+      this.dom.cancelFmuVolumeButton,
+      "click",
+      () => {
+        this.closeFmuVolumeDialog();
+      }
+    );
+
+    this.bindEvent(
+      this.dom.fmuVolumeDialog,
+      "cancel",
+      (event) => {
+        event.preventDefault();
+        this.closeFmuVolumeDialog();
       }
     );
 

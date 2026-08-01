@@ -12,7 +12,7 @@
 
   <meta
     name="description"
-    content="PNG Forest Authority Forest Information and Mapping System Cloud Version 2.5.0"
+    content="PNG Forest Authority Forest Information and Mapping System Cloud Version 2.6.0"
   />
 
   <meta
@@ -42,7 +42,7 @@
 
   <!--
     ============================================================
-    FIMS Cloud Ver.2.5.0
+    FIMS Cloud Ver.2.6.0
     GitHub Pages Content Security Policy
     ============================================================
 
@@ -83,14 +83,14 @@
        ======================================================== -->
   <link
     rel="stylesheet"
-    href="./css/main.css?v=2.5.0"
+    href="./css/main.css?v=2.6.0"
   />
 </head>
 
 <body>
   <!--
     ============================================================
-    FIMS Cloud Ver.2.5.0
+    FIMS Cloud Ver.2.6.0
     Province Selection Screen
 
     Current implementation:
@@ -111,7 +111,7 @@
   <div
     id="fims-app"
     class="app-shell"
-    data-fims-version="2.5.0"
+    data-fims-version="2.6.0"
   >
     <!-- ======================================================
          Application header
@@ -128,7 +128,7 @@
             class="version-badge"
             data-app-version
           >
-            Ver.2.5.0
+            Ver.2.6.0
           </span>
         </div>
 
@@ -174,7 +174,7 @@
         aria-atomic="true"
         data-app-status
       >
-        Starting FIMS Cloud Ver.2.5.0…
+        Starting FIMS Cloud Ver.2.6.0…
       </div>
     </section>
 
@@ -497,34 +497,8 @@
               </button>
             </div>
 
-            <div class="new-volume-control">
-              <label for="newVolumeInput">
-                New Vol.
-              </label>
-
-              <input
-                id="newVolumeInput"
-                type="number"
-                min="0"
-                step="0.01"
-                inputmode="decimal"
-                disabled
-                aria-disabled="true"
-              />
-
-              <button
-                id="applyVolumeUpdateButton"
-                type="button"
-                class="primary-button"
-                disabled
-                aria-disabled="true"
-              >
-                Update
-              </button>
-            </div>
-
             <p class="control-note">
-              Zone and individual FMU updates are connected to the secured OCI FastAPI service.
+              Select an FMU row, then click Update Timber Volume for FMU. The updated FMU is protected from later Zone updates.
             </p>
           </div>
         </article>
@@ -944,7 +918,7 @@
         id="statusText"
         data-app-status
       >
-        Starting FIMS Cloud Ver.2.5.0…
+        Starting FIMS Cloud Ver.2.6.0…
       </span>
 
       <span
@@ -959,6 +933,111 @@
       </span>
     </footer>
 
+
+    <!-- ======================================================
+         Individual FMU Timber Volume dialog
+         Old FIMS User Guide Section 1.4.2
+         ====================================================== -->
+    <dialog
+      id="fmuVolumeDialog"
+      class="fmu-volume-dialog"
+      aria-labelledby="fmuVolumeDialogTitle"
+    >
+      <div class="fmu-volume-dialog-shell">
+        <header class="fmu-volume-dialog-header">
+          <div>
+            <h2 id="fmuVolumeDialogTitle">
+              Update Timber Volume for FMU
+            </h2>
+            <p>Old FIMS User Guide Section 1.4.2</p>
+          </div>
+
+          <button
+            id="cancelFmuVolumeButton"
+            type="button"
+            class="dialog-close-button"
+          >
+            Close
+          </button>
+        </header>
+
+        <div class="fmu-volume-dialog-body">
+          <dl class="fmu-volume-details">
+            <div>
+              <dt>FMU</dt>
+              <dd id="fmuVolumeDialogFmu">—</dd>
+            </div>
+            <div>
+              <dt>Forest Zone</dt>
+              <dd id="fmuVolumeDialogZone">—</dd>
+            </div>
+            <div>
+              <dt>Vegetation Type</dt>
+              <dd id="fmuVolumeDialogVegType">—</dd>
+            </div>
+            <div>
+              <dt>Current Timber Volume</dt>
+              <dd>
+                <span id="fmuVolumeDialogCurrent">—</span>
+                m³/ha
+              </dd>
+            </div>
+            <div>
+              <dt>Individually Updated</dt>
+              <dd id="fmuVolumeDialogProtected">No</dd>
+            </div>
+          </dl>
+
+          <div class="fmu-volume-entry">
+            <label for="newVolumeInput">
+              New Timber Volume
+            </label>
+
+            <div class="number-with-unit">
+              <input
+                id="newVolumeInput"
+                type="number"
+                min="0"
+                step="0.01"
+                inputmode="decimal"
+                disabled
+                aria-disabled="true"
+                required
+              />
+              <span>m³/ha</span>
+            </div>
+          </div>
+
+          <div class="fmu-volume-calculation-note">
+            <strong>Automatic recalculation</strong>
+            <p>
+              The selected FMU volume fields are recalculated and the FMU is marked as individually updated. Later Zone updates will preserve this FMU.
+            </p>
+          </div>
+        </div>
+
+        <footer class="fmu-volume-dialog-actions">
+          <button
+            id="cancelFmuVolumeFooterButton"
+            type="button"
+            class="secondary-button"
+            onclick="document.getElementById('cancelFmuVolumeButton').click()"
+          >
+            Cancel
+          </button>
+
+          <button
+            id="applyVolumeUpdateButton"
+            type="button"
+            class="primary-button"
+            disabled
+            aria-disabled="true"
+          >
+            Update Timber Volume
+          </button>
+        </footer>
+      </div>
+    </dialog>
 
     <!-- ======================================================
          Timber Volume update dialog
@@ -1126,7 +1205,7 @@
        ======================================================== -->
   <script
     type="module"
-    src="./js/app.js?v=2.5.0"
+    src="./js/app.js?v=2.6.0"
   ></script>
 </body>
 </html>

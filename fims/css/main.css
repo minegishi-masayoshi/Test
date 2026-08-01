@@ -2313,3 +2313,136 @@ input:focus:not(:focus-visible) {
     justify-self: start;
   }
 }
+
+
+/* Individual FMU Timber Volume — User Guide Section 1.4.2 */
+.fmu-volume-dialog {
+  width: min(620px, calc(100vw - 28px));
+  max-height: calc(100vh - 40px);
+  padding: 0;
+  color: #1d2a21;
+  background: #f7faf7;
+  border: 1px solid #274d34;
+  border-radius: 5px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.32);
+}
+
+.fmu-volume-dialog::backdrop {
+  background: rgba(11, 30, 18, 0.58);
+}
+
+.fmu-volume-dialog-shell {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  max-height: calc(100vh - 42px);
+}
+
+.fmu-volume-dialog-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 13px 15px;
+  color: #fff;
+  background: linear-gradient(180deg, #1f6a3b, #15532e);
+}
+
+.fmu-volume-dialog-header h2 {
+  margin: 0;
+  font-size: var(--font-size-lg);
+}
+
+.fmu-volume-dialog-header p {
+  margin: 3px 0 0;
+  color: #dceee1;
+  font-size: var(--font-size-xs);
+}
+
+.fmu-volume-dialog-body {
+  overflow: auto;
+  padding: 16px;
+}
+
+.fmu-volume-details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0 0 16px;
+  border-top: 1px solid #c3cec5;
+  border-left: 1px solid #c3cec5;
+}
+
+.fmu-volume-details > div {
+  padding: 9px 10px;
+  background: #fff;
+  border-right: 1px solid #c3cec5;
+  border-bottom: 1px solid #c3cec5;
+}
+
+.fmu-volume-details dt {
+  margin-bottom: 3px;
+  color: #526258;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+}
+
+.fmu-volume-details dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+.fmu-volume-entry {
+  padding: 13px;
+  background: #edf5ef;
+  border: 1px solid #86a78e;
+  border-radius: 4px;
+}
+
+.fmu-volume-entry label {
+  display: block;
+  margin-bottom: 7px;
+  font-weight: 700;
+}
+
+.number-with-unit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.number-with-unit input {
+  width: min(240px, 100%);
+  padding: 8px 9px;
+  border: 1px solid #798b7d;
+  border-radius: 3px;
+  font: inherit;
+  text-align: right;
+}
+
+.fmu-volume-calculation-note {
+  margin-top: 14px;
+  padding: 10px 12px;
+  color: #34473a;
+  background: #fff8df;
+  border: 1px solid #cdbb76;
+  border-radius: 4px;
+}
+
+.fmu-volume-calculation-note p {
+  margin: 4px 0 0;
+  line-height: 1.45;
+}
+
+.fmu-volume-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 11px 15px;
+  background: #edf2ee;
+  border-top: 1px solid #bac6bc;
+}
+
+@media (max-width: 560px) {
+  .fmu-volume-details {
+    grid-template-columns: 1fr;
+  }
+}
