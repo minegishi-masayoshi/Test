@@ -2268,3 +2268,48 @@ input:focus:not(:focus-visible) {
     align-items: flex-start;
   }
 }
+
+
+/* ============================================================
+   API integration status — Ver.2.5.0
+   ============================================================ */
+
+.api-status {
+  justify-self: end;
+  padding: 3px 7px;
+  color: #4b5c50;
+  background: #f4f6f4;
+  border: 1px solid #aeb9b0;
+  border-radius: 999px;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.api-status-connected {
+  color: #174d2c;
+  background: #dff2e4;
+  border-color: #5d9870;
+}
+
+.api-status-fallback {
+  color: #7a4b00;
+  background: #fff2cf;
+  border-color: #d8a94f;
+}
+
+.timber-volume-dialog.is-loading .timber-table-scroll {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.timber-volume-dialog.is-loading .timber-dialog-actions {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+@media (max-width: 720px) {
+  .api-status {
+    justify-self: start;
+  }
+}

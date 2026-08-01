@@ -67,7 +67,7 @@ import {
  * ============================================================
  */
 
-export const APP_VERSION = "2.4.0";
+export const APP_VERSION = "2.5.0";
 
 export const APP_STATUS = Object.freeze({
   IDLE: "idle",
@@ -238,6 +238,16 @@ const SELECTORS = Object.freeze({
   updateFmuButton: [
     "#updateFmuButton",
     "[data-action='update-fmu']"
+  ],
+
+  newVolumeInput: [
+    "#newVolumeInput",
+    "[data-new-volume-input]"
+  ],
+
+  applyVolumeUpdateButton: [
+    "#applyVolumeUpdateButton",
+    "[data-action='apply-fmu-volume']"
   ],
 
   previewReportButton: [
@@ -959,6 +969,11 @@ export class ApplicationController {
         onStatus:
           (message) => {
             this.setStatus(message);
+          },
+
+        onUpdated:
+          async () => {
+            await this.refreshSelectedProvinceAfterTimberUpdate();
           },
 
         onError:
@@ -3346,6 +3361,10 @@ export class ApplicationController {
     this.selectedFmu =
       matchingFmu;
 
+    this.syncFmuUpdateControls({
+      resetValue: true
+    });
+
     this.renderFmuTable();
 
     this.updateMapFmuSelection(
@@ -3378,6 +3397,10 @@ export class ApplicationController {
    */
   clearFmuSelection() {
     this.selectedFmu = null;
+
+    this.syncFmuUpdateControls({
+      resetValue: true
+    });
 
     this.renderFmuTable();
 
@@ -4333,9 +4356,9 @@ export class ApplicationController {
   }
 
   /**
-   * Placeholder for future FMU update API.
+   * Prepares the individual FMU update input.
    */
-  requestFmuUpdate() {
+  prepareFmuUpdate() {
     if (!this.selectedFmu) {
       this.setStatus(
         "Select an FMU first."
@@ -4344,13 +4367,267 @@ export class ApplicationController {
       return false;
     }
 
+    this.syncFmuUpdateControls({
+      focus: true
+    });
+
     this.setStatus(
-      `FMU ${this.getFmuDisplayId(
+      `Enter New Vol. for FMU ${this.getFmuDisplayId(
         this.selectedFmu
-      )}: update API is reserved for the backend implementation phase.`
+      )}, then click Update.`
     );
 
     return true;
+  }
+
+  /**
+   * Synchronizes individual FMU update controls.
+   */
+  syncFmuUpdateControls(
+    options = {}
+  ) {
+    const input =
+      this.dom.newVolumeInput;
+
+    const button =
+      this.dom
+        .applyVolumeUpdateButton;
+
+    const hasFmu =
+      Boolean(
+        this.selectedFmu
+      );
+
+    if (input) {
+      input.disabled =
+        !hasFmu;
+
+      input.setAttribute(
+        "aria-disabled",
+        String(!hasFmu)
+      );
+
+      if (
+        options.resetValue
+      ) {
+        input.value = "";
+      }
+
+      if (
+        options.focus &&
+        hasFmu
+      ) {
+        input.focus();
+      }
+    }
+
+    const rawValue =
+      String(
+        input?.value ?? ""
+      ).trim();
+
+    const value =
+      Number(rawValue);
+
+    const valid =
+      hasFmu &&
+      rawValue !== "" &&
+      Number.isFinite(value) &&
+      value >= 0;
+
+    if (button) {
+      button.disabled =
+        !valid;
+
+      button.setAttribute(
+        "aria-disabled",
+        String(!valid)
+      );
+    }
+  }
+
+  /**
+   * Updates one FMU through FastAPI.
+   */
+  async requestFmuUpdate() {
+    if (!this.selectedFmu) {
+      this.setStatus(
+        "Select an FMU first."
+      );
+
+      return false;
+    }
+
+    const input =
+      this.dom.newVolumeInput;
+
+    const rawValue =
+      String(
+        input?.value ?? ""
+      ).trim();
+
+    const volPerHa =
+      Number(rawValue);
+
+    if (
+      rawValue === "" ||
+      !Number.isFinite(
+        volPerHa
+      ) ||
+      volPerHa < 0
+    ) {
+      this.setStatus(
+        "Enter a valid non-negative New Vol. value."
+      );
+
+      input?.focus();
+
+      return false;
+    }
+
+    const province =
+      Number(
+        this.getProvinceCode(
+          this.selectedProvince
+        )
+      );
+
+    const fmu =
+      Number(
+        this.getFmuDisplayId(
+          this.selectedFmu
+        )
+      );
+
+    if (
+      !Number.isFinite(
+        province
+      ) ||
+      !Number.isFinite(fmu)
+    ) {
+      this.setStatus(
+        "The selected Province or FMU code is invalid."
+      );
+
+      return false;
+    }
+
+    const apiBaseUrl =
+      String(
+        this.config.timberVolume
+          ?.apiBaseUrl ||
+        ""
+      ).replace(/\/$/, "");
+
+    if (!apiBaseUrl) {
+      this.setStatus(
+        "The secured Timber Volume API is not configured."
+      );
+
+      return false;
+    }
+
+    if (
+      !window.confirm(
+        `Update FMU ${fmu} to ${volPerHa} m³/ha?`
+      )
+    ) {
+      return false;
+    }
+
+    if (
+      this.dom
+        .applyVolumeUpdateButton
+    ) {
+      this.dom
+        .applyVolumeUpdateButton
+        .disabled = true;
+    }
+
+    try {
+      const response =
+        await fetch(
+          `${apiBaseUrl}/timber-volume/fmu`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type":
+                "application/json",
+              "Accept":
+                "application/json"
+            },
+            credentials:
+              "omit",
+            body:
+              JSON.stringify({
+                province,
+                fmu,
+                vol_per_ha:
+                  volPerHa
+              })
+          }
+        );
+
+      const payload =
+        await response.json()
+          .catch(
+            () => ({})
+          );
+
+      if (!response.ok) {
+        throw new Error(
+          payload.detail ||
+          `FMU update failed (${response.status}).`
+        );
+      }
+
+      if (input) {
+        input.value = "";
+      }
+
+      await this.refreshSelectedProvinceAfterTimberUpdate();
+
+      this.setStatus(
+        `FMU ${fmu} updated to ${volPerHa} m³/ha and protected from later Zone updates.`
+      );
+
+      return true;
+    } catch (error) {
+      this.handleError(
+        "FMU Timber Volume update failed.",
+        error,
+        {
+          fatal: false
+        }
+      );
+
+      return false;
+    } finally {
+      this.syncFmuUpdateControls();
+    }
+  }
+
+  /**
+   * Refreshes Province FMUs and Summary after an update.
+   */
+  async refreshSelectedProvinceAfterTimberUpdate() {
+    if (!this.selectedProvince) {
+      return;
+    }
+
+    await this.selectProvince(
+      this.selectedProvince,
+      {
+        source:
+          "timber-volume-update",
+        notify:
+          false
+      }
+    );
+
+    this.setStatus(
+      "Timber Volume update complete. FMUs and Summary were refreshed."
+    );
   }
 
   /* ==========================================================
@@ -4498,7 +4775,23 @@ export class ApplicationController {
       this.dom.updateFmuButton,
       "click",
       () => {
-        this.requestFmuUpdate();
+        this.prepareFmuUpdate();
+      }
+    );
+
+    this.bindEvent(
+      this.dom.applyVolumeUpdateButton,
+      "click",
+      async () => {
+        await this.requestFmuUpdate();
+      }
+    );
+
+    this.bindEvent(
+      this.dom.newVolumeInput,
+      "input",
+      () => {
+        this.syncFmuUpdateControls();
       }
     );
 

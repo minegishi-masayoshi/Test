@@ -34,5 +34,16 @@ The concession master in `js/data.js` is prototype data. Replace it with
 PostGIS/API results when the backend is implemented.
 
 
-## Ver.2.4.0
+## Ver.2.5.0
 Automatic zoom on Province, Concession and FMU selection is disabled.
+
+
+## Ver.2.5.0 Timber Volume API
+
+The Timber Volume functions are connected to the OCI FastAPI service:
+
+`https://140-245-124-203.sslip.io/api`
+
+Zone updates use `PUT /timber-volumes/zone`. Individual FMU updates use
+`PUT /timber-volume/fmu`. The bundled CSV remains available only as a
+read-only fallback when the API cannot be reached.

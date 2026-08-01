@@ -12,7 +12,7 @@
 
   <meta
     name="description"
-    content="PNG Forest Authority Forest Information and Mapping System Cloud Version 2.4.0"
+    content="PNG Forest Authority Forest Information and Mapping System Cloud Version 2.5.0"
   />
 
   <meta
@@ -42,7 +42,7 @@
 
   <!--
     ============================================================
-    FIMS Cloud Ver.2.4.0
+    FIMS Cloud Ver.2.5.0
     GitHub Pages Content Security Policy
     ============================================================
 
@@ -83,14 +83,14 @@
        ======================================================== -->
   <link
     rel="stylesheet"
-    href="./css/main.css?v=2.4.0"
+    href="./css/main.css?v=2.5.0"
   />
 </head>
 
 <body>
   <!--
     ============================================================
-    FIMS Cloud Ver.2.4.0
+    FIMS Cloud Ver.2.5.0
     Province Selection Screen
 
     Current implementation:
@@ -111,7 +111,7 @@
   <div
     id="fims-app"
     class="app-shell"
-    data-fims-version="2.4.0"
+    data-fims-version="2.5.0"
   >
     <!-- ======================================================
          Application header
@@ -128,7 +128,7 @@
             class="version-badge"
             data-app-version
           >
-            Ver.2.4.0
+            Ver.2.5.0
           </span>
         </div>
 
@@ -174,7 +174,7 @@
         aria-atomic="true"
         data-app-status
       >
-        Starting FIMS Cloud Ver.2.4.0…
+        Starting FIMS Cloud Ver.2.5.0…
       </div>
     </section>
 
@@ -491,7 +491,7 @@
                 id="updateFmuButton"
                 type="button"
                 class="secondary-button"
-                title="This function requires a secured server-side API."
+                title="Prepare an individual FMU Timber Volume update."
               >
                 Update Timber Volume for FMU
               </button>
@@ -524,7 +524,7 @@
             </div>
 
             <p class="control-note">
-              Zone values can be reviewed and saved as a browser draft. Database updates require the secured backend API.
+              Zone and individual FMU updates are connected to the secured OCI FastAPI service.
             </p>
           </div>
         </article>
@@ -944,7 +944,7 @@
         id="statusText"
         data-app-status
       >
-        Starting FIMS Cloud Ver.2.4.0…
+        Starting FIMS Cloud Ver.2.5.0…
       </span>
 
       <span
@@ -1003,6 +1003,13 @@
           <span id="timberVolumeCountText">
             0 rows
           </span>
+
+          <span
+            id="timberVolumeSourceText"
+            class="api-status"
+          >
+            API: Not checked
+          </span>
         </div>
 
         <div class="timber-table-scroll">
@@ -1021,9 +1028,9 @@
         </div>
 
         <p class="timber-dialog-note">
-          Only Current Vol/ha and Comments are editable. Draft changes are
-          stored in this browser. PostgreSQL updates require the secured
-          backend API configured in <code>config.js</code>.
+          Current Vol/ha and Comments are editable. Update Zone Volumes
+          writes to PostgreSQL, recalculates matching unprotected FMUs, and
+          preserves FMUs previously updated through the individual function.
         </p>
 
         <footer class="timber-dialog-actions">
@@ -1032,7 +1039,7 @@
             type="button"
             class="secondary-button"
           >
-            Save Draft
+            Save Browser Draft
           </button>
 
           <button
@@ -1042,7 +1049,7 @@
             disabled
             aria-disabled="true"
           >
-            Apply to FMUs
+            Update Zone Volumes
           </button>
         </footer>
       </div>
@@ -1119,7 +1126,7 @@
        ======================================================== -->
   <script
     type="module"
-    src="./js/app.js?v=2.4.0"
+    src="./js/app.js?v=2.5.0"
   ></script>
 </body>
 </html>

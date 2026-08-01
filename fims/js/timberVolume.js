@@ -1,30 +1,26 @@
 /**
  * FIMS Cloud Timber Volume Manager
- * Phase 1: browser-based Zone / Vegetation Type editor.
+ * Ver.2.5.0 — OCI FastAPI integration
  *
- * The module loads the migrated ctrl_TimberVolume_NEW data from CSV,
- * filters it by the selected Province and presents the legacy-style
- * "Update Timber Volumes for Zone" screen.
+ * Live endpoints:
+ *   GET  {apiBaseUrl}/timber-volume/province/{province}
+ *   PUT  {apiBaseUrl}/timber-volumes/zone
  *
- * GitHub Pages cannot write directly to PostgreSQL. Edits are therefore
- * stored as a local draft until a secured backend API is configured.
+ * The bundled CSV is retained only as a read-only fallback.
  */
 
-export const TIMBER_VOLUME_MODULE_ID =
-  "timber-volume";
+export const TIMBER_VOLUME_MODULE_ID = "timber-volume";
 
-const DEFAULT_CSV_URL =
-  "./data/timber_volume_master.csv";
+const DEFAULT_CSV_URL = "./data/timber_volume_master.csv";
+const STORAGE_KEY = "fims-cloud:timber-volume-draft:v2";
+const REQUEST_TIMEOUT_MS = 20000;
 
-const STORAGE_KEY =
-  "fims-cloud:timber-volume-draft:v1";
-
-function text(value) {
+function normalizeText(value) {
   return String(value ?? "").trim();
 }
 
-function numberOrNull(value) {
-  const normalized = text(value);
+function toNumberOrNull(value) {
+  const normalized = normalizeText(value);
 
   if (
     normalized === "" ||
@@ -41,7 +37,7 @@ function numberOrNull(value) {
 }
 
 function escapeHtml(value) {
-  return text(value)
+  return normalizeText(value)
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
@@ -49,9 +45,6 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-/**
- * Minimal CSV parser supporting quoted values and escaped quotes.
- */
 function parseCsv(csvText) {
   const rows = [];
   let row = [];
@@ -62,7 +55,11 @@ function parseCsv(csvText) {
     String(csvText ?? "")
       .replace(/^\uFEFF/, "");
 
-  for (let index = 0; index < source.length; index += 1) {
+  for (
+    let index = 0;
+    index < source.length;
+    index += 1
+  ) {
     const character = source[index];
     const next = source[index + 1];
 
@@ -73,7 +70,9 @@ function parseCsv(csvText) {
       ) {
         field += '"';
         index += 1;
-      } else if (character === '"') {
+      } else if (
+        character === '"'
+      ) {
         quoted = false;
       } else {
         field += character;
@@ -84,7 +83,9 @@ function parseCsv(csvText) {
 
     if (character === '"') {
       quoted = true;
-    } else if (character === ",") {
+    } else if (
+      character === ","
+    ) {
       row.push(field);
       field = "";
     } else if (
@@ -104,7 +105,7 @@ function parseCsv(csvText) {
       if (
         row.some(
           (value) =>
-            text(value) !== ""
+            normalizeText(value) !== ""
         )
       ) {
         rows.push(row);
@@ -131,22 +132,53 @@ function parseCsv(csvText) {
   const headers =
     rows[0].map(
       (header) =>
-        text(header)
+        normalizeText(header)
     );
 
-  return rows.slice(1).map((values) => {
-    const record = {};
+  return rows
+    .slice(1)
+    .map((values) => {
+      const record = {};
 
-    headers.forEach((header, index) => {
-      record[header] =
-        values[index] ?? "";
+      headers.forEach(
+        (header, index) => {
+          record[header] =
+            values[index] ?? "";
+        }
+      );
+
+      return record;
     });
-
-    return record;
-  });
 }
 
-function createRowKey(record) {
+async function fetchWithTimeout(
+  url,
+  options = {}
+) {
+  const controller =
+    new AbortController();
+
+  const timer =
+    window.setTimeout(
+      () => controller.abort(),
+      REQUEST_TIMEOUT_MS
+    );
+
+  try {
+    return await fetch(
+      url,
+      {
+        ...options,
+        signal:
+          controller.signal
+      }
+    );
+  } finally {
+    window.clearTimeout(timer);
+  }
+}
+
+function createKey(record) {
   return [
     record.province,
     record.zone,
@@ -161,22 +193,34 @@ export class TimberVolumeManager {
       DEFAULT_CSV_URL;
 
     this.apiBaseUrl =
-      text(options.apiBaseUrl);
+      normalizeText(
+        options.apiBaseUrl
+      ).replace(/\/$/, "");
+
+    this.getSelectedProvince =
+      typeof options
+        .getSelectedProvince ===
+        "function"
+        ? options.getSelectedProvince
+        : () => null;
 
     this.onStatus =
-      typeof options.onStatus === "function"
+      typeof options.onStatus ===
+        "function"
         ? options.onStatus
         : () => {};
 
     this.onError =
-      typeof options.onError === "function"
+      typeof options.onError ===
+        "function"
         ? options.onError
         : () => {};
 
-    this.getSelectedProvince =
-      typeof options.getSelectedProvince === "function"
-        ? options.getSelectedProvince
-        : () => null;
+    this.onUpdated =
+      typeof options.onUpdated ===
+        "function"
+        ? options.onUpdated
+        : async () => {};
 
     this.dialog =
       document.getElementById(
@@ -196,6 +240,11 @@ export class TimberVolumeManager {
     this.countText =
       document.getElementById(
         "timberVolumeCountText"
+      );
+
+    this.sourceText =
+      document.getElementById(
+        "timberVolumeSourceText"
       );
 
     this.searchInput =
@@ -220,111 +269,208 @@ export class TimberVolumeManager {
 
     this.records = [];
     this.currentRecords = [];
+    this.currentProvinceCode = null;
+    this.dataSource = "none";
+    this.loading = false;
     this.draft = this.loadDraft();
-    this.loaded = false;
 
     this.bindEvents();
+    this.renderSourceState();
     this.updateApplyButton();
   }
 
   bindEvents() {
-    this.searchInput?.addEventListener(
-      "input",
-      () => {
-        this.render();
-      }
-    );
+    this.searchInput
+      ?.addEventListener(
+        "input",
+        () => this.render()
+      );
 
-    this.saveDraftButton?.addEventListener(
-      "click",
-      () => {
-        this.saveDraft();
-      }
-    );
+    this.saveDraftButton
+      ?.addEventListener(
+        "click",
+        () => this.saveDraft()
+      );
 
-    this.applyButton?.addEventListener(
-      "click",
-      async () => {
-        await this.applyUpdates();
-      }
-    );
+    this.applyButton
+      ?.addEventListener(
+        "click",
+        async () => {
+          await this.applyUpdates();
+        }
+      );
 
-    this.closeButton?.addEventListener(
-      "click",
-      () => {
-        this.close();
-      }
+    this.closeButton
+      ?.addEventListener(
+        "click",
+        () => this.close()
+      );
+  }
+
+  getProvinceCode(province) {
+    const value =
+      province?.code ??
+      province?.provinceCode ??
+      province?.province_code ??
+      province?.properties?.code ??
+      province?.properties
+        ?.province ??
+      province?.properties
+        ?.province_code ??
+      province?.id;
+
+    const parsed = Number(value);
+
+    return Number.isFinite(parsed)
+      ? parsed
+      : null;
+  }
+
+  getProvinceName(
+    province,
+    provinceCode
+  ) {
+    return (
+      normalizeText(
+        province?.name ??
+        province?.provinceName ??
+        province?.province_name ??
+        province?.properties?.name ??
+        province?.properties?.descrip
+      ) ||
+      `Province ${provinceCode}`
     );
   }
 
-  async load() {
-    if (this.loaded) {
-      return this.records;
-    }
-
+  async loadFromApi(
+    provinceCode
+  ) {
     const response =
-      await fetch(
-        this.csvUrl,
+      await fetchWithTimeout(
+        `${this.apiBaseUrl}/timber-volume/province/${provinceCode}`,
         {
-          cache: "no-store"
+          method: "GET",
+          headers: {
+            "Accept":
+              "application/json"
+          },
+          credentials:
+            "omit",
+          cache:
+            "no-store"
         }
       );
 
     if (!response.ok) {
       throw new Error(
-        `Timber Volume CSV request failed (${response.status}).`
+        `API request failed (${response.status}).`
       );
     }
 
-    const csvText =
-      await response.text();
+    const payload =
+      await response.json();
 
-    this.records =
-      parseCsv(csvText)
-        .map((record) => ({
+    return (
+      Array.isArray(
+        payload.records
+      )
+        ? payload.records
+        : []
+    ).map(
+      (record) => ({
+        province:
+          toNumberOrNull(
+            record.province
+          ),
+        zone:
+          toNumberOrNull(
+            record.zone
+          ),
+        vegType:
+          normalizeText(
+            record.veg_type
+          ),
+        currentVol:
+          toNumberOrNull(
+            record.vol_per_ha
+          ),
+        originalVol:
+          toNumberOrNull(
+            record
+              .original_vol_per_ha
+          ),
+        comments:
+          normalizeText(
+            record.comments
+          )
+      })
+    );
+  }
+
+  async loadFromCsv(
+    provinceCode
+  ) {
+    const response =
+      await fetchWithTimeout(
+        this.csvUrl,
+        {
+          cache:
+            "no-store"
+        }
+      );
+
+    if (!response.ok) {
+      throw new Error(
+        `CSV request failed (${response.status}).`
+      );
+    }
+
+    const rows =
+      parseCsv(
+        await response.text()
+      );
+
+    return rows
+      .map(
+        (record) => ({
           province:
-            numberOrNull(
+            toNumberOrNull(
               record.Province
             ),
           zone:
-            numberOrNull(
+            toNumberOrNull(
               record.Zone
             ),
           vegType:
-            text(
+            normalizeText(
               record.VegType
             ),
           currentVol:
-            numberOrNull(
+            toNumberOrNull(
               record["Vol/ha"]
             ),
           originalVol:
-            numberOrNull(
-              record["OriginalVol/ha"]
+            toNumberOrNull(
+              record[
+                "OriginalVol/ha"
+              ]
             ),
           comments:
-            text(
+            normalizeText(
               record.Comments
-            ).toUpperCase() === "NULL"
+            ).toUpperCase() ===
+              "NULL"
               ? ""
-              : text(
+              : normalizeText(
                   record.Comments
                 )
-        }))
-        .filter(
-          (record) =>
-            Number.isFinite(
-              record.province
-            ) &&
-            Number.isFinite(
-              record.zone
-            ) &&
-            record.vegType
-        );
-
-    this.loaded = true;
-
-    return this.records;
+        })
+      )
+      .filter(
+        (record) =>
+          record.province ===
+          provinceCode
+      );
   }
 
   async open() {
@@ -339,117 +485,221 @@ export class TimberVolumeManager {
       return false;
     }
 
+    const provinceCode =
+      this.getProvinceCode(
+        province
+      );
+
+    if (
+      !Number.isFinite(
+        provinceCode
+      )
+    ) {
+      this.onError(
+        new Error(
+          "The selected Province has no valid numeric code."
+        )
+      );
+
+      return false;
+    }
+
+    this.currentProvinceCode =
+      provinceCode;
+
+    this.setLoading(true);
+
     try {
-      await this.load();
+      if (this.apiBaseUrl) {
+        try {
+          this.records =
+            await this.loadFromApi(
+              provinceCode
+            );
 
-      const provinceCode =
-        Number(
-          province.code ??
-          province.provinceCode ??
-          province.properties?.code ??
-          province.properties?.province ??
-          province.id
-        );
+          this.dataSource =
+            "api";
+        } catch (apiError) {
+          this.onStatus(
+            `Timber Volume API unavailable; using read-only CSV fallback (${apiError.message}).`
+          );
 
-      if (!Number.isFinite(provinceCode)) {
-        throw new Error(
-          "The selected Province does not have a valid numeric code."
-        );
+          this.records =
+            await this.loadFromCsv(
+              provinceCode
+            );
+
+          this.dataSource =
+            "csv";
+        }
+      } else {
+        this.records =
+          await this.loadFromCsv(
+            provinceCode
+          );
+
+        this.dataSource =
+          "csv";
       }
 
-      const provinceName =
-        text(
-          province.name ??
-          province.provinceName ??
-          province.properties?.name ??
-          province.properties?.descrip
-        ) ||
-        `Province ${provinceCode}`;
-
       this.currentRecords =
-        this.records
-          .filter(
-            (record) =>
-              record.province ===
-              provinceCode
-          )
+        [...this.records]
           .sort(
             (a, b) =>
               a.zone - b.zone ||
-              a.vegType.localeCompare(
-                b.vegType,
-                "en",
-                {
-                  numeric: true,
-                  sensitivity: "base"
-                }
-              )
+              a.vegType
+                .localeCompare(
+                  b.vegType,
+                  "en",
+                  {
+                    numeric:
+                      true,
+                    sensitivity:
+                      "base"
+                  }
+                )
           );
 
       if (this.provinceText) {
-        this.provinceText.textContent =
-          `${provinceCode} ${provinceName}`;
+        this.provinceText
+          .textContent =
+          `${provinceCode} ${this.getProvinceName(
+            province,
+            provinceCode
+          )}`;
       }
 
       if (this.searchInput) {
-        this.searchInput.value = "";
+        this.searchInput.value =
+          "";
       }
 
       this.render();
+      this.renderSourceState();
 
       if (
-        typeof this.dialog?.showModal ===
+        typeof this.dialog
+          ?.showModal ===
         "function"
       ) {
-        this.dialog.showModal();
-      } else if (this.dialog) {
-        this.dialog.hidden = false;
+        if (!this.dialog.open) {
+          this.dialog.showModal();
+        }
+      } else if (
+        this.dialog
+      ) {
+        this.dialog.hidden =
+          false;
       }
 
       this.onStatus(
-        `Timber Volume editor opened for ${provinceName}.`
+        this.dataSource ===
+          "api"
+          ? "Live Timber Volume data loaded from PostgreSQL."
+          : "Read-only Timber Volume CSV fallback loaded."
       );
 
       return true;
     } catch (error) {
       this.onError(error);
       return false;
+    } finally {
+      this.setLoading(false);
     }
   }
 
   close() {
     if (
       typeof this.dialog?.close ===
-      "function" &&
+        "function" &&
       this.dialog.open
     ) {
       this.dialog.close();
-    } else if (this.dialog) {
-      this.dialog.hidden = true;
+    } else if (
+      this.dialog
+    ) {
+      this.dialog.hidden =
+        true;
+    }
+  }
+
+  setLoading(loading) {
+    this.loading =
+      Boolean(loading);
+
+    this.dialog
+      ?.classList.toggle(
+        "is-loading",
+        this.loading
+      );
+
+    this.updateApplyButton();
+  }
+
+  renderSourceState() {
+    if (!this.sourceText) {
+      return;
+    }
+
+    if (
+      this.dataSource ===
+      "api"
+    ) {
+      this.sourceText.textContent =
+        "API: Connected";
+
+      this.sourceText.className =
+        "api-status api-status-connected";
+    } else if (
+      this.dataSource ===
+      "csv"
+    ) {
+      this.sourceText.textContent =
+        "API: Offline — CSV fallback";
+
+      this.sourceText.className =
+        "api-status api-status-fallback";
+    } else {
+      this.sourceText.textContent =
+        this.apiBaseUrl
+          ? "API: Not checked"
+          : "API: Not configured";
+
+      this.sourceText.className =
+        "api-status";
     }
   }
 
   getFilteredRecords() {
     const query =
-      text(
-        this.searchInput?.value
-      ).toLocaleLowerCase("en");
+      normalizeText(
+        this.searchInput
+          ?.value
+      ).toLocaleLowerCase(
+        "en"
+      );
 
     if (!query) {
       return this.currentRecords;
     }
 
-    return this.currentRecords.filter(
-      (record) =>
-        String(record.zone)
-          .includes(query) ||
-        record.vegType
-          .toLocaleLowerCase("en")
-          .includes(query) ||
-        record.comments
-          .toLocaleLowerCase("en")
-          .includes(query)
-    );
+    return this.currentRecords
+      .filter(
+        (record) =>
+          String(
+            record.zone
+          ).includes(query) ||
+          record.vegType
+            .toLocaleLowerCase(
+              "en"
+            )
+            .includes(query) ||
+          record.comments
+            .toLocaleLowerCase(
+              "en"
+            )
+            .includes(query)
+      );
   }
 
   render() {
@@ -460,22 +710,23 @@ export class TimberVolumeManager {
     const records =
       this.getFilteredRecords();
 
-    this.tableBody.replaceChildren();
+    this.tableBody
+      .replaceChildren();
 
-    for (const record of records) {
+    for (
+      const record
+      of records
+    ) {
       const key =
-        createRowKey(record);
+        createKey(record);
 
-      const draftValue =
+      const draft =
         this.draft[key];
 
-      const currentValue =
-        draftValue?.volPerHa ??
-        record.currentVol ??
-        0;
-
       const row =
-        document.createElement("tr");
+        document.createElement(
+          "tr"
+        );
 
       row.innerHTML = `
         <td class="number-cell">${escapeHtml(record.zone)}</td>
@@ -487,16 +738,14 @@ export class TimberVolumeManager {
             type="number"
             min="0"
             step="0.01"
-            value="${escapeHtml(currentValue)}"
-            aria-label="Current volume for Zone ${escapeHtml(record.zone)}, Vegetation Type ${escapeHtml(record.vegType)}"
+            value="${escapeHtml(draft?.volPerHa ?? record.currentVol ?? 0)}"
           />
         </td>
         <td>
           <input
             class="timber-comment-input"
             type="text"
-            value="${escapeHtml(draftValue?.comments ?? record.comments)}"
-            aria-label="Comments for Zone ${escapeHtml(record.zone)}, Vegetation Type ${escapeHtml(record.vegType)}"
+            value="${escapeHtml(draft?.comments ?? record.comments)}"
           />
         </td>
       `;
@@ -514,7 +763,7 @@ export class TimberVolumeManager {
       const updateDraft =
         () => {
           const volPerHa =
-            numberOrNull(
+            toNumberOrNull(
               volumeInput?.value
             );
 
@@ -522,23 +771,33 @@ export class TimberVolumeManager {
             volPerHa === null ||
             volPerHa < 0
           ) {
-            volumeInput?.setCustomValidity(
-              "Enter a non-negative numeric value."
-            );
+            volumeInput
+              ?.setCustomValidity(
+                "Enter a non-negative numeric value."
+              );
 
             return;
           }
 
-          volumeInput?.setCustomValidity("");
+          volumeInput
+            ?.setCustomValidity("");
+
+          const comments =
+            normalizeText(
+              commentInput?.value
+            );
 
           const unchanged =
             volPerHa ===
-              (record.currentVol ?? 0) &&
-            text(commentInput?.value) ===
+              (record.currentVol ??
+                0) &&
+            comments ===
               record.comments;
 
           if (unchanged) {
-            delete this.draft[key];
+            delete this.draft[
+              key
+            ];
           } else {
             this.draft[key] = {
               province:
@@ -548,53 +807,75 @@ export class TimberVolumeManager {
               vegType:
                 record.vegType,
               volPerHa,
-              originalVolPerHa:
-                record.originalVol,
-              comments:
-                text(
-                  commentInput?.value
-                )
+              comments
             };
           }
 
-          this.updateApplyButton();
           row.classList.toggle(
             "edited",
             !unchanged
           );
+
+          this.persistDraft();
+          this.updateCount(
+            records.length
+          );
+          this.updateApplyButton();
         };
 
-      volumeInput?.addEventListener(
-        "input",
-        updateDraft
-      );
+      volumeInput
+        ?.addEventListener(
+          "input",
+          updateDraft
+        );
 
-      commentInput?.addEventListener(
-        "input",
-        updateDraft
-      );
+      commentInput
+        ?.addEventListener(
+          "input",
+          updateDraft
+        );
 
       row.classList.toggle(
         "edited",
-        Boolean(draftValue)
+        Boolean(draft)
       );
 
-      this.tableBody.appendChild(row);
+      this.tableBody
+        .appendChild(row);
     }
 
-    if (this.countText) {
-      this.countText.textContent =
-        `${records.length} rows / ${Object.keys(this.draft).length} draft changes`;
-    }
+    this.updateCount(
+      records.length
+    );
 
     this.updateApplyButton();
+  }
+
+  updateCount(visibleRows) {
+    if (!this.countText) {
+      return;
+    }
+
+    const changes =
+      Object.values(
+        this.draft
+      ).filter(
+        (change) =>
+          change.province ===
+          this.currentProvinceCode
+      ).length;
+
+    this.countText.textContent =
+      `${visibleRows} rows / ${changes} change(s)`;
   }
 
   loadDraft() {
     try {
       const value =
         window.localStorage
-          .getItem(STORAGE_KEY);
+          .getItem(
+            STORAGE_KEY
+          );
 
       return value
         ? JSON.parse(value)
@@ -604,11 +885,18 @@ export class TimberVolumeManager {
     }
   }
 
+  persistDraft() {
+    window.localStorage
+      .setItem(
+        STORAGE_KEY,
+        JSON.stringify(
+          this.draft
+        )
+      );
+  }
+
   saveDraft() {
-    window.localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(this.draft)
-    );
+    this.persistDraft();
 
     this.onStatus(
       `${Object.keys(this.draft).length} Timber Volume draft change(s) saved in this browser.`
@@ -621,42 +909,49 @@ export class TimberVolumeManager {
     }
 
     const hasChanges =
-      Object.keys(this.draft)
-        .length > 0;
+      Object.values(
+        this.draft
+      ).some(
+        (change) =>
+          change.province ===
+          this.currentProvinceCode
+      );
 
-    const apiConfigured =
-      Boolean(this.apiBaseUrl);
+    const liveApi =
+      Boolean(
+        this.apiBaseUrl
+      ) &&
+      this.dataSource ===
+        "api";
 
     this.applyButton.disabled =
+      this.loading ||
       !hasChanges ||
-      !apiConfigured;
+      !liveApi;
 
-    this.applyButton.setAttribute(
-      "aria-disabled",
-      String(
-        this.applyButton.disabled
-      )
-    );
-
-    this.applyButton.title =
-      apiConfigured
-        ? "Apply Timber Volume changes through the secured backend API."
-        : "A secured backend API must be configured before database updates can be applied.";
+    this.applyButton
+      .setAttribute(
+        "aria-disabled",
+        String(
+          this.applyButton
+            .disabled
+        )
+      );
   }
 
   async applyUpdates() {
-    if (!this.apiBaseUrl) {
-      this.onStatus(
-        "Timber Volume changes are saved as a local draft. Configure the secured backend API to update PostgreSQL."
+    const changes =
+      Object.values(
+        this.draft
+      ).filter(
+        (change) =>
+          change.province ===
+          this.currentProvinceCode
       );
 
-      return false;
-    }
-
-    const changes =
-      Object.values(this.draft);
-
-    if (changes.length === 0) {
+    if (
+      changes.length === 0
+    ) {
       this.onStatus(
         "There are no Timber Volume changes to apply."
       );
@@ -664,47 +959,110 @@ export class TimberVolumeManager {
       return false;
     }
 
+    if (
+      !this.apiBaseUrl ||
+      this.dataSource !==
+        "api"
+    ) {
+      this.onStatus(
+        "A live secured API connection is required to update PostgreSQL."
+      );
+
+      return false;
+    }
+
+    if (
+      !window.confirm(
+        `Apply ${changes.length} Timber Volume change(s) and recalculate unprotected FMUs?`
+      )
+    ) {
+      return false;
+    }
+
+    this.setLoading(true);
+
     try {
       const response =
-        await fetch(
-          `${this.apiBaseUrl.replace(/\/$/, "")}/timber-volumes/zone`,
+        await fetchWithTimeout(
+          `${this.apiBaseUrl}/timber-volumes/zone`,
           {
             method: "PUT",
             headers: {
               "Content-Type":
+                "application/json",
+              "Accept":
                 "application/json"
             },
             credentials:
-              "include",
+              "omit",
             body:
               JSON.stringify({
-                changes
+                changes:
+                  changes.map(
+                    (change) => ({
+                      province:
+                        change.province,
+                      zone:
+                        change.zone,
+                      veg_type:
+                        change.vegType,
+                      vol_per_ha:
+                        change.volPerHa,
+                      comments:
+                        change.comments ||
+                        null
+                    })
+                  )
               })
           }
         );
 
+      const payload =
+        await response.json()
+          .catch(
+            () => ({})
+          );
+
       if (!response.ok) {
         throw new Error(
+          payload.detail ||
           `Timber Volume update failed (${response.status}).`
         );
       }
 
-      this.draft = {};
-      window.localStorage
-        .removeItem(STORAGE_KEY);
+      for (
+        const change
+        of changes
+      ) {
+        delete this.draft[
+          [
+            change.province,
+            change.zone,
+            change.vegType
+          ].join("|")
+        ];
+      }
 
-      this.loaded = false;
-      await this.load();
-      await this.open();
+      this.persistDraft();
 
       this.onStatus(
-        `${changes.length} Timber Volume change(s) applied successfully.`
+        `${payload.change_count ?? changes.length} change(s) applied; ` +
+        `${payload.updated_fmu_rows ?? 0} FMU row(s) recalculated; ` +
+        `${payload.protected_fmu_rows ?? 0} individually updated FMU row(s) protected.`
       );
+
+      await this.onUpdated(
+        payload
+      );
+
+      await this.open();
 
       return true;
     } catch (error) {
       this.onError(error);
       return false;
+    } finally {
+      this.setLoading(false);
     }
   }
 }
