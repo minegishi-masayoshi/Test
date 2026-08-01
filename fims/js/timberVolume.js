@@ -1,6 +1,6 @@
 /**
  * FIMS Cloud Timber Volume Manager
- * Ver.2.5.0 — OCI FastAPI integration
+ * Ver.2.7.0 — OCI FastAPI integration without browser draft storage
  *
  * Live endpoints:
  *   GET  {apiBaseUrl}/timber-volume/province/{province}
@@ -12,7 +12,6 @@
 export const TIMBER_VOLUME_MODULE_ID = "timber-volume";
 
 const DEFAULT_CSV_URL = "./data/timber_volume_master.csv";
-const STORAGE_KEY = "fims-cloud:timber-volume-draft:v2";
 const REQUEST_TIMEOUT_MS = 20000;
 
 function normalizeText(value) {
@@ -252,11 +251,6 @@ export class TimberVolumeManager {
         "timberVolumeSearchInput"
       );
 
-    this.saveDraftButton =
-      document.getElementById(
-        "saveTimberVolumeDraftButton"
-      );
-
     this.applyButton =
       document.getElementById(
         "applyTimberVolumeUpdateButton"
@@ -272,7 +266,7 @@ export class TimberVolumeManager {
     this.currentProvinceCode = null;
     this.dataSource = "none";
     this.loading = false;
-    this.draft = this.loadDraft();
+    this.changes = {};
 
     this.bindEvents();
     this.renderSourceState();
@@ -284,12 +278,6 @@ export class TimberVolumeManager {
       ?.addEventListener(
         "input",
         () => this.render()
-      );
-
-    this.saveDraftButton
-      ?.addEventListener(
-        "click",
-        () => this.saveDraft()
       );
 
     this.applyButton
@@ -720,8 +708,8 @@ export class TimberVolumeManager {
       const key =
         createKey(record);
 
-      const draft =
-        this.draft[key];
+      const change =
+        this.changes[key];
 
       const row =
         document.createElement(
@@ -738,14 +726,14 @@ export class TimberVolumeManager {
             type="number"
             min="0"
             step="0.01"
-            value="${escapeHtml(draft?.volPerHa ?? record.currentVol ?? 0)}"
+            value="${escapeHtml(change?.volPerHa ?? record.currentVol ?? 0)}"
           />
         </td>
         <td>
           <input
             class="timber-comment-input"
             type="text"
-            value="${escapeHtml(draft?.comments ?? record.comments)}"
+            value="${escapeHtml(change?.comments ?? record.comments)}"
           />
         </td>
       `;
@@ -760,7 +748,7 @@ export class TimberVolumeManager {
           ".timber-comment-input"
         );
 
-      const updateDraft =
+      const updateChange =
         () => {
           const volPerHa =
             toNumberOrNull(
@@ -795,11 +783,11 @@ export class TimberVolumeManager {
               record.comments;
 
           if (unchanged) {
-            delete this.draft[
+            delete this.changes[
               key
             ];
           } else {
-            this.draft[key] = {
+            this.changes[key] = {
               province:
                 record.province,
               zone:
@@ -815,8 +803,6 @@ export class TimberVolumeManager {
             "edited",
             !unchanged
           );
-
-          this.persistDraft();
           this.updateCount(
             records.length
           );
@@ -826,18 +812,18 @@ export class TimberVolumeManager {
       volumeInput
         ?.addEventListener(
           "input",
-          updateDraft
+          updateChange
         );
 
       commentInput
         ?.addEventListener(
           "input",
-          updateDraft
+          updateChange
         );
 
       row.classList.toggle(
         "edited",
-        Boolean(draft)
+        Boolean(change)
       );
 
       this.tableBody
@@ -858,7 +844,7 @@ export class TimberVolumeManager {
 
     const changes =
       Object.values(
-        this.draft
+        this.changes
       ).filter(
         (change) =>
           change.province ===
@@ -869,40 +855,6 @@ export class TimberVolumeManager {
       `${visibleRows} rows / ${changes} change(s)`;
   }
 
-  loadDraft() {
-    try {
-      const value =
-        window.localStorage
-          .getItem(
-            STORAGE_KEY
-          );
-
-      return value
-        ? JSON.parse(value)
-        : {};
-    } catch {
-      return {};
-    }
-  }
-
-  persistDraft() {
-    window.localStorage
-      .setItem(
-        STORAGE_KEY,
-        JSON.stringify(
-          this.draft
-        )
-      );
-  }
-
-  saveDraft() {
-    this.persistDraft();
-
-    this.onStatus(
-      `${Object.keys(this.draft).length} Timber Volume draft change(s) saved in this browser.`
-    );
-  }
-
   updateApplyButton() {
     if (!this.applyButton) {
       return;
@@ -910,7 +862,7 @@ export class TimberVolumeManager {
 
     const hasChanges =
       Object.values(
-        this.draft
+        this.changes
       ).some(
         (change) =>
           change.province ===
@@ -942,7 +894,7 @@ export class TimberVolumeManager {
   async applyUpdates() {
     const changes =
       Object.values(
-        this.draft
+        this.changes
       ).filter(
         (change) =>
           change.province ===
@@ -1034,7 +986,7 @@ export class TimberVolumeManager {
         const change
         of changes
       ) {
-        delete this.draft[
+        delete this.changes[
           [
             change.province,
             change.zone,
@@ -1042,8 +994,6 @@ export class TimberVolumeManager {
           ].join("|")
         ];
       }
-
-      this.persistDraft();
 
       this.onStatus(
         `${payload.change_count ?? changes.length} change(s) applied; ` +
