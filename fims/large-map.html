@@ -8,18 +8,18 @@
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com; connect-src 'self' https:; img-src 'self' data: blob: https:; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self';" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="./css/main.css?v=2.8.1" />
+  <link rel="stylesheet" href="./css/main.css?v=2.9.0" />
 </head>
 <body class="large-map-page">
   <div class="large-map-shell">
     <header class="large-map-header">
       <div class="large-map-title-block">
         <h1>FIMS Cloud - Large Map</h1>
-        <p>Display-only MVP · GeoServer WMS/WFS · Ver.2.8.1</p>
+        <p>Administrator Map · GeoServer WMS/WFS · Ver.2.9.0</p>
       </div>
       <div class="large-map-header-actions" aria-label="Large Map functions">
         <button id="fmuCalculationButton" type="button" disabled title="Scheduled for a later implementation phase">FMU Calculation</button>
-        <button id="importButton" type="button" disabled title="Scheduled for a later implementation phase">Import</button>
+        <button id="importButton" type="button">Import</button>
         <button id="pngExtentButton" type="button">PNG Extent</button>
         <button id="closeLargeMapButton" type="button">Close</button>
       </div>
@@ -62,7 +62,9 @@
     </footer>
   </div>
 
+
+<div id="importModal" class="import-modal" hidden><div class="import-modal-backdrop" data-import-close></div><section class="import-dialog" role="dialog" aria-modal="true"><header class="import-dialog-header"><div><h2>Import GIS Dataset</h2><p>Administrator function · GeoPackage (.gpkg)</p></div><button id="closeImportDialogButton" type="button">Close</button></header><div class="import-dialog-body"><div class="import-warning"><strong>Database update:</strong> Replace deletes all existing records in the selected target layer.</div><div class="import-grid"><label>Target layer<select id="importTarget"></select></label><label>Import mode<select id="importMode"><option value="replace">Replace existing layer</option><option value="add">Add to existing layer</option></select></label><label class="import-file-field">GeoPackage file<input id="importFile" type="file" accept=".gpkg" /></label></div><div class="import-actions"><button id="inspectImportButton">1. Inspect File</button></div><section id="importInspection" class="import-inspection" hidden><h3>Inspection result</h3><dl id="importInspectionDetails"></dl><label>Source layer<select id="importSourceLayer"></select></label><label class="import-confirm"><input id="importConfirm" type="checkbox" /> I checked the target, source and mode.</label><div class="import-actions"><button id="executeImportButton" class="danger" disabled>2. Execute Import</button></div></section><div id="importProgress" class="import-progress" hidden><span></span><strong>Processing…</strong></div><pre id="importResult" class="import-result" hidden></pre></div></section></div>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script type="module" src="./js/largeMap.js?v=2.8.1"></script>
+  <script type="module" src="./js/largeMap.js?v=2.9.0"></script>
 </body>
 </html>

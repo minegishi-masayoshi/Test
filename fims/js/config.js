@@ -40,7 +40,7 @@ const CONFIG = {
     name: "FIMS Cloud",
     fullName: "Forest Information and Mapping System",
     organization: "PNG Forest Authority",
-    version: "Ver.2.3.2",
+    version: "Ver.2.9.0",
     build: "2.0.0",
     environment: "MVP",
     language: "en",
@@ -1680,6 +1680,22 @@ const CONFIG = {
     logSummaryCalculations: false,
 
     showDetailedErrors: true
+  },
+
+
+  dataImport: {
+    enabled: true,
+    apiBaseUrl: "https://140-245-124-203.sslip.io/api/imports",
+    maxFileSizeMb: 250,
+    defaultMode: "replace",
+    targets: [
+      { key: "concessionarea", label: "Concession Area" },
+      { key: "logged_notlanduse_current", label: "Logged Not Land Use - Current" },
+      { key: "logged_landuse_current", label: "Logged Land Use - Current" },
+      { key: "landuse_notlogged_current", label: "Land Use Not Logged - Current" },
+      { key: "protected_area", label: "Protected Area" },
+      { key: "planarea", label: "Plan Area" }
+    ]
   },
 
   /*

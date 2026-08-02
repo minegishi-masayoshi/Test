@@ -1,9 +1,10 @@
 /**
- * FIMS Cloud Ver.2.8.1 - Standalone Large Map MVP
+ * FIMS Cloud Ver.2.9.0 - Standalone Large Map MVP
  */
 import { CONFIG } from "./config.js";
 import * as DataModule from "./data.js";
 import { FimsMap } from "./map.js";
+import { initializeImport } from "./import.js";
 
 const params = new URLSearchParams(window.location.search);
 const requestedProvince = params.get("province");
@@ -76,6 +77,7 @@ async function initialize() {
   buildLayerControls(mapManager);
   dom.pngExtent.addEventListener("click", () => mapManager.zoomToPng({ notify: false }));
   dom.close.addEventListener("click", () => window.close());
+  initializeImport(async (result) => { setStatus(`Import completed: ${result.imported_count ?? 0} feature(s).`); window.setTimeout(() => window.location.reload(), 800); });
 
   try {
     const provinceResult = await DataModule.loadProvinces();
