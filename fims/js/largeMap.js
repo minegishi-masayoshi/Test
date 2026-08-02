@@ -1,5 +1,5 @@
 /**
- * FIMS Cloud Ver.3.2 - Simple Large Map Workflow
+ * FIMS Cloud Ver.3.3 - Simple Large Map Workflow
  */
 
 import { CONFIG } from "./config.js";

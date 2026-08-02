@@ -367,7 +367,19 @@ export function initializeImport(
             }
           );
 
-        showResult(result);
+        const summary = {
+          status: result.status,
+          target: result.target,
+          mode: result.mode,
+          imported_count: result.imported_count,
+          skipped_count: result.skipped_count,
+          geometry_type: result.geometry_type,
+          srid: result.srid,
+          geoserver: result.geoserver,
+          next_action: result.next_action
+        };
+
+        showResult(summary);
 
         await done(
           result,

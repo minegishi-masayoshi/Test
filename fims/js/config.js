@@ -1728,7 +1728,7 @@ const CONFIG = {
   dataImport: {
     enabled: true,
     endpoint:
-      "https://140-245-124-203.sslip.io/api/imports/gpkg",
+      "https://140-245-124-203.sslip.io/api/imports/gpkg-auto",
     maxFileSizeMb: 250,
     defaultMode: "replace",
 

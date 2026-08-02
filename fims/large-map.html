@@ -8,14 +8,14 @@
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com; connect-src 'self' https:; img-src 'self' data: blob: https:; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self';" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="./css/main.css?v=3.2.0" />
+  <link rel="stylesheet" href="./css/main.css?v=3.3.0" />
 </head>
 <body class="large-map-page">
   <div class="large-map-shell">
     <header class="large-map-header">
       <div class="large-map-title-block">
         <h1>FIMS Cloud - Large Map</h1>
-        <p>GIS Data Update Workflow · Ver.3.2.0</p>
+        <p>GIS Data Update Workflow · Ver.3.3.0</p>
       </div>
 
       <div class="large-map-header-actions" aria-label="Map utilities">
@@ -90,15 +90,16 @@
       <header class="import-dialog-header">
         <div>
           <h2 id="importDialogTitle">1. Import GIS Data</h2>
-          <p>GeoPackage (.gpkg) → FastAPI → PostGIS</p>
+          <p>GeoPackage → PostGIS → GeoServer → Large Map</p>
         </div>
         <button id="closeImportDialogButton" type="button">Close</button>
       </header>
 
       <div class="import-dialog-body">
         <div class="import-warning">
-          <strong>Important:</strong>
-          Replace removes all existing records in the selected target table before importing.
+          <strong>Automatic processing:</strong>
+          Geometry normalization, GeoServer publishing and WMS reload are executed automatically.<br />
+          <strong>Important:</strong> Replace removes all existing records in the selected target table before importing.
           Use Add only when the uploaded features are genuinely additional records.
         </div>
 
@@ -153,6 +154,6 @@
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script type="module" src="./js/largeMap.js?v=3.2.0"></script>
+  <script type="module" src="./js/largeMap.js?v=3.3.0"></script>
 </body>
 </html>
