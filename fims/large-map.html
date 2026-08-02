@@ -8,14 +8,14 @@
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com; connect-src 'self' https:; img-src 'self' data: blob: https:; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self';" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="./css/main.css?v=3.3.0" />
+  <link rel="stylesheet" href="./css/main.css?v=3.4.0" />
 </head>
 <body class="large-map-page">
   <div class="large-map-shell">
     <header class="large-map-header">
       <div class="large-map-title-block">
         <h1>FIMS Cloud - Large Map</h1>
-        <p>GIS Data Update Workflow · Ver.3.3.0</p>
+        <p>GIS Data Update Workflow · Ver.3.4.0</p>
       </div>
 
       <div class="large-map-header-actions" aria-label="Map utilities">
@@ -153,7 +153,80 @@
     </section>
   </div>
 
+
+  <div id="reviewModal" class="review-modal" hidden>
+    <div class="review-modal-backdrop" data-review-close></div>
+
+    <section
+      class="review-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="reviewDialogTitle"
+    >
+      <header class="review-dialog-header">
+        <div>
+          <h2 id="reviewDialogTitle">2. Review Imported Layer</h2>
+          <p>Confirm the latest PostGIS and GeoServer update on Large Map.</p>
+        </div>
+        <button id="closeReviewDialogButton" type="button">Close</button>
+      </header>
+
+      <div class="review-dialog-body">
+        <div id="reviewStatusBanner" class="review-status-banner">
+          Imported layer is ready for review.
+        </div>
+
+        <dl class="review-summary">
+          <div>
+            <dt>Target layer</dt>
+            <dd id="reviewTargetLayer">—</dd>
+          </div>
+          <div>
+            <dt>Imported features</dt>
+            <dd id="reviewImportedCount">—</dd>
+          </div>
+          <div>
+            <dt>Skipped features</dt>
+            <dd id="reviewSkippedCount">—</dd>
+          </div>
+          <div>
+            <dt>Geometry</dt>
+            <dd id="reviewGeometryType">—</dd>
+          </div>
+          <div>
+            <dt>CRS</dt>
+            <dd id="reviewSrid">—</dd>
+          </div>
+          <div>
+            <dt>GeoServer layer</dt>
+            <dd id="reviewWmsLayer">—</dd>
+          </div>
+          <div>
+            <dt>Publication</dt>
+            <dd id="reviewPublishStatus">—</dd>
+          </div>
+          <div>
+            <dt>Catalog reload</dt>
+            <dd id="reviewReloadStatus">—</dd>
+          </div>
+        </dl>
+
+        <div class="review-actions">
+          <button id="refreshImportedLayerButton" type="button">
+            Refresh Imported Layer
+          </button>
+          <button id="zoomProvinceButton" type="button">
+            Zoom to Province
+          </button>
+          <button id="continueCalculateButton" class="primary" type="button">
+            Continue to Calculate
+          </button>
+        </div>
+      </div>
+    </section>
+  </div>
+
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script type="module" src="./js/largeMap.js?v=3.3.0"></script>
+  <script type="module" src="./js/largeMap.js?v=3.4.0"></script>
 </body>
 </html>

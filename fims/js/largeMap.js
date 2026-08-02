@@ -1,5 +1,5 @@
 /**
- * FIMS Cloud Ver.3.3 - Simple Large Map Workflow
+ * FIMS Cloud Ver.3.4 - Review Workflow
  */
 
 import { CONFIG } from "./config.js";
@@ -68,11 +68,84 @@ const dom = {
   reviewResults:
     document.getElementById(
       "reviewResultsButton"
+    ),
+
+  reviewModal:
+    document.getElementById(
+      "reviewModal"
+    ),
+
+  closeReviewDialog:
+    document.getElementById(
+      "closeReviewDialogButton"
+    ),
+
+  refreshImportedLayer:
+    document.getElementById(
+      "refreshImportedLayerButton"
+    ),
+
+  zoomProvince:
+    document.getElementById(
+      "zoomProvinceButton"
+    ),
+
+  continueCalculate:
+    document.getElementById(
+      "continueCalculateButton"
+    ),
+
+  reviewTargetLayer:
+    document.getElementById(
+      "reviewTargetLayer"
+    ),
+
+  reviewImportedCount:
+    document.getElementById(
+      "reviewImportedCount"
+    ),
+
+  reviewSkippedCount:
+    document.getElementById(
+      "reviewSkippedCount"
+    ),
+
+  reviewGeometryType:
+    document.getElementById(
+      "reviewGeometryType"
+    ),
+
+  reviewSrid:
+    document.getElementById(
+      "reviewSrid"
+    ),
+
+  reviewWmsLayer:
+    document.getElementById(
+      "reviewWmsLayer"
+    ),
+
+  reviewPublishStatus:
+    document.getElementById(
+      "reviewPublishStatus"
+    ),
+
+  reviewReloadStatus:
+    document.getElementById(
+      "reviewReloadStatus"
+    ),
+
+  reviewStatusBanner:
+    document.getElementById(
+      "reviewStatusBanner"
     )
 };
 
 const state = {
   lastImportedLayerKey: null,
+  lastImportResult: null,
+  lastImportTarget: null,
+  selectedProvince: null,
   layerInputs: new Map()
 };
 
@@ -283,6 +356,126 @@ function displayImportedLayer(
   );
 }
 
+
+function setText(element, value) {
+  if (element) {
+    element.textContent =
+      value ?? "—";
+  }
+}
+
+function populateReviewDialog() {
+  const result =
+    state.lastImportResult;
+
+  const target =
+    state.lastImportTarget;
+
+  if (!result || !target) {
+    return false;
+  }
+
+  setText(
+    dom.reviewTargetLayer,
+    target.label
+  );
+
+  setText(
+    dom.reviewImportedCount,
+    Number.isFinite(
+      Number(result.imported_count)
+    )
+      ? Number(
+          result.imported_count
+        ).toLocaleString()
+      : "—"
+  );
+
+  setText(
+    dom.reviewSkippedCount,
+    Number.isFinite(
+      Number(result.skipped_count)
+    )
+      ? Number(
+          result.skipped_count
+        ).toLocaleString()
+      : "—"
+  );
+
+  setText(
+    dom.reviewGeometryType,
+    result.geometry_type ||
+      "MULTIPOLYGON"
+  );
+
+  setText(
+    dom.reviewSrid,
+    result.srid
+      ? `EPSG:${result.srid}`
+      : "—"
+  );
+
+  setText(
+    dom.reviewWmsLayer,
+    result.geoserver?.wms_layer ||
+      `fims:${result.target}`
+  );
+
+  const publishAction =
+    result.geoserver
+      ?.publish_action;
+
+  setText(
+    dom.reviewPublishStatus,
+    publishAction ===
+      "published"
+      ? "Published automatically"
+      : publishAction ===
+        "already_published"
+        ? "Existing layer updated"
+        : "Completed"
+  );
+
+  setText(
+    dom.reviewReloadStatus,
+    result.geoserver
+      ?.catalog_reloaded
+      ? "Completed"
+      : "Not confirmed"
+  );
+
+  if (dom.reviewStatusBanner) {
+    dom.reviewStatusBanner.textContent =
+      `${target.label}: ` +
+      `${result.imported_count ?? 0} features imported successfully.`;
+  }
+
+  return true;
+}
+
+function openReviewDialog(
+  mapManager
+) {
+  if (!populateReviewDialog()) {
+    setStatus(
+      "Import a dataset first."
+    );
+    return;
+  }
+
+  displayImportedLayer(
+    mapManager,
+    state.lastImportedLayerKey
+  );
+
+  setWorkflowStep(2);
+  dom.reviewModal.hidden = false;
+}
+
+function closeReviewDialog() {
+  dom.reviewModal.hidden = true;
+}
+
 async function initialize() {
   const mapManager =
     new FimsMap({
@@ -328,21 +521,93 @@ async function initialize() {
     .addEventListener(
       "click",
       () => {
-        if (
-          !state.lastImportedLayerKey
-        ) {
-          setStatus(
-            "Import a dataset first."
-          );
-          return;
-        }
+        openReviewDialog(
+          mapManager
+        );
+      }
+    );
 
+  dom.closeReviewDialog
+    .addEventListener(
+      "click",
+      closeReviewDialog
+    );
+
+  dom.reviewModal
+    .querySelectorAll(
+      "[data-review-close]"
+    )
+    .forEach(
+      (element) => {
+        element.addEventListener(
+          "click",
+          closeReviewDialog
+        );
+      }
+    );
+
+  dom.refreshImportedLayer
+    .addEventListener(
+      "click",
+      () => {
         displayImportedLayer(
           mapManager,
           state.lastImportedLayerKey
         );
 
-        setWorkflowStep(2);
+        populateReviewDialog();
+
+        setStatus(
+          "Latest GeoServer WMS layer refreshed."
+        );
+      }
+    );
+
+  dom.zoomProvince
+    .addEventListener(
+      "click",
+      () => {
+        if (
+          state.selectedProvince
+        ) {
+          mapManager.selectProvince(
+            state.selectedProvince,
+            {
+              zoom: true,
+              openPopup: false,
+              notify: false
+            }
+          );
+
+          setStatus(
+            "Map zoomed to the selected Province."
+          );
+        } else {
+          mapManager.zoomToPng(
+            {
+              notify: false
+            }
+          );
+
+          setStatus(
+            "Map zoomed to PNG extent."
+          );
+        }
+      }
+    );
+
+  dom.continueCalculate
+    .addEventListener(
+      "click",
+      () => {
+        closeReviewDialog();
+        setWorkflowStep(3);
+        dom.fmuCalculation.disabled =
+          false;
+
+        setStatus(
+          "Imported layer review completed. Continue with Calculate."
+        );
       }
     );
 
@@ -389,17 +654,29 @@ async function initialize() {
       state.lastImportedLayerKey =
         target.mapLayerKey;
 
+      state.lastImportResult =
+        result;
+
+      state.lastImportTarget =
+        target;
+
       dom.reviewImported.disabled =
         false;
 
       dom.fmuCalculation.disabled =
-        false;
+        true;
 
       setWorkflowStep(2);
 
       displayImportedLayer(
         mapManager,
         target.mapLayerKey
+      );
+
+      populateReviewDialog();
+
+      setStatus(
+        "Import completed. Select Review to confirm the imported layer."
       );
     }
   );
@@ -432,6 +709,9 @@ async function initialize() {
     }
 
     if (selectedProvince) {
+      state.selectedProvince =
+        selectedProvince;
+
       dom.province.textContent =
         (
           `${getProvinceId(selectedProvince)} ` +

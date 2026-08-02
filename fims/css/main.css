@@ -3048,3 +3048,166 @@ body.large-map-page {
     min-width: 100px;
   }
 }
+
+
+/* ============================================================
+   FIMS Cloud Ver.3.4 - Review Imported Layer
+   ============================================================ */
+
+.review-modal[hidden] {
+  display: none !important;
+}
+
+.review-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 5100;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+
+.review-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 27, 17, 0.68);
+}
+
+.review-dialog {
+  position: relative;
+  width: min(720px, 96vw);
+  max-height: 92vh;
+  overflow: auto;
+  background: #f8faf8;
+  border: 1px solid #77917f;
+  border-radius: 7px;
+  box-shadow: 0 12px 38px rgba(0, 0, 0, 0.35);
+}
+
+.review-dialog-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 13px 15px;
+  color: #fff;
+  background: linear-gradient(180deg, #267044, #17512f);
+}
+
+.review-dialog-header h2 {
+  margin: 0;
+  font-size: 1.08rem;
+}
+
+.review-dialog-header p {
+  margin: 3px 0 0;
+  font-size: 0.76rem;
+}
+
+.review-dialog-header button {
+  align-self: flex-start;
+  min-height: 34px;
+  padding: 6px 12px;
+  background: #fff;
+  border: 0;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.review-dialog-body {
+  padding: 14px;
+}
+
+.review-status-banner {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  color: #215936;
+  background: #e8f5eb;
+  border: 1px solid #9cc3a6;
+  border-radius: 4px;
+  font-weight: 700;
+}
+
+.review-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+  border: 1px solid #c4d1c8;
+  background: #fff;
+}
+
+.review-summary > div {
+  display: grid;
+  grid-template-columns: 130px minmax(0, 1fr);
+  min-width: 0;
+  border-bottom: 1px solid #d9e1db;
+}
+
+.review-summary > div:nth-child(odd) {
+  border-right: 1px solid #d9e1db;
+}
+
+.review-summary dt,
+.review-summary dd {
+  margin: 0;
+  padding: 8px;
+  overflow-wrap: anywhere;
+}
+
+.review-summary dt {
+  color: #344b3b;
+  background: #eef3ef;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.review-summary dd {
+  color: #263b2e;
+  font-size: 0.78rem;
+}
+
+.review-actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.review-actions button {
+  min-height: 36px;
+  padding: 7px 13px;
+  color: #244332;
+  background: #fff;
+  border: 1px solid #9caf9f;
+  border-radius: 4px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.review-actions button.primary {
+  color: #fff;
+  background: #1c6339;
+  border-color: #124c2a;
+}
+
+.review-actions button:hover {
+  filter: brightness(0.97);
+}
+
+@media (max-width: 700px) {
+  .review-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .review-summary > div:nth-child(odd) {
+    border-right: 0;
+  }
+
+  .review-actions {
+    justify-content: stretch;
+  }
+
+  .review-actions button {
+    flex: 1 1 100%;
+  }
+}
