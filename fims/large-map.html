@@ -8,14 +8,14 @@
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com; connect-src 'self' https:; img-src 'self' data: blob: https:; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self';" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="./css/main.css?v=3.1.0" />
+  <link rel="stylesheet" href="./css/main.css?v=3.2.0" />
 </head>
 <body class="large-map-page">
   <div class="large-map-shell">
     <header class="large-map-header">
       <div class="large-map-title-block">
         <h1>FIMS Cloud - Large Map</h1>
-        <p>GIS Data Update Workflow · Ver.3.1.0</p>
+        <p>GIS Data Update Workflow · Ver.3.2.0</p>
       </div>
 
       <div class="large-map-header-actions" aria-label="Map utilities">
@@ -24,43 +24,31 @@
       </div>
     </header>
 
-    <nav class="large-map-workflow compact-workflow" aria-label="GIS update workflow">
+    <nav class="large-map-workflow simple-workflow" aria-label="GIS update workflow">
       <button id="importButton" class="workflow-step" type="button" data-workflow-step="1">
-        <span class="workflow-icon" aria-hidden="true">⇧</span>
-        <span class="workflow-copy">
-          <strong>Import</strong>
-          <small>GPKG</small>
-        </span>
+        <span class="workflow-number">1</span>
+        <strong>Import</strong>
       </button>
 
-      <span class="workflow-arrow" aria-hidden="true">›</span>
+      <span class="workflow-arrow" aria-hidden="true">→</span>
 
       <button id="reviewImportedButton" class="workflow-step" type="button" data-workflow-step="2" disabled>
-        <span class="workflow-icon" aria-hidden="true">⌖</span>
-        <span class="workflow-copy">
-          <strong>Review</strong>
-          <small>Imported layer</small>
-        </span>
+        <span class="workflow-number">2</span>
+        <strong>Review</strong>
       </button>
 
-      <span class="workflow-arrow" aria-hidden="true">›</span>
+      <span class="workflow-arrow" aria-hidden="true">→</span>
 
       <button id="fmuCalculationButton" class="workflow-step" type="button" data-workflow-step="3" disabled>
-        <span class="workflow-icon" aria-hidden="true">Σ</span>
-        <span class="workflow-copy">
-          <strong>Calculate</strong>
-          <small>FMU</small>
-        </span>
+        <span class="workflow-number">3</span>
+        <strong>Calculate</strong>
       </button>
 
-      <span class="workflow-arrow" aria-hidden="true">›</span>
+      <span class="workflow-arrow" aria-hidden="true">→</span>
 
       <button id="reviewResultsButton" class="workflow-step" type="button" data-workflow-step="4" disabled>
-        <span class="workflow-icon" aria-hidden="true">✓</span>
-        <span class="workflow-copy">
-          <strong>Results</strong>
-          <small>Review</small>
-        </span>
+        <span class="workflow-number">4</span>
+        <strong>Results</strong>
       </button>
     </nav>
 
@@ -165,6 +153,6 @@
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script type="module" src="./js/largeMap.js?v=3.1.0"></script>
+  <script type="module" src="./js/largeMap.js?v=3.2.0"></script>
 </body>
 </html>

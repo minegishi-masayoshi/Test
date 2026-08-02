@@ -2948,3 +2948,103 @@ body.large-map-page {
     min-width: 105px;
   }
 }
+
+
+/* ============================================================
+   FIMS Cloud Ver.3.2 - Simple workflow bar
+   ============================================================ */
+
+.simple-workflow {
+  display: flex;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 5px 12px;
+  background: #e8eeea;
+  border-bottom: 1px solid #aebbb2;
+}
+
+.simple-workflow .workflow-step {
+  display: inline-flex;
+  flex: 0 0 auto;
+  min-width: 112px;
+  min-height: 32px;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 5px 13px;
+  color: #365143;
+  background: #f8faf9;
+  border: 1px solid #b9c5bd;
+  border-radius: 4px;
+  box-shadow: none;
+  cursor: pointer;
+}
+
+.simple-workflow .workflow-number {
+  display: inline-grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  color: #ffffff;
+  background: #718579;
+  border-radius: 50%;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.simple-workflow .workflow-step strong {
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.simple-workflow .workflow-arrow {
+  display: inline-block;
+  flex: 0 0 auto;
+  color: #708077;
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
+.simple-workflow .workflow-step.is-active {
+  color: #6f4c00;
+  background: #fff5d8;
+  border-color: #d1a13a;
+  box-shadow: inset 0 -3px #c8860a;
+}
+
+.simple-workflow .workflow-step.is-active .workflow-number {
+  background: #a96f00;
+}
+
+.simple-workflow .workflow-step.is-complete {
+  color: #255f38;
+  background: #e9f5ec;
+  border-color: #94b99f;
+}
+
+.simple-workflow .workflow-step.is-complete .workflow-number {
+  background: #2f7c49;
+}
+
+.simple-workflow .workflow-step:disabled {
+  color: #7d8781;
+  background: #eef1ef;
+  border-color: #d1d8d3;
+  cursor: not-allowed;
+  opacity: 0.76;
+}
+
+@media (max-width: 760px) {
+  .simple-workflow {
+    justify-content: flex-start;
+    overflow-x: auto;
+  }
+
+  .simple-workflow .workflow-step {
+    min-width: 100px;
+  }
+}
