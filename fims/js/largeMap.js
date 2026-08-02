@@ -1,5 +1,5 @@
 /**
- * FIMS Cloud Ver.3.0 - Large Map Administrator Workflow
+ * FIMS Cloud Ver.3.1 - Compact Large Map Workflow
  */
 
 import { CONFIG } from "./config.js";
@@ -18,18 +18,11 @@ const requestedProvince =
 const requestedProvinceName =
   params.get("provinceName");
 
-const requestedFmu =
-  params.get("fmu");
 
 const dom = {
   province:
     document.getElementById(
       "largeMapProvince"
-    ),
-
-  fmu:
-    document.getElementById(
-      "largeMapFmu"
     ),
 
   layers:
@@ -75,11 +68,6 @@ const dom = {
   reviewResults:
     document.getElementById(
       "reviewResultsButton"
-    ),
-
-  importSummary:
-    document.getElementById(
-      "lastImportSummary"
     )
 };
 
@@ -151,14 +139,6 @@ function getProvinceName(record) {
   );
 }
 
-function getFmuId(record) {
-  return (
-    record?.fmuId ??
-    record?.fmu ??
-    record?.id ??
-    ""
-  );
-}
 
 const layerGroups = [
   {
@@ -415,18 +395,6 @@ async function initialize() {
       dom.fmuCalculation.disabled =
         false;
 
-      dom.importSummary.textContent =
-        (
-          `${target.label}: ` +
-          `${result.imported_count ?? 0} imported, ` +
-          `${result.skipped_count ?? 0} skipped.`
-        );
-
-      if (result.target_created) {
-        dom.importSummary.textContent +=
-          " First import: publish the new table in GeoServer once before map review.";
-      }
-
       setWorkflowStep(2);
 
       displayImportedLayer(
@@ -479,52 +447,6 @@ async function initialize() {
         }
       );
 
-      const fmuResult =
-        await DataModule
-          .loadFmusForProvince(
-            selectedProvince
-          );
-
-      const fmus =
-        fmuResult.records ??
-        [];
-
-      mapManager.setFmuData(
-        fmus,
-        {
-          fit: false
-        }
-      );
-
-      if (requestedFmu) {
-        const selectedFmu =
-          fmus.find(
-            (record) =>
-              String(
-                getFmuId(record)
-              ) ===
-              String(
-                requestedFmu
-              )
-          );
-
-        if (selectedFmu) {
-          dom.fmu.textContent =
-            String(
-              getFmuId(selectedFmu)
-            );
-
-          mapManager.selectFmu(
-            selectedFmu,
-            {
-              zoom: true,
-              openPopup: true,
-              notify: false
-            }
-          );
-        }
-      }
-
       setStatus(
         `Large Map ready for ${getProvinceName(selectedProvince)}.`
       );
@@ -541,7 +463,7 @@ async function initialize() {
     console.error(error);
 
     setStatus(
-      "Large Map opened, but Province/FMUs vector data could not be loaded. WMS layers remain available."
+      "Large Map opened, but Province vector data could not be loaded. WMS layers remain available."
     );
   }
 

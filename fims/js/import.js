@@ -1,5 +1,5 @@
 /**
- * FIMS Cloud Ver.3.0
+ * FIMS Cloud Ver.3.1
  * GeoPackage import controller for the Large Map administrator workflow.
  */
 
@@ -192,6 +192,20 @@ export function initializeImport(
   byId("importButton").onclick = () => {
     resetResult();
     updateSourceLayer(config);
+
+    const file =
+      byId("importFile")
+        ?.files?.[0];
+
+    const selectedFileName =
+      byId("selectedImportFileName");
+
+    if (selectedFileName) {
+      selectedFileName.textContent =
+        file?.name ||
+        "No file selected";
+    }
+
     modal.hidden = false;
   };
 
@@ -214,8 +228,29 @@ export function initializeImport(
     updateSourceLayer(config);
   };
 
-  byId("importFile").onchange =
-    resetResult;
+  const importFile =
+    byId("importFile");
+
+  const selectedFileName =
+    byId("selectedImportFileName");
+
+  const updateSelectedFileName = () => {
+    const file =
+      importFile?.files?.[0];
+
+    if (selectedFileName) {
+      selectedFileName.textContent =
+        file?.name ||
+        "No file selected";
+    }
+
+    resetResult();
+  };
+
+  if (importFile) {
+    importFile.onchange =
+      updateSelectedFileName;
+  }
 
   byId("executeImportButton").onclick =
     async () => {

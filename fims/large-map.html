@@ -8,14 +8,14 @@
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com; connect-src 'self' https:; img-src 'self' data: blob: https:; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self';" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="./css/main.css?v=3.0.0" />
+  <link rel="stylesheet" href="./css/main.css?v=3.1.0" />
 </head>
 <body class="large-map-page">
   <div class="large-map-shell">
     <header class="large-map-header">
       <div class="large-map-title-block">
         <h1>FIMS Cloud - Large Map</h1>
-        <p>Administrator GIS Data Update Workflow · Ver.3.0.0</p>
+        <p>GIS Data Update Workflow · Ver.3.1.0</p>
       </div>
 
       <div class="large-map-header-actions" aria-label="Map utilities">
@@ -24,29 +24,43 @@
       </div>
     </header>
 
-    <nav class="large-map-workflow" aria-label="Administrator workflow">
+    <nav class="large-map-workflow compact-workflow" aria-label="GIS update workflow">
       <button id="importButton" class="workflow-step" type="button" data-workflow-step="1">
-        <span>1</span>
-        <strong>Import Data</strong>
-        <small>Choose target, GPKG and Add/Replace</small>
+        <span class="workflow-icon" aria-hidden="true">⇧</span>
+        <span class="workflow-copy">
+          <strong>Import</strong>
+          <small>GPKG</small>
+        </span>
       </button>
+
+      <span class="workflow-arrow" aria-hidden="true">›</span>
 
       <button id="reviewImportedButton" class="workflow-step" type="button" data-workflow-step="2" disabled>
-        <span>2</span>
-        <strong>Review Imported Layer</strong>
-        <small>Refresh WMS and inspect the map</small>
+        <span class="workflow-icon" aria-hidden="true">⌖</span>
+        <span class="workflow-copy">
+          <strong>Review</strong>
+          <small>Imported layer</small>
+        </span>
       </button>
+
+      <span class="workflow-arrow" aria-hidden="true">›</span>
 
       <button id="fmuCalculationButton" class="workflow-step" type="button" data-workflow-step="3" disabled>
-        <span>3</span>
-        <strong>FMU Calculation</strong>
-        <small>Recalculate FMU and Concession</small>
+        <span class="workflow-icon" aria-hidden="true">Σ</span>
+        <span class="workflow-copy">
+          <strong>Calculate</strong>
+          <small>FMU</small>
+        </span>
       </button>
 
+      <span class="workflow-arrow" aria-hidden="true">›</span>
+
       <button id="reviewResultsButton" class="workflow-step" type="button" data-workflow-step="4" disabled>
-        <span>4</span>
-        <strong>Review Results</strong>
-        <small>Reload calculated layers</small>
+        <span class="workflow-icon" aria-hidden="true">✓</span>
+        <span class="workflow-copy">
+          <strong>Results</strong>
+          <small>Review</small>
+        </span>
       </button>
     </nav>
 
@@ -56,7 +70,6 @@
           <h2>Current Scope</h2>
           <div class="large-map-sidebar-body large-map-scope">
             <span>Province: <strong id="largeMapProvince">All Provinces</strong></span>
-            <span>FMU: <strong id="largeMapFmu">Not selected</strong></span>
           </div>
         </section>
 
@@ -64,27 +77,6 @@
           <h2>Contents</h2>
           <div class="large-map-sidebar-body">
             <div id="largeMapLayerList" class="large-map-layer-list" aria-label="Map layers"></div>
-          </div>
-        </section>
-
-        <section>
-          <h2>Last Data Update</h2>
-          <div class="large-map-sidebar-body">
-            <p id="lastImportSummary" class="control-note">
-              No dataset has been imported during this session.
-            </p>
-          </div>
-        </section>
-
-        <section>
-          <h2>Administrator Guidance</h2>
-          <div class="large-map-sidebar-body">
-            <ol class="large-map-guidance">
-              <li>Import a GeoPackage into the selected FIMS layer.</li>
-              <li>Review the imported geometry on this map.</li>
-              <li>Run FMU Calculation after confirming the data.</li>
-              <li>Review the recalculated FMU and Concession layers.</li>
-            </ol>
           </div>
         </section>
       </aside>
@@ -136,10 +128,18 @@
             </select>
           </label>
 
-          <label class="import-file-field">
-            GeoPackage file
-            <input id="importFile" type="file" accept=".gpkg" />
-          </label>
+          <div class="import-file-field">
+            <span class="import-field-label">GeoPackage file</span>
+            <div class="custom-file-control">
+              <label class="custom-file-button" for="importFile">
+                Browse GeoPackage...
+              </label>
+              <span id="selectedImportFileName" class="custom-file-name">
+                No file selected
+              </span>
+              <input id="importFile" class="visually-hidden-file" type="file" accept=".gpkg" />
+            </div>
+          </div>
 
           <label class="import-file-field">
             Source layer name inside GeoPackage
@@ -165,6 +165,6 @@
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script type="module" src="./js/largeMap.js?v=3.0.0"></script>
+  <script type="module" src="./js/largeMap.js?v=3.1.0"></script>
 </body>
 </html>

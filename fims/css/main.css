@@ -2745,3 +2745,206 @@ body.large-map-page {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* ============================================================
+   FIMS Cloud Ver.3.1 - Compact Large Map workflow
+   ============================================================ */
+
+.large-map-page .large-map-header {
+  min-height: 43px;
+}
+
+.large-map-page .large-map-title-block h1 {
+  font-size: 0.98rem;
+}
+
+.large-map-page .large-map-title-block p {
+  margin-top: 1px;
+  font-size: 0.62rem;
+}
+
+.compact-workflow {
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  min-height: 54px;
+  padding: 5px 10px;
+  gap: 4px;
+  background: #e5ece7;
+  border-bottom: 1px solid #98aa9d;
+}
+
+.compact-workflow .workflow-step {
+  display: flex;
+  flex: 0 1 180px;
+  min-width: 120px;
+  min-height: 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 5px 10px;
+  color: #365342;
+  background: #f7faf8;
+  border: 1px solid #bac8be;
+  border-radius: 999px;
+  box-shadow: 0 1px 2px rgba(30, 61, 42, 0.08);
+}
+
+.compact-workflow .workflow-icon {
+  display: grid;
+  flex: 0 0 28px;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  color: #ffffff;
+  background: #708779;
+  border-radius: 50%;
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.compact-workflow .workflow-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.05;
+}
+
+.compact-workflow .workflow-copy strong {
+  font-size: 0.76rem;
+  white-space: nowrap;
+}
+
+.compact-workflow .workflow-copy small {
+  margin-top: 3px;
+  color: #718077;
+  font-size: 0.58rem;
+  white-space: nowrap;
+}
+
+.compact-workflow .workflow-arrow {
+  display: grid;
+  flex: 0 0 18px;
+  place-items: center;
+  color: #75877b;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+
+.compact-workflow .workflow-step.is-active {
+  color: #724d00;
+  background: #fff5d8;
+  border-color: #d3a433;
+  box-shadow:
+    0 0 0 2px rgba(211, 164, 51, 0.16),
+    0 2px 4px rgba(61, 48, 15, 0.12);
+}
+
+.compact-workflow .workflow-step.is-active .workflow-icon {
+  background: #a96f00;
+}
+
+.compact-workflow .workflow-step.is-complete {
+  color: #245f38;
+  background: #e8f5eb;
+  border-color: #8eb99a;
+}
+
+.compact-workflow .workflow-step.is-complete .workflow-icon {
+  background: #2e7c49;
+}
+
+.compact-workflow .workflow-step:disabled {
+  color: #79847d;
+  background: #edf0ee;
+  border-color: #d0d7d2;
+  opacity: 0.75;
+}
+
+.large-map-sidebar {
+  overflow-y: auto;
+}
+
+.large-map-sidebar > section:last-child {
+  margin-bottom: 0;
+}
+
+.custom-file-control {
+  display: flex;
+  min-height: 34px;
+  align-items: center;
+  gap: 8px;
+  padding: 4px;
+  background: #ffffff;
+  border: 1px solid #aebcaf;
+  border-radius: 3px;
+}
+
+.import-field-label {
+  display: block;
+  margin-bottom: 5px;
+  color: #334b3a;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.custom-file-button {
+  display: inline-flex;
+  flex: 0 0 auto;
+  min-height: 27px;
+  align-items: center;
+  padding: 4px 10px;
+  color: #ffffff;
+  background: #356947;
+  border: 1px solid #245238;
+  border-radius: 3px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.custom-file-button:hover {
+  background: #28583a;
+}
+
+.custom-file-name {
+  min-width: 0;
+  overflow: hidden;
+  color: #58675d;
+  font-size: 0.72rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.visually-hidden-file {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 980px) {
+  .compact-workflow {
+    overflow-x: auto;
+    justify-content: flex-start;
+  }
+
+  .compact-workflow .workflow-step {
+    flex-basis: 150px;
+  }
+}
+
+@media (max-width: 640px) {
+  .compact-workflow .workflow-copy small {
+    display: none;
+  }
+
+  .compact-workflow .workflow-step {
+    min-width: 105px;
+  }
+}
