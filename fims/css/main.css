@@ -2621,3 +2621,127 @@ body.large-map-page {
 
 /* Ver.2.9.0 Administrator GeoPackage Import */
 .import-modal[hidden]{display:none!important}.import-modal{position:fixed;inset:0;z-index:5000;display:grid;place-items:center;padding:18px}.import-modal-backdrop{position:absolute;inset:0;background:rgba(8,27,17,.68)}.import-dialog{position:relative;width:min(850px,96vw);max-height:92vh;overflow:auto;background:#f8faf8;border:1px solid #77917f;border-radius:7px;box-shadow:0 12px 38px rgba(0,0,0,.35)}.import-dialog-header{display:flex;justify-content:space-between;gap:16px;padding:13px 15px;color:#fff;background:linear-gradient(180deg,#267044,#17512f)}.import-dialog-header h2{margin:0;font-size:1.08rem}.import-dialog-header p{margin:3px 0 0;font-size:.76rem}.import-dialog-header button{padding:6px 12px;background:#fff;border:0;border-radius:4px}.import-dialog-body{padding:14px}.import-warning{margin-bottom:13px;padding:10px 12px;color:#5b4200;background:#fff7d7;border:1px solid #e1c86b;border-radius:4px}.import-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.import-grid label,.import-inspection label{display:grid;gap:5px;font-size:.8rem;font-weight:700}.import-grid select,.import-grid input,.import-inspection select{width:100%;min-height:36px;padding:6px 8px;border:1px solid #aebeb3}.import-file-field{grid-column:1/-1}.import-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:13px}.import-actions button{min-height:36px;padding:7px 14px;color:#fff;background:#1c6339;border:1px solid #124c2a;border-radius:4px;font-weight:700}.import-actions .danger{background:#9b2f25}.import-actions button:disabled{opacity:.5}.import-inspection{margin-top:15px;padding:12px;background:#fff;border:1px solid #c4d1c8}.import-inspection dl{display:grid;grid-template-columns:150px 1fr}.import-inspection dt,.import-inspection dd{margin:0;padding:6px;border-bottom:1px solid #d9e1db}.import-inspection dt{font-weight:700;background:#eef3ef}.import-confirm{display:flex!important;align-items:center;margin-top:12px;font-weight:400!important}.import-progress{display:flex;gap:9px;align-items:center;margin-top:12px;padding:9px;background:#e8f2eb}.import-progress span{width:16px;height:16px;border:2px solid #9db7a5;border-top-color:#1c6339;border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}.import-result{max-height:230px;overflow:auto;margin-top:12px;padding:10px;white-space:pre-wrap;background:#eef5f0;border:1px solid #b9cbbf}.import-result.error{color:#731d18;background:#fff0ef}
+
+
+/* ============================================================
+   FIMS Cloud Ver.3.0 - Large Map Administrator Workflow
+   ============================================================ */
+
+.large-map-workflow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1px;
+  background: #9caf9f;
+  border-bottom: 1px solid #718878;
+}
+
+.workflow-step {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  align-items: center;
+  min-height: 70px;
+  padding: 8px 12px;
+  color: #294333;
+  background: #edf3ee;
+  border: 0;
+  text-align: left;
+  cursor: pointer;
+}
+
+.workflow-step span {
+  grid-row: 1 / span 2;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  color: #fff;
+  background: #617b68;
+  border-radius: 50%;
+  font-weight: 700;
+}
+
+.workflow-step strong {
+  font-size: 0.84rem;
+}
+
+.workflow-step small {
+  color: #65736a;
+  font-size: 0.68rem;
+}
+
+.workflow-step.is-active {
+  background: #fff5d9;
+  box-shadow: inset 0 -4px #c88a18;
+}
+
+.workflow-step.is-active span {
+  background: #a86c00;
+}
+
+.workflow-step.is-complete {
+  background: #e4f3e8;
+}
+
+.workflow-step.is-complete span {
+  background: #277744;
+}
+
+.workflow-step:disabled {
+  color: #7d8981;
+  background: #eef0ee;
+  cursor: not-allowed;
+  opacity: 0.76;
+}
+
+.large-map-layer-group {
+  margin: 0 0 10px;
+  padding: 0 0 8px;
+  border-bottom: 1px solid #d7e0d9;
+}
+
+.large-map-layer-group:last-child {
+  margin-bottom: 0;
+  border-bottom: 0;
+}
+
+.large-map-layer-group h3 {
+  margin: 0 0 5px;
+  color: #31553d;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.035em;
+}
+
+.large-map-guidance {
+  margin: 0;
+  padding-left: 20px;
+  color: #44584a;
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+
+.large-map-guidance li + li {
+  margin-top: 5px;
+}
+
+.import-grid small {
+  color: #65736a;
+  font-size: 0.7rem;
+  font-weight: 400;
+}
+
+.import-actions button {
+  min-width: 150px;
+}
+
+@media (max-width: 1050px) {
+  .large-map-workflow {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 680px) {
+  .large-map-workflow {
+    grid-template-columns: 1fr;
+  }
+}

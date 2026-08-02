@@ -1277,6 +1277,41 @@ export class FimsMap {
   }
 
   /**
+   * Forces a WMS layer to request fresh tiles after a database update.
+   *
+   * @param {string} layerKey
+   * @returns {boolean}
+   */
+  refreshWmsLayer(layerKey) {
+    let layer = this.wmsLayers.get(layerKey);
+
+    if (!layer) {
+      layer = this.createWmsLayer(layerKey);
+
+      if (!layer) {
+        return false;
+      }
+
+      this.wmsLayers.set(layerKey, layer);
+    }
+
+    if (typeof layer.setParams === "function") {
+      layer.setParams(
+        {
+          _fimsRefresh: Date.now()
+        },
+        false
+      );
+    }
+
+    if (typeof layer.redraw === "function") {
+      layer.redraw();
+    }
+
+    return true;
+  }
+
+  /**
    * Applies a CQL filter to an existing or future WMS layer.
    *
    * @param {string} layerKey

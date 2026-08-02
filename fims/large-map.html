@@ -3,27 +3,52 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FIMS Cloud - Large Map</title>
+  <title>FIMS Cloud - Large Map Administrator Workflow</title>
   <meta name="robots" content="noindex, nofollow, noarchive" />
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com; connect-src 'self' https:; img-src 'self' data: blob: https:; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self';" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="./css/main.css?v=2.9.0" />
+  <link rel="stylesheet" href="./css/main.css?v=3.0.0" />
 </head>
 <body class="large-map-page">
   <div class="large-map-shell">
     <header class="large-map-header">
       <div class="large-map-title-block">
         <h1>FIMS Cloud - Large Map</h1>
-        <p>Administrator Map · GeoServer WMS/WFS · Ver.2.9.0</p>
+        <p>Administrator GIS Data Update Workflow · Ver.3.0.0</p>
       </div>
-      <div class="large-map-header-actions" aria-label="Large Map functions">
-        <button id="fmuCalculationButton" type="button" disabled title="Scheduled for a later implementation phase">FMU Calculation</button>
-        <button id="importButton" type="button">Import</button>
+
+      <div class="large-map-header-actions" aria-label="Map utilities">
         <button id="pngExtentButton" type="button">PNG Extent</button>
         <button id="closeLargeMapButton" type="button">Close</button>
       </div>
     </header>
+
+    <nav class="large-map-workflow" aria-label="Administrator workflow">
+      <button id="importButton" class="workflow-step" type="button" data-workflow-step="1">
+        <span>1</span>
+        <strong>Import Data</strong>
+        <small>Choose target, GPKG and Add/Replace</small>
+      </button>
+
+      <button id="reviewImportedButton" class="workflow-step" type="button" data-workflow-step="2" disabled>
+        <span>2</span>
+        <strong>Review Imported Layer</strong>
+        <small>Refresh WMS and inspect the map</small>
+      </button>
+
+      <button id="fmuCalculationButton" class="workflow-step" type="button" data-workflow-step="3" disabled>
+        <span>3</span>
+        <strong>FMU Calculation</strong>
+        <small>Recalculate FMU and Concession</small>
+      </button>
+
+      <button id="reviewResultsButton" class="workflow-step" type="button" data-workflow-step="4" disabled>
+        <span>4</span>
+        <strong>Review Results</strong>
+        <small>Reload calculated layers</small>
+      </button>
+    </nav>
 
     <main class="large-map-workspace">
       <aside class="large-map-sidebar" aria-label="Large Map controls">
@@ -43,16 +68,32 @@
         </section>
 
         <section>
-          <h2>MVP Scope</h2>
+          <h2>Last Data Update</h2>
           <div class="large-map-sidebar-body">
-            <p class="control-note">This version provides map display, layer visibility, Province/FMUs focus and PNG extent. Import and FMU Calculation are shown as future functions and do not update the database.</p>
+            <p id="lastImportSummary" class="control-note">
+              No dataset has been imported during this session.
+            </p>
+          </div>
+        </section>
+
+        <section>
+          <h2>Administrator Guidance</h2>
+          <div class="large-map-sidebar-body">
+            <ol class="large-map-guidance">
+              <li>Import a GeoPackage into the selected FIMS layer.</li>
+              <li>Review the imported geometry on this map.</li>
+              <li>Run FMU Calculation after confirming the data.</li>
+              <li>Review the recalculated FMU and Concession layers.</li>
+            </ol>
           </div>
         </section>
       </aside>
 
       <section class="large-map-canvas-wrap" aria-label="Interactive Large Map">
         <div id="largeMap" role="application" aria-label="FIMS Large Map"></div>
-        <div id="largeMapMessage" class="large-map-message" role="status" aria-live="polite">Initializing Large Map…</div>
+        <div id="largeMapMessage" class="large-map-message" role="status" aria-live="polite">
+          Initializing Large Map…
+        </div>
       </section>
     </main>
 
@@ -62,9 +103,68 @@
     </footer>
   </div>
 
+  <div id="importModal" class="import-modal" hidden>
+    <div class="import-modal-backdrop" data-import-close></div>
 
-<div id="importModal" class="import-modal" hidden><div class="import-modal-backdrop" data-import-close></div><section class="import-dialog" role="dialog" aria-modal="true"><header class="import-dialog-header"><div><h2>Import GIS Dataset</h2><p>Administrator function · GeoPackage (.gpkg)</p></div><button id="closeImportDialogButton" type="button">Close</button></header><div class="import-dialog-body"><div class="import-warning"><strong>Database update:</strong> Replace deletes all existing records in the selected target layer.</div><div class="import-grid"><label>Target layer<select id="importTarget"></select></label><label>Import mode<select id="importMode"><option value="replace">Replace existing layer</option><option value="add">Add to existing layer</option></select></label><label class="import-file-field">GeoPackage file<input id="importFile" type="file" accept=".gpkg" /></label></div><div class="import-actions"><button id="inspectImportButton">1. Inspect File</button></div><section id="importInspection" class="import-inspection" hidden><h3>Inspection result</h3><dl id="importInspectionDetails"></dl><label>Source layer<select id="importSourceLayer"></select></label><label class="import-confirm"><input id="importConfirm" type="checkbox" /> I checked the target, source and mode.</label><div class="import-actions"><button id="executeImportButton" class="danger" disabled>2. Execute Import</button></div></section><div id="importProgress" class="import-progress" hidden><span></span><strong>Processing…</strong></div><pre id="importResult" class="import-result" hidden></pre></div></section></div>
+    <section class="import-dialog" role="dialog" aria-modal="true" aria-labelledby="importDialogTitle">
+      <header class="import-dialog-header">
+        <div>
+          <h2 id="importDialogTitle">1. Import GIS Data</h2>
+          <p>GeoPackage (.gpkg) → FastAPI → PostGIS</p>
+        </div>
+        <button id="closeImportDialogButton" type="button">Close</button>
+      </header>
+
+      <div class="import-dialog-body">
+        <div class="import-warning">
+          <strong>Important:</strong>
+          Replace removes all existing records in the selected target table before importing.
+          Use Add only when the uploaded features are genuinely additional records.
+        </div>
+
+        <div class="import-grid">
+          <label>
+            Target FIMS layer
+            <select id="importTarget"></select>
+          </label>
+
+          <label>
+            Import mode
+            <select id="importMode">
+              <option value="replace">Replace existing records</option>
+              <option value="add">Add records</option>
+            </select>
+          </label>
+
+          <label class="import-file-field">
+            GeoPackage file
+            <input id="importFile" type="file" accept=".gpkg" />
+          </label>
+
+          <label class="import-file-field">
+            Source layer name inside GeoPackage
+            <input id="importSourceLayer" type="text" autocomplete="off" />
+            <small>The standard source layer name is filled automatically from the selected target.</small>
+          </label>
+        </div>
+
+        <div class="import-actions">
+          <button id="executeImportButton" type="button">
+            Execute Import
+          </button>
+        </div>
+
+        <div id="importProgress" class="import-progress" hidden>
+          <span></span>
+          <strong>Uploading and importing the GeoPackage…</strong>
+        </div>
+
+        <pre id="importResult" class="import-result" hidden></pre>
+      </div>
+    </section>
+  </div>
+
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script type="module" src="./js/largeMap.js?v=2.9.0"></script>
+  <script type="module" src="./js/largeMap.js?v=3.0.0"></script>
 </body>
 </html>

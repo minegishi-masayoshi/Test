@@ -1426,30 +1426,72 @@ const CONFIG = {
 
     protectedArea: {
       key: "protectedArea",
-      label: "Protected Areas",
+      label: "Protected Area",
       workspace: "fims",
       name: "protected_area",
       qualifiedName: "fims:protected_area",
       service: "wms",
-      enabled: false,
+      enabled: true,
       visible: false,
       queryable: false,
       opacity: 0.65,
       zIndex: 600
     },
 
-    loggingArea: {
-      key: "loggingArea",
-      label: "Logging Areas",
+    loggedNotLandUseCurrent: {
+      key: "loggedNotLandUseCurrent",
+      label: "Logged Not Land Use - Current",
       workspace: "fims",
-      name: "logged_over",
-      qualifiedName: "fims:logged_over",
+      name: "logged_notlanduse_current",
+      qualifiedName: "fims:logged_notlanduse_current",
       service: "wms",
-      enabled: false,
+      enabled: true,
       visible: false,
       queryable: false,
-      opacity: 0.65,
-      zIndex: 700
+      opacity: 0.62,
+      zIndex: 710
+    },
+
+    loggedLandUseCurrent: {
+      key: "loggedLandUseCurrent",
+      label: "Logged Land Use - Current",
+      workspace: "fims",
+      name: "logged_landuse_current",
+      qualifiedName: "fims:logged_landuse_current",
+      service: "wms",
+      enabled: true,
+      visible: false,
+      queryable: false,
+      opacity: 0.62,
+      zIndex: 720
+    },
+
+    landUseNotLoggedCurrent: {
+      key: "landUseNotLoggedCurrent",
+      label: "Land Use Not Logged - Current",
+      workspace: "fims",
+      name: "landuse_notlogged_current",
+      qualifiedName: "fims:landuse_notlogged_current",
+      service: "wms",
+      enabled: true,
+      visible: false,
+      queryable: false,
+      opacity: 0.62,
+      zIndex: 730
+    },
+
+    planArea: {
+      key: "planArea",
+      label: "Plan Area",
+      workspace: "fims",
+      name: "planarea",
+      qualifiedName: "fims:planarea",
+      service: "wms",
+      enabled: true,
+      visible: false,
+      queryable: false,
+      opacity: 0.62,
+      zIndex: 740
     }
   },
 
@@ -1685,16 +1727,48 @@ const CONFIG = {
 
   dataImport: {
     enabled: true,
-    apiBaseUrl: "https://140-245-124-203.sslip.io/api/imports",
+    endpoint:
+      "https://140-245-124-203.sslip.io/api/imports/gpkg",
     maxFileSizeMb: 250,
     defaultMode: "replace",
+
     targets: [
-      { key: "concessionarea", label: "Concession Area" },
-      { key: "logged_notlanduse_current", label: "Logged Not Land Use - Current" },
-      { key: "logged_landuse_current", label: "Logged Land Use - Current" },
-      { key: "landuse_notlogged_current", label: "Land Use Not Logged - Current" },
-      { key: "protected_area", label: "Protected Area" },
-      { key: "planarea", label: "Plan Area" }
+      {
+        key: "concessionarea",
+        label: "Concession Area",
+        sourceLayer: "concessionarea",
+        mapLayerKey: "concession"
+      },
+      {
+        key: "logged_notlanduse_current",
+        label: "Logged Not Land Use - Current",
+        sourceLayer: "logged_notlanduse_current",
+        mapLayerKey: "loggedNotLandUseCurrent"
+      },
+      {
+        key: "logged_landuse_current",
+        label: "Logged Land Use - Current",
+        sourceLayer: "logged_landuse_current",
+        mapLayerKey: "loggedLandUseCurrent"
+      },
+      {
+        key: "landuse_notlogged_current",
+        label: "Land Use Not Logged - Current",
+        sourceLayer: "landuse_notlogged_current",
+        mapLayerKey: "landUseNotLoggedCurrent"
+      },
+      {
+        key: "protected_area",
+        label: "Protected Area",
+        sourceLayer: "protected_area",
+        mapLayerKey: "protectedArea"
+      },
+      {
+        key: "planarea",
+        label: "Plan Area",
+        sourceLayer: "planarea",
+        mapLayerKey: "planArea"
+      }
     ]
   },
 

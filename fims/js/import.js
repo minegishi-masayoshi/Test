@@ -1,9 +1,352 @@
-import { CONFIG } from './config.js';
-const $=id=>document.getElementById(id); const state={token:null,busy:false};
-async function api(url,opt={},timeout=300000){const c=new AbortController(),t=setTimeout(()=>c.abort(),timeout);try{const r=await fetch(url,{...opt,signal:c.signal,cache:'no-store'}),x=await r.text();let b={};try{b=x?JSON.parse(x):{}}catch{b={detail:x}}if(!r.ok)throw new Error(b.detail||b.message||`HTTP ${r.status}`);return b}finally{clearTimeout(t)}}
-function busy(v){state.busy=v;$('inspectImportButton').disabled=v;$('executeImportButton').disabled=v||!state.token||!$('importConfirm').checked;$('importProgress').hidden=!v}
-function result(v,e=false){const n=$('importResult');n.hidden=false;n.classList.toggle('error',e);n.textContent=typeof v==='string'?v:JSON.stringify(v,null,2)}
-function reset(){state.token=null;$('importInspection').hidden=true;$('importResult').hidden=true;$('importConfirm').checked=false;$('executeImportButton').disabled=true}
-export function initializeImport(done=()=>{}){const cfg=CONFIG.dataImport,m=$('importModal'),target=$('importTarget');if(!cfg?.enabled)return;for(const x of cfg.targets){const o=document.createElement('option');o.value=x.key;o.textContent=x.label;target.append(o)}$('importMode').value=cfg.defaultMode||'replace';const close=()=>{if(!state.busy)m.hidden=true};$('importButton').onclick=()=>{reset();m.hidden=false};$('closeImportDialogButton').onclick=close;m.querySelectorAll('[data-import-close]').forEach(x=>x.onclick=close);$('importFile').onchange=reset;target.onchange=reset;$('importConfirm').onchange=()=>busy(false);
-$('inspectImportButton').onclick=async()=>{const f=$('importFile').files?.[0];if(!f)return result('Select a .gpkg file.',true);if(!f.name.toLowerCase().endsWith('.gpkg'))return result('Only .gpkg is accepted.',true);if(f.size>cfg.maxFileSizeMb*1024*1024)return result(`Maximum size is ${cfg.maxFileSizeMb} MB.`,true);reset();busy(true);try{const fd=new FormData();fd.append('file',f);const r=await api(`${cfg.apiBaseUrl}/inspect`,{method:'POST',body:fd},120000);state.token=r.upload_token;const dl=$('importInspectionDetails');dl.replaceChildren();for(const [k,v] of [['File',r.file_name],['Size',`${(r.file_size/1048576).toFixed(2)} MB`],['Layers',r.layers.length],['Expires',r.expires_at]]){const dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=k;dd.textContent=v;dl.append(dt,dd)}const s=$('importSourceLayer');s.replaceChildren();for(const l of r.layers){const o=document.createElement('option');o.value=l.name;o.textContent=`${l.name} — ${l.feature_count??'?'} features · ${l.geometry_type||'Unknown'} · ${l.srs||'SRS unknown'}`;s.append(o)}$('importInspection').hidden=false;result('Inspection completed. Review the result before execution.')}catch(e){result(e.message,true)}finally{busy(false)}};
-$('executeImportButton').onclick=async()=>{const mode=$('importMode').value,source=$('importSourceLayer').value,key=target.value;if(!confirm(`${mode.toUpperCase()} ${target.selectedOptions[0].textContent}?\nSource: ${source}\n\nThis updates PostGIS.`))return;busy(true);try{const r=await api(`${cfg.apiBaseUrl}/execute`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({upload_token:state.token,target:key,source_layer:source,mode})});result(r);await done(r)}catch(e){result(e.message,true)}finally{busy(false)}}}
+/**
+ * FIMS Cloud Ver.3.0
+ * GeoPackage import controller for the Large Map administrator workflow.
+ */
+
+import { CONFIG } from "./config.js";
+
+const byId = (id) => document.getElementById(id);
+
+const state = {
+  busy: false
+};
+
+async function requestImport(url, options, timeout = 1800000) {
+  const controller = new AbortController();
+  const timer = window.setTimeout(
+    () => controller.abort(),
+    timeout
+  );
+
+  try {
+    const response = await fetch(
+      url,
+      {
+        ...options,
+        signal: controller.signal,
+        cache: "no-store"
+      }
+    );
+
+    const raw = await response.text();
+    let body = {};
+
+    try {
+      body = raw ? JSON.parse(raw) : {};
+    } catch {
+      body = {
+        detail: raw
+      };
+    }
+
+    if (!response.ok) {
+      throw new Error(
+        body.detail ||
+        body.message ||
+        `HTTP ${response.status}`
+      );
+    }
+
+    return body;
+  } finally {
+    window.clearTimeout(timer);
+  }
+}
+
+function setBusy(value) {
+  state.busy = value;
+
+  const executeButton =
+    byId("executeImportButton");
+
+  const closeButton =
+    byId("closeImportDialogButton");
+
+  const progress =
+    byId("importProgress");
+
+  if (executeButton) {
+    executeButton.disabled = value;
+  }
+
+  if (closeButton) {
+    closeButton.disabled = value;
+  }
+
+  if (progress) {
+    progress.hidden = !value;
+  }
+}
+
+function showResult(value, isError = false) {
+  const result = byId("importResult");
+
+  if (!result) {
+    return;
+  }
+
+  result.hidden = false;
+  result.classList.toggle(
+    "error",
+    isError
+  );
+
+  result.textContent =
+    typeof value === "string"
+      ? value
+      : JSON.stringify(
+          value,
+          null,
+          2
+        );
+}
+
+function selectedTarget(config) {
+  const select = byId("importTarget");
+  const key = select?.value;
+
+  return config.targets.find(
+    (target) => target.key === key
+  ) || null;
+}
+
+function updateSourceLayer(config) {
+  const target =
+    selectedTarget(config);
+
+  const sourceInput =
+    byId("importSourceLayer");
+
+  if (sourceInput) {
+    sourceInput.value =
+      target?.sourceLayer ||
+      target?.key ||
+      "";
+  }
+}
+
+function resetResult() {
+  const result = byId("importResult");
+
+  if (result) {
+    result.hidden = true;
+    result.textContent = "";
+    result.classList.remove("error");
+  }
+}
+
+/**
+ * Initializes the Import modal.
+ *
+ * @param {(result: object, target: object) => Promise<void>|void} done
+ */
+export function initializeImport(
+  done = () => {}
+) {
+  const config =
+    CONFIG.dataImport;
+
+  const modal =
+    byId("importModal");
+
+  const targetSelect =
+    byId("importTarget");
+
+  if (
+    !config?.enabled ||
+    !modal ||
+    !targetSelect
+  ) {
+    return;
+  }
+
+  targetSelect.replaceChildren();
+
+  for (const target of config.targets) {
+    const option =
+      document.createElement("option");
+
+    option.value = target.key;
+    option.textContent = target.label;
+
+    targetSelect.append(option);
+  }
+
+  const modeSelect =
+    byId("importMode");
+
+  if (modeSelect) {
+    modeSelect.value =
+      config.defaultMode ||
+      "replace";
+  }
+
+  updateSourceLayer(config);
+
+  const close = () => {
+    if (!state.busy) {
+      modal.hidden = true;
+    }
+  };
+
+  byId("importButton").onclick = () => {
+    resetResult();
+    updateSourceLayer(config);
+    modal.hidden = false;
+  };
+
+  byId(
+    "closeImportDialogButton"
+  ).onclick = close;
+
+  modal
+    .querySelectorAll(
+      "[data-import-close]"
+    )
+    .forEach(
+      (element) => {
+        element.onclick = close;
+      }
+    );
+
+  targetSelect.onchange = () => {
+    resetResult();
+    updateSourceLayer(config);
+  };
+
+  byId("importFile").onchange =
+    resetResult;
+
+  byId("executeImportButton").onclick =
+    async () => {
+      const file =
+        byId("importFile")
+          .files?.[0];
+
+      const target =
+        selectedTarget(config);
+
+      const mode =
+        byId("importMode").value;
+
+      const sourceLayer =
+        byId("importSourceLayer")
+          .value.trim();
+
+      if (!target) {
+        showResult(
+          "Select a target layer.",
+          true
+        );
+        return;
+      }
+
+      if (!file) {
+        showResult(
+          "Select a GeoPackage file.",
+          true
+        );
+        return;
+      }
+
+      if (
+        !file.name
+          .toLowerCase()
+          .endsWith(".gpkg")
+      ) {
+        showResult(
+          "Only .gpkg files are accepted.",
+          true
+        );
+        return;
+      }
+
+      if (
+        file.size >
+        config.maxFileSizeMb *
+          1024 *
+          1024
+      ) {
+        showResult(
+          `Maximum file size is ${config.maxFileSizeMb} MB.`,
+          true
+        );
+        return;
+      }
+
+      if (!sourceLayer) {
+        showResult(
+          "Enter the source layer name inside the GeoPackage.",
+          true
+        );
+        return;
+      }
+
+      const warning =
+        mode === "replace"
+          ? (
+              `REPLACE ${target.label}?\n\n` +
+              "All existing records in the target table will be deleted before import."
+            )
+          : (
+              `ADD records to ${target.label}?`
+            );
+
+      if (!window.confirm(warning)) {
+        return;
+      }
+
+      resetResult();
+      setBusy(true);
+
+      try {
+        const formData =
+          new FormData();
+
+        formData.append(
+          "target",
+          target.key
+        );
+
+        formData.append(
+          "mode",
+          mode
+        );
+
+        formData.append(
+          "source_layer",
+          sourceLayer
+        );
+
+        formData.append(
+          "file",
+          file
+        );
+
+        const result =
+          await requestImport(
+            config.endpoint,
+            {
+              method: "POST",
+              body: formData
+            }
+          );
+
+        showResult(result);
+
+        await done(
+          result,
+          target
+        );
+      } catch (error) {
+        showResult(
+          error.name === "AbortError"
+            ? "Import timed out."
+            : error.message,
+          true
+        );
+      } finally {
+        setBusy(false);
+      }
+    };
+}
