@@ -1,5 +1,5 @@
 /**
- * FIMS Cloud Ver.3.5 - Forest Constraints Import
+ * FIMS Cloud Ver.3.5.1 - Large Map Hotfix
  */
 
 import { CONFIG } from "./config.js";
@@ -567,23 +567,6 @@ async function initialize() {
         setStatus(
           "Latest GeoServer WMS layer refreshed."
         );
-      }
-    );
-
-          setStatus(
-            "Map zoomed to the selected Province."
-          );
-        } else {
-          mapManager.zoomToPng(
-            {
-              notify: false
-            }
-          );
-
-          setStatus(
-            "Map zoomed to PNG extent."
-          );
-        }
       }
     );
 

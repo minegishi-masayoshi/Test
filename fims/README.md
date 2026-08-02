@@ -34,11 +34,11 @@ The concession master in `js/data.js` is prototype data. Replace it with
 PostGIS/API results when the backend is implemented.
 
 
-## Ver.3.5.0
+## Ver.3.4.0
 Automatic zoom on Province, Concession and FMU selection is disabled.
 
 
-## Ver.3.5.0 Timber Volume API
+## Ver.3.4.0 Timber Volume API
 
 The Timber Volume functions are connected to the OCI FastAPI service:
 
@@ -49,7 +49,7 @@ Zone updates use `PUT /timber-volumes/zone`. Individual FMU updates use
 read-only fallback when the API cannot be reached.
 
 
-## Ver.3.5.0 — Individual FMU Timber Volume
+## Ver.3.4.0 — Individual FMU Timber Volume
 
 Select an FMU row, click **Update Timber Volume for FMU**, enter the revised
 value, and confirm. FIMS Cloud calls the secured FastAPI endpoint, recalculates
@@ -57,7 +57,7 @@ the FMU, sets the individual-update protection flag, and refreshes the Province
 FMU list and Summary.
 
 
-## Ver.3.5.0 — Browser Draft removed
+## Ver.3.4.0 — Browser Draft removed
 
 The **Save Browser Draft** function has been completely removed.
 
@@ -68,7 +68,7 @@ The **Save Browser Draft** function has been completely removed.
 - **Update Zone Volumes** writes changes directly to PostgreSQL through FastAPI.
 
 
-## Ver.3.5.0 — Large Map MVP
+## Ver.3.4.0 — Large Map MVP
 
 - Removed the embedded Province Map panel from the main analysis screen.
 - Added `large-map.html`, opened from **Large Map** in a separate browser window.
