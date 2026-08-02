@@ -67,7 +67,7 @@ import {
  * ============================================================
  */
 
-export const APP_VERSION = "3.4.0";
+export const APP_VERSION = "3.5.2";
 
 export const APP_STATUS = Object.freeze({
   IDLE: "idle",
@@ -849,6 +849,27 @@ export class ApplicationController {
       this.config.provinceScreen
         ?.elements?.mapContainer ||
       "map";
+
+    /*
+     * index.html is primarily the Province/FMU/Concession analysis
+     * screen and currently has no embedded Leaflet map container.
+     *
+     * Previous versions still created FimsMap, leaving a manager
+     * object whose internal `map` property was null. Concession then
+     * called setWmsLayerFilter(), which attempted map.getPane() and
+     * stopped the module.
+     *
+     * Treat the map as an optional capability on screens without the
+     * configured element. Large Map continues to initialize normally
+     * in large-map.html.
+     */
+    if (!document.getElementById(mapElementId)) {
+      this.mapManager = null;
+      console.info(
+        `[FIMS map] Optional map element '#${mapElementId}' is not present on this screen.`
+      );
+      return;
+    }
 
     const mapOptions = {
       elementId: mapElementId,

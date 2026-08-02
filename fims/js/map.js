@@ -1111,6 +1111,10 @@ export class FimsMap {
    * @returns {L.TileLayer.WMS|null}
    */
   createWmsLayer(layerKey) {
+    if (!this.map || this.destroyed) {
+      return null;
+    }
+
     const definition =
       getLayerConfig(layerKey);
 
@@ -1322,6 +1326,10 @@ export class FimsMap {
     layerKey,
     cqlFilter
   ) {
+    if (!this.map || this.destroyed) {
+      return false;
+    }
+
     let layer =
       this.wmsLayers.get(layerKey);
 
