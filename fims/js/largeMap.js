@@ -1,5 +1,5 @@
 /**
- * FIMS Cloud Ver.3.4 - Review Workflow
+ * FIMS Cloud Ver.3.5 - Forest Constraints Import
  */
 
 import { CONFIG } from "./config.js";
@@ -83,11 +83,6 @@ const dom = {
   refreshImportedLayer:
     document.getElementById(
       "refreshImportedLayerButton"
-    ),
-
-  zoomProvince:
-    document.getElementById(
-      "zoomProvinceButton"
     ),
 
   continueCalculate:
@@ -237,6 +232,18 @@ const layerGroups = [
       "loggedNotLandUseCurrent",
       "loggedLandUseCurrent",
       "landUseNotLoggedCurrent"
+    ]
+  },
+  {
+    title: "Forest Constraints",
+    keys: [
+      "extremeSlope",
+      "extremeAltitude",
+      "extremeKarst",
+      "extremeInundation",
+      "extremeMangrove",
+      "seriousSlopeRelief",
+      "seriousInundation"
     ]
   }
 ];
@@ -562,22 +569,6 @@ async function initialize() {
         );
       }
     );
-
-  dom.zoomProvince
-    .addEventListener(
-      "click",
-      () => {
-        if (
-          state.selectedProvince
-        ) {
-          mapManager.selectProvince(
-            state.selectedProvince,
-            {
-              zoom: true,
-              openPopup: false,
-              notify: false
-            }
-          );
 
           setStatus(
             "Map zoomed to the selected Province."

@@ -1306,7 +1306,17 @@ const CONFIG = {
       "concession",
       "fmu",
       "protectedArea",
-      "loggingArea"
+      "loggedNotLandUseCurrent",
+      "loggedLandUseCurrent",
+      "landUseNotLoggedCurrent",
+      "planArea",
+      "extremeSlope",
+      "extremeAltitude",
+      "extremeKarst",
+      "extremeInundation",
+      "extremeMangrove",
+      "seriousSlopeRelief",
+      "seriousInundation"
     ],
 
     defaultVisibleLayers: [
@@ -1492,6 +1502,104 @@ const CONFIG = {
       queryable: false,
       opacity: 0.62,
       zIndex: 740
+    },
+
+    extremeSlope: {
+      key: "extremeSlope",
+      label: "Extreme Slope",
+      workspace: "fims",
+      name: "extreme_slope",
+      qualifiedName: "fims:extreme_slope",
+      service: "wms",
+      enabled: true,
+      visible: false,
+      queryable: false,
+      opacity: 0.55,
+      zIndex: 810
+    },
+
+    extremeAltitude: {
+      key: "extremeAltitude",
+      label: "Extreme Altitude",
+      workspace: "fims",
+      name: "extreme_altitude",
+      qualifiedName: "fims:extreme_altitude",
+      service: "wms",
+      enabled: true,
+      visible: false,
+      queryable: false,
+      opacity: 0.55,
+      zIndex: 820
+    },
+
+    extremeKarst: {
+      key: "extremeKarst",
+      label: "Extreme Karst",
+      workspace: "fims",
+      name: "extreme_karst",
+      qualifiedName: "fims:extreme_karst",
+      service: "wms",
+      enabled: true,
+      visible: false,
+      queryable: false,
+      opacity: 0.55,
+      zIndex: 830
+    },
+
+    extremeInundation: {
+      key: "extremeInundation",
+      label: "Extreme Inundation",
+      workspace: "fims",
+      name: "extreme_inundation",
+      qualifiedName: "fims:extreme_inundation",
+      service: "wms",
+      enabled: true,
+      visible: false,
+      queryable: false,
+      opacity: 0.55,
+      zIndex: 840
+    },
+
+    extremeMangrove: {
+      key: "extremeMangrove",
+      label: "Extreme Mangrove",
+      workspace: "fims",
+      name: "extreme_mangrove",
+      qualifiedName: "fims:extreme_mangrove",
+      service: "wms",
+      enabled: true,
+      visible: false,
+      queryable: false,
+      opacity: 0.55,
+      zIndex: 850
+    },
+
+    seriousSlopeRelief: {
+      key: "seriousSlopeRelief",
+      label: "Serious Slope Relief",
+      workspace: "fims",
+      name: "serious_sloperelief",
+      qualifiedName: "fims:serious_sloperelief",
+      service: "wms",
+      enabled: true,
+      visible: false,
+      queryable: false,
+      opacity: 0.55,
+      zIndex: 860
+    },
+
+    seriousInundation: {
+      key: "seriousInundation",
+      label: "Serious Inundation",
+      workspace: "fims",
+      name: "serious_inundation",
+      qualifiedName: "fims:serious_inundation",
+      service: "wms",
+      enabled: true,
+      visible: false,
+      queryable: false,
+      opacity: 0.55,
+      zIndex: 870
     }
   },
 
@@ -1768,6 +1876,48 @@ const CONFIG = {
         label: "Plan Area",
         sourceLayer: "planarea",
         mapLayerKey: "planArea"
+      },
+      {
+        key: "extreme_slope",
+        label: "Extreme Slope",
+        sourceLayer: "extreme_slope",
+        mapLayerKey: "extremeSlope"
+      },
+      {
+        key: "extreme_altitude",
+        label: "Extreme Altitude",
+        sourceLayer: "extreme_altitude",
+        mapLayerKey: "extremeAltitude"
+      },
+      {
+        key: "extreme_karst",
+        label: "Extreme Karst",
+        sourceLayer: "extreme_karst",
+        mapLayerKey: "extremeKarst"
+      },
+      {
+        key: "extreme_inundation",
+        label: "Extreme Inundation",
+        sourceLayer: "extreme_inundation",
+        mapLayerKey: "extremeInundation"
+      },
+      {
+        key: "extreme_mangrove",
+        label: "Extreme Mangrove",
+        sourceLayer: "extreme_mangrove",
+        mapLayerKey: "extremeMangrove"
+      },
+      {
+        key: "serious_sloperelief",
+        label: "Serious Slope Relief",
+        sourceLayer: "serious_sloperelief",
+        mapLayerKey: "seriousSlopeRelief"
+      },
+      {
+        key: "serious_inundation",
+        label: "Serious Inundation",
+        sourceLayer: "serious_inundation",
+        mapLayerKey: "seriousInundation"
       }
     ]
   },
