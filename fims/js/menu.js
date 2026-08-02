@@ -161,9 +161,9 @@ export const MENU_ITEMS = Object.freeze([
     configModuleKey: "largeMap",
     label: "Large Map",
     icon: "▣",
-    title: "Open the Province map in a larger view",
+    title: "Open the Large Map in a separate window",
     description:
-      "Expand the current FIMS map for detailed inspection.",
+      "Open the GIS viewer with Province, FMU, Concession and Forest Base Map layers.",
     type: MENU_ITEM_TYPE.ACTION,
     enabledByDefault: true,
     activeByDefault: false,
@@ -971,7 +971,7 @@ export class MenuManager {
         return false;
       }
     } else {
-      this.toggleLargeMapLayout();
+      this.openUrl("./large-map.html", "fimsLargeMap");
     }
 
     await this.invokeSelectCallback(

@@ -202,10 +202,12 @@ const CONFIG = {
     largeMap: {
       key: "large-map",
       label: "Large Map",
-      enabled: false,
-      implemented: false,
+      enabled: true,
+      implemented: true,
       initial: false,
-      type: "internal"
+      type: "external",
+      url: "./large-map.html",
+      target: "fimsLargeMap"
     },
 
     assessmentByFips: {

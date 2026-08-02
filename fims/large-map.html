@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FIMS Cloud - Large Map</title>
+  <meta name="robots" content="noindex, nofollow, noarchive" />
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com; connect-src 'self' https:; img-src 'self' data: blob: https:; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self';" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="./css/main.css?v=2.8.0" />
+</head>
+<body class="large-map-page">
+  <div class="large-map-shell">
+    <header class="large-map-header">
+      <div class="large-map-title-block">
+        <h1>FIMS Cloud - Large Map</h1>
+        <p>Display-only MVP · GeoServer WMS/WFS · Ver.2.8.0</p>
+      </div>
+      <div class="large-map-header-actions" aria-label="Large Map functions">
+        <button id="fmuCalculationButton" type="button" disabled title="Scheduled for a later implementation phase">FMU Calculation</button>
+        <button id="importButton" type="button" disabled title="Scheduled for a later implementation phase">Import</button>
+        <button id="pngExtentButton" type="button">PNG Extent</button>
+        <button id="closeLargeMapButton" type="button">Close</button>
+      </div>
+    </header>
+
+    <main class="large-map-workspace">
+      <aside class="large-map-sidebar" aria-label="Large Map controls">
+        <section>
+          <h2>Current Scope</h2>
+          <div class="large-map-sidebar-body large-map-scope">
+            <span>Province: <strong id="largeMapProvince">All Provinces</strong></span>
+            <span>FMU: <strong id="largeMapFmu">Not selected</strong></span>
+          </div>
+        </section>
+
+        <section>
+          <h2>Contents</h2>
+          <div class="large-map-sidebar-body">
+            <div id="largeMapLayerList" class="large-map-layer-list" aria-label="Map layers"></div>
+          </div>
+        </section>
+
+        <section>
+          <h2>MVP Scope</h2>
+          <div class="large-map-sidebar-body">
+            <p class="control-note">This version provides map display, layer visibility, Province/FMUs focus and PNG extent. Import and FMU Calculation are shown as future functions and do not update the database.</p>
+          </div>
+        </section>
+      </aside>
+
+      <section class="large-map-canvas-wrap" aria-label="Interactive Large Map">
+        <div id="largeMap" role="application" aria-label="FIMS Large Map"></div>
+        <div id="largeMapMessage" class="large-map-message" role="status" aria-live="polite">Initializing Large Map…</div>
+      </section>
+    </main>
+
+    <footer class="large-map-footer">
+      <span id="largeMapStatus">Starting…</span>
+      <span id="largeMapCoordinate">Lat: — / Lon: —</span>
+    </footer>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script type="module" src="./js/largeMap.js?v=2.8.0"></script>
+</body>
+</html>

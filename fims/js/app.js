@@ -67,7 +67,7 @@ import {
  * ============================================================
  */
 
-export const APP_VERSION = "2.7.0";
+export const APP_VERSION = "2.8.0";
 
 export const APP_STATUS = Object.freeze({
   IDLE: "idle",
@@ -4823,31 +4823,45 @@ export class ApplicationController {
    * Opens or toggles Large Map mode.
    */
   openLargeMap() {
-    if (
-      typeof this.menuManager
-        ?.toggleLargeMapLayout ===
-      "function"
-    ) {
-      const expanded =
-        this.menuManager
-          .toggleLargeMapLayout();
+    const url = new URL(
+      "./large-map.html",
+      window.location.href
+    );
 
-      this.invalidateMapSize();
-
-      return expanded;
+    if (this.selectedProvince) {
+      url.searchParams.set(
+        "province",
+        String(this.getProvinceId(this.selectedProvince))
+      );
+      url.searchParams.set(
+        "provinceName",
+        this.getProvinceName(this.selectedProvince)
+      );
     }
 
-    const mapPanel =
-      this.dom.mapContainer
-        ?.closest(".map-panel");
+    if (this.selectedFmu) {
+      url.searchParams.set(
+        "fmu",
+        String(this.getFmuId(this.selectedFmu))
+      );
+    }
 
-    mapPanel?.scrollIntoView({
-      behavior: "smooth",
-      block: "start"
-    });
+    const largeMapWindow = window.open(
+      url.toString(),
+      "fimsLargeMap"
+    );
 
-    this.invalidateMapSize();
+    if (!largeMapWindow) {
+      this.setStatus(
+        "Large Map could not be opened. Allow pop-ups for this site."
+      );
+      return false;
+    }
 
+    largeMapWindow.focus();
+    this.setStatus(
+      "Large Map opened in a separate window."
+    );
     return true;
   }
 

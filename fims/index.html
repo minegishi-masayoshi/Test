@@ -12,7 +12,7 @@
 
   <meta
     name="description"
-    content="PNG Forest Authority Forest Information and Mapping System Cloud Version 2.7.0"
+    content="PNG Forest Authority Forest Information and Mapping System Cloud Version 2.8.0"
   />
 
   <meta
@@ -42,7 +42,7 @@
 
   <!--
     ============================================================
-    FIMS Cloud Ver.2.7.0
+    FIMS Cloud Ver.2.8.0
     GitHub Pages Content Security Policy
     ============================================================
 
@@ -83,22 +83,22 @@
        ======================================================== -->
   <link
     rel="stylesheet"
-    href="./css/main.css?v=2.7.0"
+    href="./css/main.css?v=2.8.0"
   />
 </head>
 
 <body>
   <!--
     ============================================================
-    FIMS Cloud Ver.2.7.0
+    FIMS Cloud Ver.2.8.0
     Province Selection Screen
 
     Current implementation:
       1. Province selection
       2. FMU listing
-      3. Province map
-      4. Province Summary
-      5. Legacy FIMS Report Catalog
+      3. Province Summary
+      4. Legacy FIMS Report Catalog
+      5. Large Map in a separate browser window
 
     Deferred modules:
       - Concession
@@ -111,7 +111,7 @@
   <div
     id="fims-app"
     class="app-shell"
-    data-fims-version="2.7.0"
+    data-fims-version="2.8.0"
   >
     <!-- ======================================================
          Application header
@@ -128,7 +128,7 @@
             class="version-badge"
             data-app-version
           >
-            Ver.2.7.0
+            Ver.2.8.0
           </span>
         </div>
 
@@ -174,7 +174,7 @@
         aria-atomic="true"
         data-app-status
       >
-        Starting FIMS Cloud Ver.2.7.0…
+        Starting FIMS Cloud Ver.2.8.0…
       </div>
     </section>
 
@@ -502,121 +502,6 @@
             </p>
           </div>
         </article>
-
-        <!-- ==================================================
-             Province overview map
-             Old FIMS No.16
-             ================================================== -->
-        <article
-          id="provinceMapPanel"
-          class="panel map-panel"
-          data-panel="map"
-        >
-          <div class="panel-header">
-            <div>
-              <h3>
-                Province Map
-              </h3>
-
-              <small
-                id="mapSubtitle"
-                data-map-subtitle
-              >
-                Papua New Guinea
-              </small>
-            </div>
-          </div>
-
-          <div class="panel-body map-panel-body">
-            <div class="map-container-wrap">
-              <div
-                id="map"
-                class="map-container"
-                role="application"
-                aria-label="Interactive map of Papua New Guinea Provinces and FMUs"
-                aria-expanded="false"
-                data-fims-map
-              ></div>
-
-              <div
-                id="mapLoading"
-                class="map-overlay"
-                role="status"
-                aria-live="polite"
-                hidden
-              >
-                Loading map…
-              </div>
-
-              <div
-                id="mapError"
-                class="map-overlay map-error"
-                role="alert"
-                hidden
-              >
-                The map could not be displayed.
-              </div>
-            </div>
-
-            <!-- ==============================================
-                 Map footer
-                 ============================================== -->
-            <div class="map-footer">
-              <div
-                id="layerList"
-                class="compact-layers"
-                aria-label="Map layers"
-                data-layer-list
-              >
-                <!-- Rendered by map.js or app.js -->
-              </div>
-
-              <div
-                class="map-actions"
-                aria-label="Map actions"
-              >
-                <button
-                  id="homeExtentButton"
-                  type="button"
-                  class="secondary-button"
-                  data-action="home-extent"
-                >
-                  PNG Extent
-                </button>
-
-                <button
-                  id="clearLayersButton"
-                  type="button"
-                  class="secondary-button"
-                  data-action="clear-layers"
-                  title="Hide optional map layers"
-                >
-                  Clear Layers
-                </button>
-
-                <button
-                  id="clearMapSelectionButton"
-                  type="button"
-                  class="secondary-button"
-                  data-action="clear-map-selection"
-                  title="Clear the selected Province and FMU"
-                >
-                  Clear Selection
-                </button>
-              </div>
-            </div>
-
-            <!-- ==============================================
-                 Coordinate help
-                 ============================================== -->
-            <p
-              id="map-coordinate-help"
-              class="sr-only"
-            >
-              Pointer coordinates are displayed in the footer.
-            </p>
-          </div>
-        </article>
       </section>
 
       <!-- ====================================================
@@ -918,7 +803,7 @@
         id="statusText"
         data-app-status
       >
-        Starting FIMS Cloud Ver.2.7.0…
+        Starting FIMS Cloud Ver.2.8.0…
       </span>
 
       <span
@@ -1198,7 +1083,7 @@
        ======================================================== -->
   <script
     type="module"
-    src="./js/app.js?v=2.7.0"
+    src="./js/app.js?v=2.8.0"
   ></script>
 </body>
 </html>
