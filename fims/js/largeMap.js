@@ -1,5 +1,5 @@
 /**
- * FIMS Cloud Ver.2.8.0 - Standalone Large Map MVP
+ * FIMS Cloud Ver.2.8.1 - Standalone Large Map MVP
  */
 import { CONFIG } from "./config.js";
 import * as DataModule from "./data.js";

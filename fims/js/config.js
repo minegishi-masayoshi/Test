@@ -1816,7 +1816,8 @@ function buildWfsGetFeatureUrl(options = {}) {
     version: CONFIG.geoserver.services.wfs.version,
     request: "GetFeature",
     typeNames: resolvedTypeName,
-    outputFormat: CONFIG.geoserver.services.wfs.outputFormat
+    outputFormat: CONFIG.geoserver.services.wfs.outputFormat,
+    srsName: "EPSG:4326"
   });
 
   if (cqlFilter) {
