@@ -1,9 +1,9 @@
 /**
  * FIMS Cloud report engine.
- * Ver.3.8.7: robust jsPDF-AutoTable UMD integration for GitHub Pages.
+ * Ver.3.8.8: local table plugin integration for stable GitHub Pages PDF output.
  * Uses the same browser-side jsPDF + jsPDF-AutoTable approach as FIPS.
  */
-export const REPORT_ENGINE_VERSION = "3.8.7";
+export const REPORT_ENGINE_VERSION = "3.8.8";
 
 const SUPPORTED_REPORT_ID = "province-constraint";
 
@@ -43,7 +43,6 @@ export class ReportEngine {
 
     const model = this.buildModel(context);
     const doc = new jsPDFClass({ orientation: "portrait", unit: "mm", format: "a4", compress: true });
-    this.prepareAutoTable(doc, jsPDFClass);
     this.drawCompactReport(doc, model);
     this.addFooter(doc, model);
 
@@ -52,64 +51,11 @@ export class ReportEngine {
     this.onStatus(`PDF exported: ${model.title} for ${model.provinceName}.`);
   }
 
-  prepareAutoTable(doc, jsPDFClass) {
-    if (typeof doc?.autoTable === "function") return;
-
-    const globals = [
-      window.jspdfAutoTable,
-      window.jspdfAutotable,
-      window.jspdf_autotable,
-      window.autoTable
-    ].filter(Boolean);
-
-    for (const candidate of globals) {
-      try {
-        const applyPlugin = candidate?.applyPlugin || candidate?.default?.applyPlugin;
-        if (typeof applyPlugin === "function") {
-          applyPlugin(jsPDFClass);
-          if (typeof doc.autoTable === "function") return;
-        }
-      } catch (error) {
-        console.warn("[FIMS report] AutoTable applyPlugin fallback failed", error);
-      }
-    }
-
-    const callable = globals.some((candidate) =>
-      typeof candidate === "function" ||
-      typeof candidate?.autoTable === "function" ||
-      typeof candidate?.default === "function"
-    );
-
-    if (!callable) {
-      throw new Error("jsPDF-AutoTable was not loaded.");
-    }
-  }
-
   runAutoTable(doc, options) {
-    if (typeof doc?.autoTable === "function") {
-      doc.autoTable(options);
-      return;
+    if (typeof doc?.autoTable !== "function") {
+      throw new Error("The local PDF table plugin was not loaded.");
     }
-
-    const globals = [
-      window.jspdfAutoTable,
-      window.jspdfAutotable,
-      window.jspdf_autotable,
-      window.autoTable
-    ].filter(Boolean);
-
-    for (const candidate of globals) {
-      const fn =
-        (typeof candidate === "function" && candidate) ||
-        candidate?.autoTable ||
-        (typeof candidate?.default === "function" && candidate.default);
-      if (typeof fn === "function") {
-        fn(doc, options);
-        return;
-      }
-    }
-
-    throw new Error("jsPDF-AutoTable was not loaded.");
+    doc.autoTable(options);
   }
 
   buildModel(context) {
