@@ -40,7 +40,7 @@ const CONFIG = {
     name: "FIMS Cloud",
     fullName: "Forest Information and Mapping System",
     organization: "PNG Forest Authority",
-    version: "Ver.3.8.2",
+    version: "Ver.3.8.3",
     build: "2.0.0",
     environment: "MVP",
     language: "en",
@@ -1876,7 +1876,7 @@ const CONFIG = {
         "/summary/all"
     },
     timeoutMs: 1800000,
-    calculationVersion: "3.8.2"
+    calculationVersion: "3.8.3"
   },
 
   dataImport: {

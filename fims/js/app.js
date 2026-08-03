@@ -60,14 +60,14 @@ import {
 
 import {
   ReportEngine
-} from "./reportEngine.js?v=3.8.2";
+} from "./reportEngine.js?v=3.8.3";
 
 /* ============================================================
  * 1. Application constants
  * ============================================================
  */
 
-export const APP_VERSION = "3.8.2";
+export const APP_VERSION = "3.8.3";
 
 export const APP_STATUS = Object.freeze({
   IDLE: "idle",
@@ -4332,6 +4332,8 @@ export class ApplicationController {
               this.selectedProvince,
             fmus:
               [...this.fmus],
+            provinces:
+              [...this.provinces],
             summary:
               this.summaryManager
                 ?.getSummary() ??
