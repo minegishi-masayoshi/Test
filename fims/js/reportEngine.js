@@ -1,9 +1,9 @@
 /**
  * FIMS Cloud report engine.
- * Ver.3.8.0: first production-style PDF output using the same approach as FIPS:
+ * Ver.3.8.1: first production-style PDF output using the same approach as FIPS:
  * jsPDF + jsPDF-AutoTable, generated in the browser with fixed A4 coordinates.
  */
-export const REPORT_ENGINE_VERSION = "3.8.0";
+export const REPORT_ENGINE_VERSION = "3.8.1";
 
 const SUPPORTED_REPORT_ID = "province-constraint";
 
@@ -89,7 +89,11 @@ export class ReportEngine {
 
     const jsPDFClass = window.jspdf?.jsPDF;
     if (!jsPDFClass) {
-      throw new Error("jsPDF was not loaded.");
+      throw new Error("jsPDF was not loaded. Check that the pinned unpkg library is reachable and not blocked by CSP or the browser cache.");
+    }
+
+    if (typeof jsPDFClass.API?.autoTable !== "function") {
+      throw new Error("jsPDF-AutoTable was not loaded. Check the pinned unpkg library and reload the page without cache.");
     }
 
     const model = this.buildModel(context);
