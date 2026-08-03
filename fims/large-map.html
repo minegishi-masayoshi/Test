@@ -8,14 +8,14 @@
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com; connect-src 'self' https:; img-src 'self' data: blob: https:; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self';" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="./css/main.css?v=3.5.1" />
+  <link rel="stylesheet" href="./css/main.css?v=3.6.0" />
 </head>
 <body class="large-map-page">
   <div class="large-map-shell">
     <header class="large-map-header">
       <div class="large-map-title-block">
         <h1>FIMS Cloud - Large Map</h1>
-        <p>GIS Data Update Workflow · Ver.3.5.1</p>
+        <p>GIS Data Update Workflow · Ver.3.6.0</p>
       </div>
 
       <div class="large-map-header-actions" aria-label="Map utilities">
@@ -223,7 +223,48 @@
     </section>
   </div>
 
+
+  <div id="calculationModal" class="review-modal" hidden>
+    <div class="review-modal-backdrop" data-calculation-close></div>
+    <section class="review-dialog calculation-dialog" role="dialog" aria-modal="true" aria-labelledby="calculationDialogTitle">
+      <header class="review-dialog-header">
+        <div>
+          <h2 id="calculationDialogTitle">3. Calculate Forest Constraints</h2>
+          <p>Run the legacy-compatible FMU analysis for the selected Province.</p>
+        </div>
+        <button id="closeCalculationDialogButton" type="button">Close</button>
+      </header>
+      <div class="review-dialog-body">
+        <div id="calculationStatusBanner" class="review-status-banner">
+          Select a Province before starting calculation.
+        </div>
+        <dl class="review-summary calculation-summary">
+          <div><dt>Province</dt><dd id="calculationProvince">—</dd></div>
+          <div><dt>FMUs updated</dt><dd id="calculationFmuCount">—</dd></div>
+          <div><dt>Extreme Slope</dt><dd id="resultExtremeSlope">—</dd></div>
+          <div><dt>Extreme Altitude</dt><dd id="resultExtremeAltitude">—</dd></div>
+          <div><dt>Extreme Karst</dt><dd id="resultExtremeKarst">—</dd></div>
+          <div><dt>Extreme Inundation</dt><dd id="resultExtremeInundation">—</dd></div>
+          <div><dt>Extreme Mangrove</dt><dd id="resultExtremeMangrove">—</dd></div>
+          <div><dt>Serious Slope Relief</dt><dd id="resultSeriousSlopeRelief">—</dd></div>
+          <div><dt>Serious Inundation</dt><dd id="resultSeriousInundation">—</dd></div>
+          <div><dt>Extreme Union</dt><dd id="resultExtremeTotal">—</dd></div>
+          <div><dt>Serious Union</dt><dd id="resultSeriousTotal">—</dd></div>
+          <div><dt>Calculated</dt><dd id="resultCalculatedAt">—</dd></div>
+        </dl>
+        <div id="calculationProgress" class="import-progress" hidden>
+          <span></span>
+          <strong>Calculating FMU intersections and union areas…</strong>
+        </div>
+        <div class="review-actions">
+          <button id="executeCalculationButton" class="primary" type="button">Execute Calculate</button>
+          <button id="refreshCalculationResultsButton" type="button">Refresh Results</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script type="module" src="./js/largeMap.js?v=3.5.2"></script>
+  <script type="module" src="./js/largeMap.js?v=3.6.0"></script>
 </body>
 </html>

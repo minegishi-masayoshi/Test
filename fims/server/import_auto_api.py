@@ -1,5 +1,5 @@
 """
-FIMS Cloud Ver.3.5.0
+FIMS Cloud Ver.3.6.0
 Automatic GeoPackage -> PostGIS -> GeoServer import API.
 
 Mount this router in the existing FastAPI application:

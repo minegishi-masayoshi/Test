@@ -3211,3 +3211,18 @@ body.large-map-page {
     flex: 1 1 100%;
   }
 }
+
+
+/* FIMS Cloud Ver.3.6 - Constraint Analysis */
+.calculation-dialog {
+  width: min(820px, 96vw);
+}
+
+.calculation-summary dd {
+  font-variant-numeric: tabular-nums;
+}
+
+.calculation-summary > div:nth-last-child(-n + 3) dd {
+  font-weight: 700;
+  color: #185a33;
+}

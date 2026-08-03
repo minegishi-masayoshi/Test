@@ -40,7 +40,7 @@ const CONFIG = {
     name: "FIMS Cloud",
     fullName: "Forest Information and Mapping System",
     organization: "PNG Forest Authority",
-    version: "Ver.3.5.2",
+    version: "Ver.3.6.0",
     build: "2.0.0",
     environment: "MVP",
     language: "en",
@@ -1832,6 +1832,20 @@ const CONFIG = {
     showDetailedErrors: true
   },
 
+
+  constraintAnalysis: {
+    enabled: true,
+    apiBaseUrl:
+      "https://140-245-124-203.sslip.io/api/constraints",
+    endpoints: {
+      calculateProvince:
+        "/calculate/province/{province}",
+      provinceSummary:
+        "/summary/province/{province}"
+    },
+    timeoutMs: 1800000,
+    calculationVersion: "3.6.0"
+  },
 
   dataImport: {
     enabled: true,

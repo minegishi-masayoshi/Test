@@ -261,6 +261,7 @@ export const OLD_FIMS_SUMMARY_FIELDS = Object.freeze([
     aggregation: SUMMARY_AGGREGATION.SUM,
     source: "fmu",
     aliases: Object.freeze([
+      "altitude",
       "ext_altitude",
       "extaltitude",
       "extent_altitude",
@@ -280,6 +281,7 @@ export const OLD_FIMS_SUMMARY_FIELDS = Object.freeze([
     aggregation: SUMMARY_AGGREGATION.SUM,
     source: "fmu",
     aliases: Object.freeze([
+      "slope",
       "ext_slope",
       "extslope",
       "extent_slope",
@@ -299,6 +301,7 @@ export const OLD_FIMS_SUMMARY_FIELDS = Object.freeze([
     aggregation: SUMMARY_AGGREGATION.SUM,
     source: "fmu",
     aliases: Object.freeze([
+      "karst",
       "ext_karst",
       "extkarst",
       "extent_karst",
@@ -318,6 +321,7 @@ export const OLD_FIMS_SUMMARY_FIELDS = Object.freeze([
     aggregation: SUMMARY_AGGREGATION.SUM,
     source: "fmu",
     aliases: Object.freeze([
+      "inundation",
       "ext_inund",
       "extinund",
       "extent_inund",
@@ -339,6 +343,7 @@ export const OLD_FIMS_SUMMARY_FIELDS = Object.freeze([
     aggregation: SUMMARY_AGGREGATION.SUM,
     source: "fmu",
     aliases: Object.freeze([
+      "mangrove",
       "ext_mangrove",
       "extmangrove",
       "extent_mangrove",
@@ -358,6 +363,7 @@ export const OLD_FIMS_SUMMARY_FIELDS = Object.freeze([
     aggregation: SUMMARY_AGGREGATION.SUM,
     source: "fmu",
     aliases: Object.freeze([
+      "sloperelie",
       "ser_sloperelief",
       "sersloperelief",
       "ser_slope_relief",
@@ -377,6 +383,7 @@ export const OLD_FIMS_SUMMARY_FIELDS = Object.freeze([
     aggregation: SUMMARY_AGGREGATION.SUM,
     source: "fmu",
     aliases: Object.freeze([
+      "inundati0",
       "ser_inund",
       "serinund",
       "service_inund",

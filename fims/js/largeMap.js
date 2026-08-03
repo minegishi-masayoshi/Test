@@ -1,5 +1,5 @@
 /**
- * FIMS Cloud Ver.3.5.1 - Large Map Hotfix
+ * FIMS Cloud Ver.3.6 - Constraint Analysis Engine
  */
 
 import { CONFIG } from "./config.js";
@@ -133,7 +133,44 @@ const dom = {
   reviewStatusBanner:
     document.getElementById(
       "reviewStatusBanner"
-    )
+    ),
+
+  calculationModal:
+    document.getElementById("calculationModal"),
+  closeCalculationDialog:
+    document.getElementById("closeCalculationDialogButton"),
+  executeCalculation:
+    document.getElementById("executeCalculationButton"),
+  refreshCalculationResults:
+    document.getElementById("refreshCalculationResultsButton"),
+  calculationProgress:
+    document.getElementById("calculationProgress"),
+  calculationStatusBanner:
+    document.getElementById("calculationStatusBanner"),
+  calculationProvince:
+    document.getElementById("calculationProvince"),
+  calculationFmuCount:
+    document.getElementById("calculationFmuCount"),
+  resultExtremeSlope:
+    document.getElementById("resultExtremeSlope"),
+  resultExtremeAltitude:
+    document.getElementById("resultExtremeAltitude"),
+  resultExtremeKarst:
+    document.getElementById("resultExtremeKarst"),
+  resultExtremeInundation:
+    document.getElementById("resultExtremeInundation"),
+  resultExtremeMangrove:
+    document.getElementById("resultExtremeMangrove"),
+  resultSeriousSlopeRelief:
+    document.getElementById("resultSeriousSlopeRelief"),
+  resultSeriousInundation:
+    document.getElementById("resultSeriousInundation"),
+  resultExtremeTotal:
+    document.getElementById("resultExtremeTotal"),
+  resultSeriousTotal:
+    document.getElementById("resultSeriousTotal"),
+  resultCalculatedAt:
+    document.getElementById("resultCalculatedAt")
 };
 
 const state = {
@@ -483,6 +520,121 @@ function closeReviewDialog() {
   dom.reviewModal.hidden = true;
 }
 
+
+function getSelectedProvinceCode() {
+  return (
+    state.selectedProvince?.provinceCode ??
+    state.selectedProvince?.province ??
+    state.selectedProvince?.code ??
+    state.selectedProvince?.id ??
+    requestedProvince ??
+    null
+  );
+}
+
+function constraintUrl(endpointTemplate) {
+  const province = getSelectedProvinceCode();
+  if (!province) {
+    throw new Error("Select a Province before calculation.");
+  }
+
+  const base =
+    CONFIG.constraintAnalysis.apiBaseUrl.replace(/\/$/, "");
+
+  return (
+    base +
+    endpointTemplate.replace(
+      "{province}",
+      encodeURIComponent(String(province))
+    )
+  );
+}
+
+function formatArea(value) {
+  const number = Number(value);
+  return Number.isFinite(number)
+    ? `${number.toLocaleString("en-US", {
+        maximumFractionDigits: 2
+      })} ha`
+    : "—";
+}
+
+function renderCalculationResult(payload) {
+  const summary = payload?.summary ?? payload ?? {};
+  setText(dom.calculationFmuCount, summary.fmu_count ?? payload?.updated_fmu_count ?? "—");
+  setText(dom.resultExtremeSlope, formatArea(summary.extreme_slope_ha));
+  setText(dom.resultExtremeAltitude, formatArea(summary.extreme_altitude_ha));
+  setText(dom.resultExtremeKarst, formatArea(summary.extreme_karst_ha));
+  setText(dom.resultExtremeInundation, formatArea(summary.extreme_inundation_ha));
+  setText(dom.resultExtremeMangrove, formatArea(summary.extreme_mangrove_ha));
+  setText(dom.resultSeriousSlopeRelief, formatArea(summary.serious_sloperelief_ha));
+  setText(dom.resultSeriousInundation, formatArea(summary.serious_inundation_ha));
+  setText(dom.resultExtremeTotal, formatArea(summary.extreme_total_ha));
+  setText(dom.resultSeriousTotal, formatArea(summary.serious_total_ha));
+  setText(
+    dom.resultCalculatedAt,
+    summary.calculated_at
+      ? new Date(summary.calculated_at).toLocaleString()
+      : "—"
+  );
+}
+
+async function requestConstraint(endpointTemplate, method = "GET") {
+  const controller = new AbortController();
+  const timer = window.setTimeout(
+    () => controller.abort(),
+    CONFIG.constraintAnalysis.timeoutMs ?? 1800000
+  );
+
+  try {
+    const response = await fetch(
+      constraintUrl(endpointTemplate),
+      {
+        method,
+        cache: "no-store",
+        signal: controller.signal
+      }
+    );
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(body.detail || `HTTP ${response.status}`);
+    }
+    return body;
+  } finally {
+    window.clearTimeout(timer);
+  }
+}
+
+async function refreshConstraintResults() {
+  const payload = await requestConstraint(
+    CONFIG.constraintAnalysis.endpoints.provinceSummary
+  );
+  renderCalculationResult(payload);
+  return payload;
+}
+
+function openCalculationDialog() {
+  const province = getSelectedProvinceCode();
+  if (!province) {
+    setStatus("Select a Province before Calculate.");
+    return;
+  }
+
+  setText(
+    dom.calculationProvince,
+    state.selectedProvince
+      ? `${province} ${getProvinceName(state.selectedProvince)}`
+      : String(province)
+  );
+  dom.calculationStatusBanner.textContent =
+    "Ready to calculate the selected Province.";
+  dom.calculationModal.hidden = false;
+}
+
+function closeCalculationDialog() {
+  dom.calculationModal.hidden = true;
+}
+
 async function initialize() {
   const mapManager =
     new FimsMap({
@@ -588,17 +740,87 @@ async function initialize() {
   dom.fmuCalculation
     .addEventListener(
       "click",
-      () => {
-        setStatus(
-          "FMU Calculation is the next implementation phase."
-        );
+      openCalculationDialog
+    );
+
+  dom.closeCalculationDialog
+    .addEventListener(
+      "click",
+      closeCalculationDialog
+    );
+
+  dom.calculationModal
+    .querySelectorAll("[data-calculation-close]")
+    .forEach((element) => {
+      element.addEventListener(
+        "click",
+        closeCalculationDialog
+      );
+    });
+
+  dom.executeCalculation
+    .addEventListener(
+      "click",
+      async () => {
+        if (!window.confirm(
+          "Calculate Forest Constraints for the selected Province? Existing FMU calculation values will be updated."
+        )) {
+          return;
+        }
+
+        dom.executeCalculation.disabled = true;
+        dom.calculationProgress.hidden = false;
+        dom.calculationStatusBanner.textContent =
+          "Calculation is running. Do not close this window.";
+
+        try {
+          const payload = await requestConstraint(
+            CONFIG.constraintAnalysis.endpoints.calculateProvince,
+            "POST"
+          );
+          renderCalculationResult(payload);
+          dom.calculationStatusBanner.textContent =
+            `Calculation completed: ${payload.updated_fmu_count} FMUs updated.`;
+          dom.reviewResults.disabled = false;
+          setWorkflowStep(4);
+          setStatus("Forest Constraint calculation completed.");
+        } catch (error) {
+          dom.calculationStatusBanner.textContent =
+            `Calculation failed: ${error.message}`;
+          setStatus(`Calculation failed: ${error.message}`);
+        } finally {
+          dom.executeCalculation.disabled = false;
+          dom.calculationProgress.hidden = true;
+        }
+      }
+    );
+
+  dom.refreshCalculationResults
+    .addEventListener(
+      "click",
+      async () => {
+        try {
+          await refreshConstraintResults();
+          dom.calculationStatusBanner.textContent =
+            "Latest calculation results loaded.";
+        } catch (error) {
+          dom.calculationStatusBanner.textContent =
+            `Results could not be loaded: ${error.message}`;
+        }
       }
     );
 
   dom.reviewResults
     .addEventListener(
       "click",
-      () => {
+      async () => {
+        openCalculationDialog();
+        try {
+          await refreshConstraintResults();
+        } catch (error) {
+          dom.calculationStatusBanner.textContent =
+            `Results could not be loaded: ${error.message}`;
+        }
         mapManager.refreshWmsLayer(
           "fmu"
         );
