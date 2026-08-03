@@ -1,9 +1,9 @@
 /**
  * FIMS Cloud report engine.
- * Ver.3.8.5: integrated visual constraint table and PDF-only report action.
+ * Ver.3.8.6: syntax hotfix for integrated constraint table and PDF-only report action.
  * Uses the same browser-side jsPDF + jsPDF-AutoTable approach as FIPS.
  */
-export const REPORT_ENGINE_VERSION = "3.8.5";
+export const REPORT_ENGINE_VERSION = "3.8.6";
 
 const SUPPORTED_REPORT_ID = "province-constraint";
 
@@ -257,7 +257,7 @@ export class ReportEngine {
         }
       }
     });
-
+  }
 
   constraintRows(model) {
     return [
