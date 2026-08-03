@@ -1,9 +1,9 @@
 /**
  * FIMS Cloud report engine.
- * Ver.3.9.0: local table plugin integration for stable GitHub Pages PDF output.
+ * Ver.3.9.1: local table plugin integration for stable GitHub Pages PDF output.
  * Uses the same browser-side jsPDF + jsPDF-AutoTable approach as FIPS.
  */
-export const REPORT_ENGINE_VERSION = "3.9.0";
+export const REPORT_ENGINE_VERSION = "3.9.1";
 
 const SUPPORTED_REPORT_ID = "province-constraint";
 
