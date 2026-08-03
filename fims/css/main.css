@@ -88,8 +88,8 @@
   --header-height: 76px;
   --status-bar-height: 34px;
 
-  --province-column-width: minmax(220px, 0.8fr);
-  --fmu-column-width: minmax(520px, 2.05fr);
+  --province-column-width: 275px;
+  --fmu-column-width: minmax(0, 1fr);
   --map-column-width: minmax(330px, 1.15fr);
 }
 
@@ -1596,8 +1596,8 @@ input:focus:not(:focus-visible) {
 
 @media (max-width: 1450px) {
   :root {
-    --province-column-width: minmax(205px, 0.72fr);
-    --fmu-column-width: minmax(465px, 1.75fr);
+    --province-column-width: 275px;
+    --fmu-column-width: minmax(0, 1fr);
     --map-column-width: minmax(300px, 1fr);
   }
 
@@ -1629,7 +1629,7 @@ input:focus:not(:focus-visible) {
 
 @media (max-width: 1120px) {
   .top-grid {
-    grid-template-columns: minmax(220px, 0.75fr) minmax(500px, 1.8fr);
+    grid-template-columns: 275px minmax(0, 1fr);
   }
 
   .map-panel {
@@ -1642,7 +1642,7 @@ input:focus:not(:focus-visible) {
   }
 
   .bottom-grid {
-    grid-template-columns: minmax(220px, 0.75fr) minmax(500px, 1.8fr);
+    grid-template-columns: 275px minmax(0, 1fr);
   }
 
   .reports-panel {
