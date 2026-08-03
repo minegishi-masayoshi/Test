@@ -1,9 +1,9 @@
 /**
  * FIMS Cloud report engine.
- * Ver.3.8.1: first production-style PDF output using the same approach as FIPS:
- * jsPDF + jsPDF-AutoTable, generated in the browser with fixed A4 coordinates.
+ * Ver.3.8.2: Province Constraint PDF value-alignment and compact A4 layout.
+ * Uses the same browser-side jsPDF + jsPDF-AutoTable approach as FIPS.
  */
-export const REPORT_ENGINE_VERSION = "3.8.1";
+export const REPORT_ENGINE_VERSION = "3.8.2";
 
 const SUPPORTED_REPORT_ID = "province-constraint";
 
@@ -20,14 +20,9 @@ export class ReportEngine {
 
   async handleReportEvent(event) {
     const context = event?.detail || {};
-    const action = context.action;
-
     try {
-      if (action === "preview") {
-        this.preview(context);
-      } else if (action === "pdf") {
-        await this.exportPdf(context);
-      }
+      if (context.action === "preview") this.preview(context);
+      if (context.action === "pdf") await this.exportPdf(context);
     } catch (error) {
       console.error("[FIMS report]", error);
       this.onStatus(`Report output failed: ${error.message}`);
@@ -41,13 +36,14 @@ export class ReportEngine {
 
   preview(context) {
     if (!this.isSupported(context)) {
-      this.renderUnsupportedPreview(context);
-      return context;
+      const host = document.getElementById("reportPreview");
+      if (host) host.innerHTML = '<div class="empty-message">PDF implementation is currently available for <strong>Province Constraint</strong>.</div>';
+      return;
     }
 
     const model = this.buildModel(context);
     const host = document.getElementById("reportPreview");
-    if (!host) return context;
+    if (!host) return;
 
     host.innerHTML = `
       <div class="fims-report-preview-card">
@@ -58,28 +54,12 @@ export class ReportEngine {
           <span><strong>FMUs:</strong> ${model.fmuCount.toLocaleString("en-US")}</span>
         </div>
         <div class="fims-report-preview-grid">
-          ${model.kpis.map((item) => `
-            <div class="fims-report-preview-kpi">
-              <span>${this.escapeHtml(item.label)}</span>
-              <strong>${this.escapeHtml(item.formatted)}</strong>
-            </div>`).join("")}
+          ${model.kpis.map((item) => `<div class="fims-report-preview-kpi"><span>${this.escapeHtml(item.label)}</span><strong>${this.escapeHtml(item.formatted)}</strong></div>`).join("")}
         </div>
-        <p class="fims-report-preview-note">
-          A4 PDF includes an executive summary, small Province map, comparison chart,
-          and legacy-compatible detailed tables.
-        </p>
+        <p class="fims-report-preview-note">Compact A4 one-page PDF. Values use the same normalized Summary object displayed on screen.</p>
       </div>`;
 
     this.onStatus(`Preview ready: ${model.title} for ${model.provinceName}.`);
-    return context;
-  }
-
-  renderUnsupportedPreview(context) {
-    const host = document.getElementById("reportPreview");
-    if (host) {
-      host.innerHTML = `<div class="empty-message">PDF implementation is currently available for <strong>Province Constraint</strong>.</div>`;
-    }
-    this.onStatus(`PDF output is not yet implemented for ${context?.report?.title || "this report"}.`);
   }
 
   async exportPdf(context) {
@@ -88,25 +68,17 @@ export class ReportEngine {
     }
 
     const jsPDFClass = window.jspdf?.jsPDF;
-    if (!jsPDFClass) {
-      throw new Error("jsPDF was not loaded. Check that the pinned unpkg library is reachable and not blocked by CSP or the browser cache.");
-    }
-
-    if (typeof jsPDFClass.API?.autoTable !== "function") {
-      throw new Error("jsPDF-AutoTable was not loaded. Check the pinned unpkg library and reload the page without cache.");
-    }
+    if (!jsPDFClass) throw new Error("jsPDF was not loaded.");
+    if (typeof jsPDFClass.API?.autoTable !== "function") throw new Error("jsPDF-AutoTable was not loaded.");
 
     const model = this.buildModel(context);
     const doc = new jsPDFClass({ orientation: "portrait", unit: "mm", format: "a4", compress: true });
-
-    this.drawPageOne(doc, model);
-    this.drawLegacyDetails(doc, model);
-    this.addPageNumbers(doc, model);
+    this.drawCompactReport(doc, model);
+    this.addFooter(doc, model);
 
     const safeProvince = model.provinceName.replace(/[^A-Za-z0-9_-]+/g, "_");
     doc.save(`FIMS_Province_Constraint_${safeProvince}_${this.dateStamp()}.pdf`);
     this.onStatus(`PDF exported: ${model.title} for ${model.provinceName}.`);
-    return context;
   }
 
   buildModel(context) {
@@ -127,33 +99,46 @@ export class ReportEngine {
       "Selected Province"
     );
 
-    const valueByLabel = new Map(rows.map((row) => [String(row.label || "").toLowerCase(), row]));
+    const normalizedRows = new Map();
+    for (const row of rows) {
+      for (const key of [row?.key, row?.label, row?.description]) {
+        if (key) normalizedRows.set(this.normalizeKey(key), row);
+      }
+    }
+
     const pick = (...keys) => {
       for (const key of keys) {
-        if (values[key] !== undefined && values[key] !== null) return this.number(values[key]);
-        const row = valueByLabel.get(String(key).toLowerCase());
-        if (row) return this.number(row.value ?? row.rawValue);
+        if (Object.prototype.hasOwnProperty.call(values, key)) {
+          const n = this.numberOrNull(values[key]);
+          if (n !== null) return n;
+        }
+        const row = normalizedRows.get(this.normalizeKey(key));
+        if (row) {
+          const n = this.numberOrNull(row.rawValue ?? row.value ?? row.formattedValue);
+          if (n !== null) return n;
+        }
       }
       return 0;
     };
 
+    // Canonical keys below are the actual keys defined by summary.js.
     const metrics = {
-      area: pick("area", "Area(ha)", "vegArea"),
-      protected: pick("protected", "Protected", "protectedArea"),
-      extSlope: pick("extSlope", "Ext Slope", "extremeSlope"),
-      extAltitude: pick("extAltitude", "Ext Altitude", "extremeAltitude"),
-      extKarst: pick("extKarst", "Ext Karst", "extremeKarst"),
-      extInundation: pick("extInundation", "Ext Inundation", "extremeInundation"),
-      extMangrove: pick("extMangrove", "Ext Mangrove", "extremeMangrove"),
-      serSlope: pick("serSlope", "Ser Slope", "seriousSlopeRelief"),
-      serInundation: pick("serInundation", "Ser Inundation", "seriousInundation"),
-      grossArea75: pick("grossForestArea75", "Gross Forest Area '75", "grossForestArea"),
-      adjustedArea75: pick("adjustedForestArea75", "Adjusted Forest Area '75", "adjustedForestArea"),
-      grossVolume75: pick("grossForestVolume75", "Gross Forest Volume '75", "grossForestVolume"),
-      loggedLandUse: pick("loggedLandUse", "Logged Land Use", "loggedLandUseTotal"),
-      revisedGrossArea: pick("revisedGrossForestArea", "Revised Gross Forest Area", "revGrossForestArea"),
-      revisedAdjustedArea: pick("revAdjustedForestArea", "Rev Adj Forest Area", "revisedAdjustedForestArea"),
-      revisedGrossVolume: pick("revGrossForestVol", "Rev Gross Forest Vol", "revisedGrossForestVolume")
+      area: pick("vegArea", "Area(ha)", "Vegetation Area"),
+      protected: pick("protectedArea", "Protected", "Protected Area"),
+      extSlope: pick("extSlope", "Ext Slope", "Ext_Slope"),
+      extAltitude: pick("extAltitude", "Ext Altitude", "Ext_Altitude"),
+      extKarst: pick("extKarst", "Ext Karst", "Ext_Karst"),
+      extInundation: pick("extInund", "Ext Inundation", "Ext_Inund"),
+      extMangrove: pick("extMangrove", "Ext Mangrove", "Ext_Mangrove"),
+      serSlope: pick("serSlopeRelief", "Ser Slope", "Ser_SlopeRelief"),
+      serInundation: pick("serInund", "Ser Inundation", "Ser_Inund"),
+      grossArea75: pick("grossFrstArea75", "Gross Forest Area '75", "Gross_Frst_Area_75"),
+      adjustedArea75: pick("adjFrstArea75", "Adjusted Forest Area '75", "Adj_Frst_Area_75"),
+      grossVolume75: pick("grossFrstVol75", "Gross Forest Volume '75", "Gross_Frst_Vol_75"),
+      loggedLandUse: pick("loggedLUse", "Logged Land Use", "Logged_LUse"),
+      revisedGrossArea: pick("revGrossFrstArea", "Revised Gross Forest Area", "Rev_Gross_Frst_Area"),
+      revisedAdjustedArea: pick("revAdjFrstArea", "Rev Adj Forest Area", "Rev_Adj_Frst_Area"),
+      revisedGrossVolume: pick("revGrossFrstVol", "Rev Gross Forest Vol", "Rev_Gross_Frst_Vol")
     };
 
     const generatedAt = new Date();
@@ -162,7 +147,6 @@ export class ReportEngine {
     return {
       title: "Province Constraint Concession / Unallocated",
       legacyReport: "rpt_Province_Constraint",
-      pageSize: "A4",
       provinceName,
       provinceCode: this.firstText(metadata.provinceCode, province.code, province.id, values.zone, "—"),
       fmuCount: this.number(metadata.fmuCount ?? summary.count ?? fmus.length),
@@ -176,290 +160,261 @@ export class ReportEngine {
         this.metric("Gross Forest Volume '75", metrics.grossVolume75, "m³"),
         this.metric("Revised Gross Forest Volume", metrics.revisedGrossVolume, "m³")
       ],
-      geometry: this.extractGeometry(province),
-      rows,
-      fmus
+      geometry: this.extractGeometry(province)
     };
   }
 
-  drawPageOne(doc, model) {
+  drawCompactReport(doc, model) {
     const W = 210;
+    const left = 12;
+    const right = 198;
+    const contentW = right - left;
+
     doc.setFillColor(23, 92, 54);
-    doc.rect(0, 0, W, 24, "F");
+    doc.rect(0, 0, W, 20, "F");
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(15);
-    doc.text("PNG FOREST AUTHORITY", 14, 10);
-    doc.setFontSize(10.5);
-    doc.text("Province Constraint Concession / Unallocated", 14, 17);
+    doc.setFontSize(14);
+    doc.text("PNG FOREST AUTHORITY", left, 8.5);
+    doc.setFontSize(9.5);
+    doc.text(model.title, left, 15);
 
     doc.setTextColor(35, 35, 35);
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(8.5);
-    doc.text(`Province: ${model.provinceName}`, 14, 31);
-    doc.text(`Province code: ${model.provinceCode}`, 14, 36);
-    doc.text(`FMUs: ${model.fmuCount.toLocaleString("en-US")}`, 75, 36);
-    doc.text(`Generated: ${this.formatDateTime(model.generatedAt)}`, 120, 31);
-    doc.text(`Calculated: ${model.calculationDate}`, 120, 36);
+    doc.setFontSize(7.5);
+    doc.text(`Province: ${model.provinceName} (${model.provinceCode})`, left, 26);
+    doc.text(`FMUs: ${model.fmuCount.toLocaleString("en-US")}`, left, 31);
+    doc.text(`Generated: ${this.formatDateTime(model.generatedAt)}`, 108, 26);
+    doc.text(`Calculated: ${this.compactDate(model.calculationDate)}`, 108, 31);
 
-    this.sectionTitle(doc, "Executive Summary", 14, 44, 182);
-    const cardY = 50;
-    const cardW = 42.5;
-    model.kpis.forEach((item, i) => this.drawKpi(doc, 14 + i * 45.5, cardY, cardW, 23, item));
+    // KPI row: reduced height and tighter spacing.
+    this.sectionTitle(doc, "Executive Summary", left, 36, contentW);
+    const cardY = 41;
+    const gap = 3;
+    const cardW = (contentW - gap * 3) / 4;
+    model.kpis.forEach((item, index) => this.drawKpi(doc, left + index * (cardW + gap), cardY, cardW, 17, item));
 
-    this.sectionTitle(doc, "Province Location", 14, 81, 86);
-    this.drawSmallMap(doc, model.geometry, 14, 87, 86, 59, model.provinceName);
+    // Map and comparison panels.
+    const panelY = 63;
+    const panelH = 43;
+    this.sectionTitle(doc, "Province Location", left, panelY, 79);
+    this.drawSmallMap(doc, model.geometry, left, panelY + 5, 79, panelH - 5, model.provinceName);
+    this.sectionTitle(doc, "Original / Revised", 94, panelY, 104);
+    this.drawComparisonChart(doc, model, 94, panelY + 5, 104, panelH - 5);
 
-    this.sectionTitle(doc, "Original / Revised Comparison", 106, 81, 90);
-    this.drawComparisonChart(doc, model, 106, 87, 90, 59);
-
-    this.sectionTitle(doc, "Constraint Summary", 14, 153, 182);
-    const constraintRows = [
-      ["Protected Area", this.area(model.metrics.protected)],
-      ["Extreme Slope", this.area(model.metrics.extSlope)],
-      ["Extreme Altitude", this.area(model.metrics.extAltitude)],
-      ["Extreme Karst", this.area(model.metrics.extKarst)],
-      ["Extreme Inundation", this.area(model.metrics.extInundation)],
-      ["Extreme Mangrove", this.area(model.metrics.extMangrove)],
-      ["Serious Slope Relief", this.area(model.metrics.serSlope)],
-      ["Serious Inundation", this.area(model.metrics.serInundation)]
-    ];
-
+    // Forest values first: these are the main old-FIMS report totals.
+    this.sectionTitle(doc, "Forest Area and Volume", left, 111, contentW);
     doc.autoTable({
-      startY: 159,
-      margin: { left: 14, right: 14 },
-      head: [["Constraint", "Area (ha)", "Constraint", "Area (ha)"]],
+      startY: 116,
+      margin: { left, right: 12 },
       body: [
-        [...constraintRows[0], ...constraintRows[4]],
-        [...constraintRows[1], ...constraintRows[5]],
-        [...constraintRows[2], ...constraintRows[6]],
-        [...constraintRows[3], ...constraintRows[7]]
-      ],
-      theme: "grid",
-      styles: { font: "helvetica", fontSize: 8, cellPadding: 2.2, lineColor: [185, 199, 190] },
-      headStyles: { fillColor: [35, 105, 64], textColor: 255, fontStyle: "bold" },
-      columnStyles: { 1: { halign: "right" }, 3: { halign: "right" } }
-    });
-
-    const y = doc.lastAutoTable.finalY + 7;
-    this.sectionTitle(doc, "Forest Area and Volume", 14, y, 182);
-    doc.autoTable({
-      startY: y + 6,
-      margin: { left: 14, right: 14 },
-      body: [
+        ["Vegetation / Gross Area", this.area(model.metrics.area), "Protected Area", this.area(model.metrics.protected)],
         ["Gross Forest Area '75", this.area(model.metrics.grossArea75), "Revised Gross Forest Area", this.area(model.metrics.revisedGrossArea)],
         ["Adjusted Forest Area '75", this.area(model.metrics.adjustedArea75), "Rev Adjusted Forest Area", this.area(model.metrics.revisedAdjustedArea)],
         ["Gross Forest Volume '75", this.volume(model.metrics.grossVolume75), "Rev Gross Forest Volume", this.volume(model.metrics.revisedGrossVolume)],
-        ["Logged / Land Use", this.area(model.metrics.loggedLandUse), "Protected Area", this.area(model.metrics.protected)]
+        ["Logged / Land Use — Current", this.area(model.metrics.loggedLandUse), "Available after Land Use", this.area(model.metrics.revisedGrossArea)]
       ],
       theme: "grid",
-      styles: { font: "helvetica", fontSize: 8, cellPadding: 2.1, lineColor: [185, 199, 190] },
-      columnStyles: { 1: { halign: "right", fontStyle: "bold" }, 3: { halign: "right", fontStyle: "bold" } }
-    });
-  }
-
-  drawLegacyDetails(doc, model) {
-    doc.addPage("a4", "portrait");
-    this.pageHeader(doc, model, "Legacy-Compatible Detail");
-
-    doc.setFontSize(8.5);
-    doc.setTextColor(55, 55, 55);
-    doc.text("The following fields reproduce the principal information used by the old FIMS Province Constraint report.", 14, 34);
-
-    const m = model.metrics;
-    const body = [
-      ["Vegetation / gross area", this.area(m.area)],
-      ["Protected area", this.area(m.protected)],
-      ["Gross Forest Area '75", this.area(m.grossArea75)],
-      ["Adjusted Forest Area '75", this.area(m.adjustedArea75)],
-      ["Gross Forest Volume '75", this.volume(m.grossVolume75)],
-      ["Logged / Land Use – Current", this.area(m.loggedLandUse)],
-      ["Revised Gross Forest Area", this.area(m.revisedGrossArea)],
-      ["Revised Adjusted Forest Area", this.area(m.revisedAdjustedArea)],
-      ["Revised Gross Forest Volume", this.volume(m.revisedGrossVolume)]
-    ];
-
-    doc.autoTable({
-      startY: 40,
-      margin: { left: 14, right: 14 },
-      head: [["Legacy item", "Province total"]],
-      body,
-      theme: "grid",
-      styles: { font: "helvetica", fontSize: 8.5, cellPadding: 2.4, lineColor: [180, 195, 185] },
-      headStyles: { fillColor: [35, 105, 64], textColor: 255 },
-      columnStyles: { 1: { halign: "right", fontStyle: "bold" } }
+      styles: { font: "helvetica", fontSize: 7.4, cellPadding: 1.75, lineColor: [184, 198, 189] },
+      columnStyles: { 0: { cellWidth: 53 }, 1: { cellWidth: 35, halign: "right", fontStyle: "bold" }, 2: { cellWidth: 58 }, 3: { cellWidth: 40, halign: "right", fontStyle: "bold" } }
     });
 
-    const y = doc.lastAutoTable.finalY + 8;
-    this.sectionTitle(doc, "Constraint Components", 14, y, 182);
+    const constraintY = doc.lastAutoTable.finalY + 5;
+    this.sectionTitle(doc, "Constraint Summary", left, constraintY, contentW);
     doc.autoTable({
-      startY: y + 6,
-      margin: { left: 14, right: 14 },
-      head: [["Class", "Component", "Area (ha)"]],
+      startY: constraintY + 5,
+      margin: { left, right: 12 },
+      head: [["Class", "Component", "Area (ha)", "Class", "Component", "Area (ha)"]],
       body: [
-        ["Extreme", "Slope", this.numberText(m.extSlope)],
-        ["Extreme", "Altitude", this.numberText(m.extAltitude)],
-        ["Extreme", "Karst", this.numberText(m.extKarst)],
-        ["Extreme", "Inundation", this.numberText(m.extInundation)],
-        ["Extreme", "Mangrove", this.numberText(m.extMangrove)],
-        ["Serious", "Slope Relief", this.numberText(m.serSlope)],
-        ["Serious", "Inundation", this.numberText(m.serInundation)]
+        ["Extreme", "Slope", this.numberText(model.metrics.extSlope), "Extreme", "Inundation", this.numberText(model.metrics.extInundation)],
+        ["Extreme", "Altitude", this.numberText(model.metrics.extAltitude), "Extreme", "Mangrove", this.numberText(model.metrics.extMangrove)],
+        ["Extreme", "Karst", this.numberText(model.metrics.extKarst), "Serious", "Slope Relief", this.numberText(model.metrics.serSlope)],
+        ["Protected", "Protected Area", this.numberText(model.metrics.protected), "Serious", "Inundation", this.numberText(model.metrics.serInundation)]
       ],
       theme: "striped",
-      styles: { font: "helvetica", fontSize: 8, cellPadding: 2.2 },
-      headStyles: { fillColor: [35, 105, 64], textColor: 255 },
-      columnStyles: { 2: { halign: "right" } }
+      styles: { font: "helvetica", fontSize: 7.2, cellPadding: 1.6, lineColor: [208, 216, 211] },
+      headStyles: { fillColor: [35, 105, 64], textColor: 255, fontStyle: "bold" },
+      columnStyles: { 2: { halign: "right" }, 5: { halign: "right" } }
     });
 
-    const noteY = Math.min(275, doc.lastAutoTable.finalY + 10);
-    doc.setDrawColor(170, 185, 175);
-    doc.setFillColor(245, 248, 246);
-    doc.roundedRect(14, noteY, 182, 15, 1.5, 1.5, "FD");
-    doc.setFontSize(7.5);
-    doc.setTextColor(70, 70, 70);
-    doc.text("Source: FIMS Cloud PostGIS / FastAPI calculation results. Page size follows the old FIMS User Guide: A4.", 18, noteY + 6);
-    doc.text(`Legacy reference: ${model.legacyReport}. Calculation version: ${model.calculationVersion}.`, 18, noteY + 11);
+    const notesY = doc.lastAutoTable.finalY + 5;
+    doc.setFillColor(244, 248, 245);
+    doc.setDrawColor(185, 199, 190);
+    doc.roundedRect(left, notesY, contentW, 16, 1.5, 1.5, "FD");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.1);
+    doc.setTextColor(45, 65, 52);
+    doc.text(`Legacy reference: ${model.legacyReport} | Calculation version: ${model.calculationVersion}`, left + 4, notesY + 6);
+    doc.setFont("helvetica", "normal");
+    doc.text("Source: FIMS Cloud PostGIS / FastAPI results. Page size: A4. Values match the current Province Summary.", left + 4, notesY + 11.5);
   }
 
   drawKpi(doc, x, y, w, h, item) {
-    doc.setFillColor(244, 249, 246);
-    doc.setDrawColor(155, 185, 165);
+    doc.setFillColor(244, 248, 245);
+    doc.setDrawColor(174, 197, 181);
     doc.roundedRect(x, y, w, h, 1.5, 1.5, "FD");
-    doc.setTextColor(45, 75, 55);
+    doc.setTextColor(48, 70, 56);
     doc.setFont("helvetica", "normal");
-    doc.setFontSize(6.8);
-    doc.text(doc.splitTextToSize(item.label, w - 6), x + 3, y + 6);
+    doc.setFontSize(6.5);
+    const label = doc.splitTextToSize(item.label, w - 5);
+    doc.text(label, x + 2.5, y + 4.5);
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(9.2);
-    doc.text(item.formatted, x + 3, y + 18, { maxWidth: w - 6 });
+    doc.setFontSize(8.6);
+    doc.text(item.formatted, x + 2.5, y + h - 3.2);
+  }
+
+  sectionTitle(doc, title, x, y, w) {
+    doc.setFillColor(225, 238, 229);
+    doc.setDrawColor(176, 196, 182);
+    doc.rect(x, y, w, 5, "FD");
+    doc.setTextColor(33, 81, 50);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.4);
+    doc.text(title, x + 2, y + 3.6);
   }
 
   drawComparisonChart(doc, model, x, y, w, h) {
-    doc.setDrawColor(190, 202, 194);
     doc.setFillColor(250, 251, 250);
+    doc.setDrawColor(195, 205, 198);
     doc.rect(x, y, w, h, "FD");
-    const data = [
+
+    const rows = [
       { label: "Area", original: model.metrics.grossArea75, revised: model.metrics.revisedGrossArea },
       { label: "Adjusted", original: model.metrics.adjustedArea75, revised: model.metrics.revisedAdjustedArea },
       { label: "Volume", original: model.metrics.grossVolume75, revised: model.metrics.revisedGrossVolume }
     ];
-    const max = Math.max(1, ...data.flatMap((d) => [d.original, d.revised]));
     const chartX = x + 25;
     const chartW = w - 31;
-    data.forEach((d, i) => {
-      const rowY = y + 11 + i * 15;
-      doc.setFontSize(7);
-      doc.setTextColor(60, 60, 60);
-      doc.text(d.label, x + 3, rowY + 3);
-      doc.setFillColor(174, 196, 181);
-      doc.rect(chartX, rowY, chartW * d.original / max, 4, "F");
+    rows.forEach((row, index) => {
+      const yy = y + 7 + index * 10;
+      const max = Math.max(row.original, row.revised, 1);
+      const ow = chartW * row.original / max;
+      const rw = chartW * row.revised / max;
+      doc.setTextColor(65, 75, 69);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(6.4);
+      doc.text(row.label, x + 3, yy + 2.5);
+      doc.setFillColor(172, 204, 183);
+      doc.rect(chartX, yy, ow, 3, "F");
       doc.setFillColor(35, 105, 64);
-      doc.rect(chartX, rowY + 5, chartW * d.revised / max, 4, "F");
+      doc.rect(chartX, yy + 4, rw, 3, "F");
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(5.5);
+      doc.text(`${this.compactNumber(row.original)} / ${this.compactNumber(row.revised)}`, chartX, yy + 9.5);
     });
-    doc.setFontSize(6.5);
-    doc.setTextColor(80, 80, 80);
-    doc.text("Original", x + 4, y + h - 6);
-    doc.setFillColor(174, 196, 181); doc.rect(x + 17, y + h - 9, 7, 3, "F");
-    doc.text("Revised", x + 30, y + h - 6);
-    doc.setFillColor(35, 105, 64); doc.rect(x + 43, y + h - 9, 7, 3, "F");
+    doc.setFontSize(5.8);
+    doc.setFillColor(172, 204, 183); doc.rect(x + 4, y + h - 5, 4, 2.5, "F");
+    doc.setTextColor(60, 70, 64); doc.text("Original", x + 9, y + h - 2.8);
+    doc.setFillColor(35, 105, 64); doc.rect(x + 29, y + h - 5, 4, 2.5, "F");
+    doc.text("Revised", x + 34, y + h - 2.8);
   }
 
-  drawSmallMap(doc, geometry, x, y, w, h, label) {
-    doc.setFillColor(241, 246, 243);
-    doc.setDrawColor(185, 200, 190);
+  drawSmallMap(doc, geometry, x, y, w, h, provinceName) {
+    doc.setFillColor(248, 250, 248);
+    doc.setDrawColor(195, 205, 198);
     doc.rect(x, y, w, h, "FD");
-
-    const rings = this.geometryRings(geometry);
-    if (!rings.length) {
-      doc.setFontSize(8);
-      doc.setTextColor(100, 110, 103);
-      doc.text("Province geometry unavailable", x + w / 2, y + h / 2, { align: "center" });
-      return;
-    }
-
-    const points = rings.flat();
-    const xs = points.map((p) => p[0]);
-    const ys = points.map((p) => p[1]);
-    const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
-    const sx = (w - 10) / Math.max(maxX - minX, 1e-9);
-    const sy = (h - 12) / Math.max(maxY - minY, 1e-9);
-    const scale = Math.min(sx, sy);
-    const ox = x + (w - (maxX - minX) * scale) / 2;
-    const oy = y + (h - (maxY - minY) * scale) / 2;
-
-    doc.setDrawColor(26, 104, 59);
-    doc.setFillColor(209, 226, 215);
-    rings.forEach((ring) => {
-      const mapped = ring.map(([px, py]) => [ox + (px - minX) * scale, oy + (maxY - py) * scale]);
-      if (mapped.length > 2) {
-        const lines = mapped.slice(1).map((p, i) => [p[0] - mapped[i][0], p[1] - mapped[i][1]]);
-        doc.lines(lines, mapped[0][0], mapped[0][1], [1, 1], "FD", true);
-      }
-    });
-    doc.setFontSize(7);
-    doc.setTextColor(45, 70, 52);
-    doc.text(label, x + 3, y + h - 3);
-  }
-
-  pageHeader(doc, model, subtitle) {
-    doc.setFillColor(23, 92, 54);
-    doc.rect(0, 0, 210, 24, "F");
-    doc.setTextColor(255, 255, 255);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(13);
-    doc.text("PNG FOREST AUTHORITY", 14, 10);
-    doc.setFontSize(9.5);
-    doc.text(`${model.title} — ${subtitle}`, 14, 17);
-    doc.setTextColor(50, 50, 50);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(8);
-    doc.text(`Province: ${model.provinceName}`, 14, 29);
-    doc.text(`Calculated: ${model.calculationDate}`, 120, 29);
-  }
-
-  addPageNumbers(doc, model) {
-    const count = doc.getNumberOfPages();
-    for (let page = 1; page <= count; page += 1) {
-      doc.setPage(page);
-      doc.setDrawColor(190, 200, 193);
-      doc.line(14, 288, 196, 288);
+    const polygons = this.geometryPolygons(geometry);
+    if (!polygons.length) {
       doc.setFontSize(7);
-      doc.setTextColor(90, 90, 90);
-      doc.text(`FIMS Cloud ${REPORT_ENGINE_VERSION} | ${model.provinceName}`, 14, 293);
-      doc.text(`Page ${page} of ${count}`, 196, 293, { align: "right" });
+      doc.setTextColor(95, 105, 99);
+      doc.text("Province geometry unavailable", x + w / 2, y + h / 2, { align: "center" });
+    } else {
+      const points = polygons.flat(2);
+      const xs = points.map((p) => p[0]);
+      const ys = points.map((p) => p[1]);
+      const minX = Math.min(...xs), maxX = Math.max(...xs), minY = Math.min(...ys), maxY = Math.max(...ys);
+      const dx = Math.max(maxX - minX, 1e-9), dy = Math.max(maxY - minY, 1e-9);
+      const scale = Math.min((w - 10) / dx, (h - 10) / dy);
+      const ox = x + (w - dx * scale) / 2;
+      const oy = y + (h - dy * scale) / 2;
+      doc.setDrawColor(39, 117, 73);
+      doc.setFillColor(217, 235, 223);
+      for (const polygon of polygons) {
+        for (const ring of polygon) {
+          if (!ring.length) continue;
+          const mapped = ring.map(([px, py]) => [ox + (px - minX) * scale, oy + (maxY - py) * scale]);
+          const [sx, sy] = mapped[0];
+          const lines = mapped.slice(1).map(([px, py], i) => [px - mapped[i][0], py - mapped[i][1]]);
+          doc.lines(lines, sx, sy, [1, 1], "FD", true);
+        }
+      }
     }
+    doc.setTextColor(45, 75, 55);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(6.2);
+    doc.text(provinceName, x + 3, y + h - 2.5);
   }
 
-  sectionTitle(doc, text, x, y, w) {
-    doc.setFillColor(225, 237, 229);
-    doc.setDrawColor(165, 190, 173);
-    doc.rect(x, y, w, 6, "FD");
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(8);
-    doc.setTextColor(30, 83, 49);
-    doc.text(text, x + 2, y + 4.2);
+  addFooter(doc, model) {
+    doc.setDrawColor(190, 200, 193);
+    doc.line(12, 287, 198, 287);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(6.5);
+    doc.setTextColor(75, 85, 79);
+    doc.text(`FIMS Cloud 3.8.2 | ${model.provinceName}`, 12, 291.5);
+    doc.text("Page 1 of 1", 198, 291.5, { align: "right" });
   }
 
   extractGeometry(province) {
-    return province?.geometry || province?.feature?.geometry || province?.geojson?.geometry || null;
+    return province?.geometry || province?.feature?.geometry || province?.raw?.geometry || province?.raw?.feature?.geometry || null;
   }
 
-  geometryRings(geometry) {
+  geometryPolygons(geometry) {
     if (!geometry || !Array.isArray(geometry.coordinates)) return [];
-    if (geometry.type === "Polygon") return geometry.coordinates.filter(Array.isArray);
-    if (geometry.type === "MultiPolygon") return geometry.coordinates.flat().filter(Array.isArray);
+    if (geometry.type === "Polygon") return [geometry.coordinates];
+    if (geometry.type === "MultiPolygon") return geometry.coordinates;
     return [];
   }
 
   metric(label, value, unit) {
-    return { label, value, unit, formatted: `${this.numberText(value)} ${unit}` };
+    return { label, value, unit, formatted: unit === "m³" ? this.volume(value) : this.area(value) };
   }
+
+  number(value) { return this.numberOrNull(value) ?? 0; }
+
+  numberOrNull(value) {
+    if (typeof value === "number") return Number.isFinite(value) ? value : null;
+    if (value === null || value === undefined || value === "") return null;
+    const text = String(value).trim().replace(/,/g, "").replace(/[^0-9eE+\-.]/g, "");
+    if (!text) return null;
+    const result = Number(text);
+    return Number.isFinite(result) ? result : null;
+  }
+
+  normalizeKey(value) { return String(value ?? "").toLowerCase().replace(/[^a-z0-9]/g, ""); }
+
   area(value) { return `${this.numberText(value)} ha`; }
   volume(value) { return `${this.numberText(value)} m³`; }
-  numberText(value) { return this.number(value).toLocaleString("en-US", { maximumFractionDigits: 2 }); }
-  number(value) { const n = Number(value); return Number.isFinite(n) ? n : 0; }
-  firstText(...values) { for (const value of values) if (value !== undefined && value !== null && String(value).trim()) return String(value); return "—"; }
-  formatDateTime(value) { return new Intl.DateTimeFormat("en-GB", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }).format(value); }
-  dateStamp() { const d = new Date(); return `${d.getFullYear()}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}`; }
-  escapeHtml(value) { return String(value).replace(/[&<>'"]/g, (c) => ({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;",'"':"&quot;"}[c])); }
+  numberText(value) { return new Intl.NumberFormat("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(this.number(value)); }
+  compactNumber(value) { return new Intl.NumberFormat("en-US", { notation: "compact", maximumFractionDigits: 2 }).format(this.number(value)); }
+
+  firstText(...values) {
+    for (const value of values) {
+      if (value !== null && value !== undefined && String(value).trim() !== "") return String(value).trim();
+    }
+    return "—";
+  }
+
+  formatDateTime(value) {
+    return new Intl.DateTimeFormat("en-GB", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }).format(value);
+  }
+
+  compactDate(value) {
+    if (!value || value === "—") return "—";
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? String(value) : this.formatDateTime(date);
+  }
+
+  dateStamp() {
+    const d = new Date();
+    return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}`;
+  }
+
+  escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>'"]/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[char]);
+  }
+}
+
+export function createReportEngine(options = {}) {
+  return new ReportEngine(options);
 }
