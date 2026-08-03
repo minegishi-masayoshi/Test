@@ -38,14 +38,14 @@ const CONFIG = {
   app: {
     id: "fims-cloud",
     name: "FIMS Cloud",
-    fullName: "Forest Information and Mapping System",
+    fullName: "",
     organization: "PNG Forest Authority",
     version: "Ver.3.8.8",
     build: "2.0.0",
     environment: "MVP",
     language: "en",
     defaultModule: "province",
-    pageTitle: "FIMS Cloud - Province Selection",
+    pageTitle: "FIMS Cloud - ",
 
     copyright: {
       owner: "PNG Forest Authority",
@@ -243,7 +243,7 @@ const CONFIG = {
 
   /*
    * ==========================================================
-   * 5. Province Selection screen
+   * 5.  screen
    * ==========================================================
    *
    * Old FIMS screen correspondence:
@@ -265,7 +265,7 @@ const CONFIG = {
    */
   provinceScreen: {
     key: "province",
-    title: "Province Selection",
+    title: "",
     enabled: true,
 
     /*

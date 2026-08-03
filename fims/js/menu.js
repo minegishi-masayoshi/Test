@@ -101,7 +101,7 @@ export const MENU_STATUS = Object.freeze({
 /**
  * Main function menu.
  *
- * The item order follows the legacy Province Selection screen.
+ * The item order follows the legacy  screen.
  *
  * Notes:
  *   - enabledByDefault indicates whether the module is currently
