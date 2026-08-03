@@ -1,9 +1,9 @@
 /**
  * FIMS Cloud report engine.
- * Ver.3.8.3: PNG-wide location map and constraint-breakdown layout.
+ * Ver.3.8.4: production PDF cleanup and report availability UI.
  * Uses the same browser-side jsPDF + jsPDF-AutoTable approach as FIPS.
  */
-export const REPORT_ENGINE_VERSION = "3.8.3";
+export const REPORT_ENGINE_VERSION = "3.8.4";
 
 const SUPPORTED_REPORT_ID = "province-constraint";
 
@@ -236,17 +236,6 @@ export class ReportEngine {
       columnStyles: { 2: { halign: "right" }, 5: { halign: "right" } }
     });
 
-    const notesY = doc.lastAutoTable.finalY + 5;
-    doc.setFillColor(244, 248, 245);
-    doc.setDrawColor(185, 199, 190);
-    doc.roundedRect(left, notesY, contentW, 18, 1.5, 1.5, "FD");
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(7.1);
-    doc.setTextColor(45, 65, 52);
-    doc.text(`Legacy reference: ${model.legacyReport} | Calculation version: ${model.calculationVersion}`, left + 4, notesY + 6);
-    doc.setFont("helvetica", "normal");
-    doc.text("Source: FIMS Cloud PostGIS / FastAPI results. Page size: A4. Values match the current Province Summary.", left + 4, notesY + 11.5);
-    doc.text("Constraint areas may overlap and must not be added together as a single deduction total.", left + 4, notesY + 16);
   }
 
   drawKpi(doc, x, y, w, h, item) {
@@ -309,10 +298,7 @@ export class ReportEngine {
       doc.setFont("helvetica", "bold");
       doc.text(this.compactNumber(row[1]), x + w - 2.5, yy + 2.6, { align: "right" });
     });
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(5.4);
-    doc.setTextColor(95, 103, 98);
-    doc.text("Areas may overlap; bars are individual constraint totals.", x + 2.5, y + h - 2.5);
+
   }
 
   drawPngLocationMap(doc, model, x, y, w, h) {
@@ -366,13 +352,12 @@ export class ReportEngine {
     doc.text(`Selected: ${model.provinceName}`, x + 9, y + h - 3.2);
   }
 
-  addFooter(doc, model) {
+  addFooter(doc) {
     doc.setDrawColor(190, 200, 193);
     doc.line(12, 287, 198, 287);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(6.5);
     doc.setTextColor(75, 85, 79);
-    doc.text(`FIMS Cloud 3.8.3 | ${model.provinceName}`, 12, 291.5);
     doc.text("Page 1 of 1", 198, 291.5, { align: "right" });
   }
 

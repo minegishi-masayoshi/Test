@@ -60,14 +60,14 @@ import {
 
 import {
   ReportEngine
-} from "./reportEngine.js?v=3.8.3";
+} from "./reportEngine.js?v=3.8.4";
 
 /* ============================================================
  * 1. Application constants
  * ============================================================
  */
 
-export const APP_VERSION = "3.8.3";
+export const APP_VERSION = "3.8.4";
 
 export const APP_STATUS = Object.freeze({
   IDLE: "idle",
@@ -4077,11 +4077,7 @@ export class ApplicationController {
     }
 
     const reports =
-      this.getProvinceReports()
-        .filter(
-          (report) =>
-            report.enabled !== false
-        );
+      this.getProvinceReports();
 
     container.replaceChildren();
 
@@ -4149,7 +4145,8 @@ export class ApplicationController {
         "report-button-list";
 
       for (const report of categoryReports) {
-        firstReport ||= report;
+        const isAvailable = report.enabled !== false;
+        if (isAvailable && !firstReport) firstReport = report;
 
         const button =
           document.createElement("button");
@@ -4157,6 +4154,16 @@ export class ApplicationController {
         button.type = "button";
         button.className =
           "report-list-button";
+
+        button.classList.toggle(
+          "report-unavailable",
+          !isAvailable
+        );
+        button.disabled = !isAvailable;
+        button.setAttribute(
+          "aria-disabled",
+          String(!isAvailable)
+        );
 
         button.dataset.reportId =
           report.id;
@@ -4188,18 +4195,27 @@ export class ApplicationController {
           legacy
         );
 
-        button.title =
-          report.description ||
-          report.title;
+        if (!isAvailable) {
+          const badge = document.createElement("span");
+          badge.className = "report-coming-soon";
+          badge.textContent = "Coming Soon";
+          button.appendChild(badge);
+        }
 
-        button.addEventListener(
-          "click",
-          () => {
-            this.selectReport(
-              report.id
-            );
-          }
-        );
+        button.title = isAvailable
+          ? (report.description || report.title)
+          : `${report.title} — Coming Soon`;
+
+        if (isAvailable) {
+          button.addEventListener(
+            "click",
+            () => {
+              this.selectReport(
+                report.id
+              );
+            }
+          );
+        }
 
         buttons.appendChild(button);
       }
@@ -4249,7 +4265,7 @@ export class ApplicationController {
             reportId
         );
 
-    if (!report) {
+    if (!report || report.enabled === false) {
       return false;
     }
 
@@ -4301,9 +4317,9 @@ export class ApplicationController {
     const report =
       this.getSelectedReport();
 
-    if (!report) {
+    if (!report || report.enabled === false) {
       this.setStatus(
-        "Select a report."
+        "Select an available report."
       );
 
       return false;

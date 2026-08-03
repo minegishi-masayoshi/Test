@@ -3271,3 +3271,42 @@ body.large-map-page {
 .fims-report-preview-kpi span { display:block; font-size: 9px; color:#52665a; }
 .fims-report-preview-kpi strong { display:block; margin-top:3px; color:#174f31; font-size:11px; }
 .fims-report-preview-note { margin: 10px 0 0; font-size: 9px; color:#5b685f; line-height:1.4; }
+
+
+/* FIMS Cloud Ver.3.8.4 - Report availability states */
+.report-list-button.report-unavailable,
+.report-list-button:disabled {
+  position: relative;
+  border-color: #c8cfca;
+  background: #ecefed;
+  color: #7b847e;
+  cursor: not-allowed;
+  opacity: 0.82;
+  box-shadow: none;
+}
+
+.report-list-button.report-unavailable:hover,
+.report-list-button:disabled:hover {
+  border-color: #c8cfca;
+  background: #ecefed;
+  color: #7b847e;
+  transform: none;
+  box-shadow: none;
+}
+
+.report-list-button.report-unavailable .report-legacy-name {
+  color: #8e9691;
+}
+
+.report-coming-soon {
+  display: inline-block;
+  margin-top: 0.35rem;
+  padding: 0.15rem 0.45rem;
+  border: 1px solid #c1c8c3;
+  border-radius: 999px;
+  background: #f4f5f4;
+  color: #737b76;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}

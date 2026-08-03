@@ -40,7 +40,7 @@ const CONFIG = {
     name: "FIMS Cloud",
     fullName: "Forest Information and Mapping System",
     organization: "PNG Forest Authority",
-    version: "Ver.3.8.3",
+    version: "Ver.3.8.4",
     build: "2.0.0",
     environment: "MVP",
     language: "en",
@@ -955,9 +955,9 @@ const CONFIG = {
    * ==========================================================
    */
   reports: {
-    enabled: true,
+    enabled: false,
     scope: "selected-province",
-    defaultReport: "province-fmu-list",
+    defaultReport: "province-constraint",
 
 
     definitions: [
@@ -968,7 +968,7 @@ const CONFIG = {
         label: "National Change",
         legacyReport: "rpt_National_Change",
         description: "National forest-area change summary.",
-        enabled: true
+        enabled: false
       },
       {
         key: "national-change-forest-type",
@@ -976,7 +976,7 @@ const CONFIG = {
         label: "National Change by Forest Type",
         legacyReport: "rpt_National_Change_ForestType",
         description: "National change summarized by forest type.",
-        enabled: true
+        enabled: false
       },
       {
         key: "national-change-forest-type-by-province",
@@ -984,7 +984,7 @@ const CONFIG = {
         label: "National Change by Forest Type & Province",
         legacyReport: "rpt_National_Change_ForestType_ByProv",
         description: "Forest-type change summarized by Province.",
-        enabled: true
+        enabled: false
       },
       {
         key: "national-concession-province-change",
@@ -992,7 +992,7 @@ const CONFIG = {
         label: "National Concession Change by Province",
         legacyReport: "rpt_National_Concession_Province_Change",
         description: "National Concession change summarized by Province.",
-        enabled: true
+        enabled: false
       },
       {
         key: "national-constraint-2011",
@@ -1000,7 +1000,7 @@ const CONFIG = {
         label: "National Constraint Summary (2011)",
         legacyReport: "rpt_National_Constraint_2011",
         description: "National constraint summary for the 2011 baseline.",
-        enabled: true
+        enabled: false
       },
       {
         key: "national-constraint-extreme",
@@ -1008,7 +1008,7 @@ const CONFIG = {
         label: "National Constraint – Extreme",
         legacyReport: "rpt_National_Constraint_Extreme",
         description: "National extreme-constraint summary.",
-        enabled: true
+        enabled: false
       },
       {
         key: "national-constraint-extreme-nonforest",
@@ -1016,7 +1016,7 @@ const CONFIG = {
         label: "National Extreme Constraint – Non-Forest",
         legacyReport: "rpt_National_Constraint_Extreme_NonForestType",
         description: "Extreme constraints outside forest types.",
-        enabled: true
+        enabled: false
       },
 
       /* Province reports */
@@ -1026,7 +1026,7 @@ const CONFIG = {
         label: "Province FMU Summary (2011)",
         legacyReport: "rpt_Province_FMU_2011",
         description: "FMU summary for the selected Province using the 2011 baseline.",
-        enabled: true
+        enabled: false
       },
       {
         key: "province-fmu-current",
@@ -1034,7 +1034,7 @@ const CONFIG = {
         label: "Province FMU Summary – Current",
         legacyReport: "rpt_Province_FMU_Current",
         description: "Current FMU summary for the selected Province.",
-        enabled: true
+        enabled: false
       },
       {
         key: "province-fmu-change",
@@ -1042,7 +1042,7 @@ const CONFIG = {
         label: "Province FMU Change",
         legacyReport: "rpt_Province_FMU_Change",
         description: "FMU change within the selected Province.",
-        enabled: true
+        enabled: false
       },
       {
         key: "province-timber-volume",
@@ -1050,7 +1050,7 @@ const CONFIG = {
         label: "Province Timber Volume",
         legacyReport: "rpt_Province_Timber_Volume",
         description: "Timber-volume summary for the selected Province.",
-        enabled: true
+        enabled: false
       },
       {
         key: "province-change-forest-type",
@@ -1058,7 +1058,7 @@ const CONFIG = {
         label: "Province Change by Forest Type",
         legacyReport: "rpt_Province_Change_ForestType",
         description: "Forest-type change within the selected Province.",
-        enabled: true
+        enabled: false
       },
       {
         key: "province-constraint",
@@ -1074,7 +1074,7 @@ const CONFIG = {
         label: "Province Constraint – Extreme",
         legacyReport: "rpt_Province_Constraint_Extreme",
         description: "Extreme constraints for the selected Province.",
-        enabled: true
+        enabled: false
       },
       {
         key: "province-constraint-extreme-nonforest",
@@ -1082,7 +1082,7 @@ const CONFIG = {
         label: "Province Extreme Constraint – Non-Forest",
         legacyReport: "rpt_Province_Constraint_Extreme_NonForestType",
         description: "Extreme non-forest constraints for the selected Province.",
-        enabled: true
+        enabled: false
       },
       {
         key: "province-constraint-serious",
@@ -1090,7 +1090,7 @@ const CONFIG = {
         label: "Province Constraint – Serious",
         legacyReport: "rpt_Province_Constraint_Serious",
         description: "Serious constraints for the selected Province.",
-        enabled: true
+        enabled: false
       },
       {
         key: "province-concession-change",
@@ -1098,7 +1098,7 @@ const CONFIG = {
         label: "Province Concession Change",
         legacyReport: "rpt_Province_Concession_Change",
         description: "Concession change within the selected Province.",
-        enabled: true
+        enabled: false
       },
       {
         key: "province-concession-unallocated-forest-type",
@@ -1106,7 +1106,7 @@ const CONFIG = {
         label: "Province Concession / Unallocated by Forest Type",
         legacyReport: "rpt_Prov_Cons_Unalloc_ForestType",
         description: "Concession and unallocated areas by forest type.",
-        enabled: true
+        enabled: false
       },
       {
         key: "province-unallocated-vegetation-type",
@@ -1114,7 +1114,7 @@ const CONFIG = {
         label: "Province Unallocated by Vegetation Type",
         legacyReport: "rpt_Prov_Unalloc_VegType",
         description: "Unallocated areas by vegetation type.",
-        enabled: true
+        enabled: false
       },
 
       /* Concession reports */
@@ -1124,7 +1124,7 @@ const CONFIG = {
         label: "FMUs in Concession",
         legacyReport: "rpt_FMU(in Concession)",
         description: "FMUs spatially associated with the selected Concession.",
-        enabled: true
+        enabled: false
       },
       {
         key: "concession-fmu-change",
@@ -1132,7 +1132,7 @@ const CONFIG = {
         label: "Concession FMU Change",
         legacyReport: "rpt_Concession_FMU_Change",
         description: "FMU change within the selected Concession.",
-        enabled: true
+        enabled: false
       },
       {
         key: "concession-fmu-constraint",
@@ -1140,7 +1140,7 @@ const CONFIG = {
         label: "Concession FMU Constraint",
         legacyReport: "rpt_Concession_FMU_Constraint",
         description: "FMU constraints within the selected Concession.",
-        enabled: true
+        enabled: false
       },
       {
         key: "concession-fmu-constraint-extreme",
@@ -1148,7 +1148,7 @@ const CONFIG = {
         label: "Concession FMU Constraint – Extreme",
         legacyReport: "rpt_Concession_FMU_Constraint_Extreme",
         description: "Extreme FMU constraints within the selected Concession.",
-        enabled: true
+        enabled: false
       },
       {
         key: "concession-fmu-constraint-serious",
@@ -1156,7 +1156,7 @@ const CONFIG = {
         label: "Concession FMU Constraint – Serious",
         legacyReport: "rpt_Concession_FMU_Constraint_Serious",
         description: "Serious FMU constraints within the selected Concession.",
-        enabled: true
+        enabled: false
       },
       {
         key: "concession-province-change",
@@ -1164,7 +1164,7 @@ const CONFIG = {
         label: "Concession Change by Province",
         legacyReport: "rpt_Concession_Province_Change",
         description: "Concession change summarized by Province.",
-        enabled: true
+        enabled: false
       },
       {
         key: "concession-province-constraint",
@@ -1172,7 +1172,7 @@ const CONFIG = {
         label: "Concession Province Constraint",
         legacyReport: "rpt_Concession_Province_Constraint",
         description: "Concession constraints summarized by Province.",
-        enabled: true
+        enabled: false
       },
       {
         key: "concession-province-constraint-extreme",
@@ -1180,7 +1180,7 @@ const CONFIG = {
         label: "Concession Province Constraint – Extreme",
         legacyReport: "rpt_Concession_Province_Constraint_Extreme",
         description: "Extreme Concession constraints summarized by Province.",
-        enabled: true
+        enabled: false
       },
       {
         key: "concession-province-constraint-serious",
@@ -1188,7 +1188,7 @@ const CONFIG = {
         label: "Concession Province Constraint – Serious",
         legacyReport: "rpt_Concession_Province_Constraint_Serious",
         description: "Serious Concession constraints summarized by Province.",
-        enabled: true
+        enabled: false
       },
 
       /* Reference reports */
@@ -1198,7 +1198,7 @@ const CONFIG = {
         label: "FMU Register",
         legacyReport: "rpt_FMU",
         description: "FMU reference register.",
-        enabled: true
+        enabled: false
       },
       {
         key: "reference-species-province",
@@ -1206,7 +1206,7 @@ const CONFIG = {
         label: "Species by Province",
         legacyReport: "rptSpeciesProvince",
         description: "Species reference summarized by Province.",
-        enabled: true
+        enabled: false
       },
       {
         key: "reference-vegetation-types",
@@ -1214,7 +1214,7 @@ const CONFIG = {
         label: "Vegetation Types",
         legacyReport: "rptVegTypes",
         description: "Vegetation-type reference list.",
-        enabled: true
+        enabled: false
       },
       {
         key: "reference-vegetation-types-grouped",
@@ -1222,7 +1222,7 @@ const CONFIG = {
         label: "Vegetation Types – Grouped",
         legacyReport: "rptVegTypesGrouped",
         description: "Grouped vegetation-type reference list.",
-        enabled: true
+        enabled: false
       }
     ],
 
@@ -1232,7 +1232,7 @@ const CONFIG = {
         label: "CSV",
         extension: ".csv",
         mimeType: "text/csv;charset=utf-8",
-        enabled: true
+        enabled: false
       },
 
       xlsx: {
@@ -1254,7 +1254,7 @@ const CONFIG = {
     },
 
     print: {
-      enabled: true,
+      enabled: false,
       titlePrefix: "FIMS Cloud",
       openInNewWindow: false
     }
@@ -1876,7 +1876,7 @@ const CONFIG = {
         "/summary/all"
     },
     timeoutMs: 1800000,
-    calculationVersion: "3.8.3"
+    calculationVersion: "3.8.4"
   },
 
   dataImport: {
