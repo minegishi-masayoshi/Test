@@ -1,9 +1,9 @@
 /**
  * FIMS Cloud report engine.
- * Ver.3.8.6: syntax hotfix for integrated constraint table and PDF-only report action.
+ * Ver.3.8.7: robust jsPDF-AutoTable UMD integration for GitHub Pages.
  * Uses the same browser-side jsPDF + jsPDF-AutoTable approach as FIPS.
  */
-export const REPORT_ENGINE_VERSION = "3.8.6";
+export const REPORT_ENGINE_VERSION = "3.8.7";
 
 const SUPPORTED_REPORT_ID = "province-constraint";
 
@@ -40,16 +40,76 @@ export class ReportEngine {
 
     const jsPDFClass = window.jspdf?.jsPDF;
     if (!jsPDFClass) throw new Error("jsPDF was not loaded.");
-    if (typeof jsPDFClass.API?.autoTable !== "function") throw new Error("jsPDF-AutoTable was not loaded.");
 
     const model = this.buildModel(context);
     const doc = new jsPDFClass({ orientation: "portrait", unit: "mm", format: "a4", compress: true });
+    this.prepareAutoTable(doc, jsPDFClass);
     this.drawCompactReport(doc, model);
     this.addFooter(doc, model);
 
     const safeProvince = model.provinceName.replace(/[^A-Za-z0-9_-]+/g, "_");
     doc.save(`FIMS_Province_Constraint_${safeProvince}_${this.dateStamp()}.pdf`);
     this.onStatus(`PDF exported: ${model.title} for ${model.provinceName}.`);
+  }
+
+  prepareAutoTable(doc, jsPDFClass) {
+    if (typeof doc?.autoTable === "function") return;
+
+    const globals = [
+      window.jspdfAutoTable,
+      window.jspdfAutotable,
+      window.jspdf_autotable,
+      window.autoTable
+    ].filter(Boolean);
+
+    for (const candidate of globals) {
+      try {
+        const applyPlugin = candidate?.applyPlugin || candidate?.default?.applyPlugin;
+        if (typeof applyPlugin === "function") {
+          applyPlugin(jsPDFClass);
+          if (typeof doc.autoTable === "function") return;
+        }
+      } catch (error) {
+        console.warn("[FIMS report] AutoTable applyPlugin fallback failed", error);
+      }
+    }
+
+    const callable = globals.some((candidate) =>
+      typeof candidate === "function" ||
+      typeof candidate?.autoTable === "function" ||
+      typeof candidate?.default === "function"
+    );
+
+    if (!callable) {
+      throw new Error("jsPDF-AutoTable was not loaded.");
+    }
+  }
+
+  runAutoTable(doc, options) {
+    if (typeof doc?.autoTable === "function") {
+      doc.autoTable(options);
+      return;
+    }
+
+    const globals = [
+      window.jspdfAutoTable,
+      window.jspdfAutotable,
+      window.jspdf_autotable,
+      window.autoTable
+    ].filter(Boolean);
+
+    for (const candidate of globals) {
+      const fn =
+        (typeof candidate === "function" && candidate) ||
+        candidate?.autoTable ||
+        (typeof candidate?.default === "function" && candidate.default);
+      if (typeof fn === "function") {
+        fn(doc, options);
+        return;
+      }
+    }
+
+    throw new Error("jsPDF-AutoTable was not loaded.");
   }
 
   buildModel(context) {
@@ -171,7 +231,7 @@ export class ReportEngine {
     this.drawPngLocationMap(doc, model, left, panelY + 5, 89, panelH - 5);
 
     this.sectionTitle(doc, "Forest Area and Volume", 104, panelY, 94);
-    doc.autoTable({
+    this.runAutoTable(doc, {
       startY: panelY + 5,
       margin: { left: 104, right: 12 },
       body: [
@@ -203,7 +263,7 @@ export class ReportEngine {
     const constraintRows = this.constraintRows(model);
     const maxConstraint = Math.max(...constraintRows.map((row) => row.value), 1);
 
-    doc.autoTable({
+    this.runAutoTable(doc, {
       startY: constraintY + 5,
       margin: { left, right: 12 },
       head: [["Class", "Constraint", "Area (ha)", "Relative area"]],
