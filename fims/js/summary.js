@@ -56,7 +56,7 @@ import {
 /**
  * Summary module version.
  */
-export const SUMMARY_MODULE_VERSION = "2.0.3";
+export const SUMMARY_MODULE_VERSION = "3.7.0";
 
 /**
  * Default Summary container ID.
@@ -462,6 +462,7 @@ export const OLD_FIMS_SUMMARY_FIELDS = Object.freeze([
     aggregation: SUMMARY_AGGREGATION.SUM,
     source: "fmu",
     aliases: Object.freeze([
+      "loggedLUse",
       "logged_luse",
       "loggedluse",
       "logged_land_use",
@@ -487,7 +488,8 @@ export const OLD_FIMS_SUMMARY_FIELDS = Object.freeze([
       "revised_gross_frst_area",
       "revised_gross_forest_area",
       "revisedgrossforestarea",
-      "to960",
+      "revisedGrossForestArea",
+      "area2",
       "current_",
       "current"
     ])
@@ -506,7 +508,8 @@ export const OLD_FIMS_SUMMARY_FIELDS = Object.freeze([
       "revised_adj_frst_area",
       "revised_adjusted_forest_area",
       "revisedadjustedforestarea",
-      "to961",
+      "adjustedForestArea",
+      "area3",
       "current0"
     ])
   }),

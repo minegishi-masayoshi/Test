@@ -1,6 +1,6 @@
 """
-FIMS Cloud Ver.3.6.3
-Legacy-compatible Forest Constraint calculation API.
+FIMS Cloud Ver.3.7.0
+Legacy-compatible Forest Constraint and forest-area management calculation API.
 
 Endpoints:
     POST /api/constraints/calculate/province/{province}
@@ -43,7 +43,7 @@ engine: Engine = create_engine(
     pool_pre_ping=True,
 )
 
-CALCULATION_VERSION = "3.6.3"
+CALCULATION_VERSION = "3.7.0"
 
 REQUIRED_TABLES = (
     "fmu",
@@ -54,6 +54,10 @@ REQUIRED_TABLES = (
     "extreme_mangrove",
     "serious_sloperelief",
     "serious_inundation",
+    "protected_area",
+    "logged_notlanduse_current",
+    "logged_landuse_current",
+    "landuse_notlogged_current",
 )
 
 CONSTRAINT_SPECS = (
@@ -102,6 +106,45 @@ def _ensure_schema(connection: Any) -> None:
             """
             CREATE INDEX IF NOT EXISTS idx_constraint_result_province
             ON public.constraint_result (province)
+            """
+        )
+    )
+
+    connection.execute(
+        text(
+            """
+            ALTER TABLE public.fmu
+            ADD COLUMN IF NOT EXISTS protected_area double precision DEFAULT 0
+            """
+        )
+    )
+    connection.execute(
+        text(
+            """
+            CREATE TABLE IF NOT EXISTS public.forest_area_result (
+                id                         bigserial PRIMARY KEY,
+                province                   integer NOT NULL,
+                fmu                        bigint NOT NULL,
+                protected_area_ha          double precision DEFAULT 0,
+                logged_notlanduse_ha       double precision DEFAULT 0,
+                logged_landuse_ha          double precision DEFAULT 0,
+                landuse_notlogged_ha       double precision DEFAULT 0,
+                logged_landuse_total_ha    double precision DEFAULT 0,
+                revised_gross_area_ha      double precision DEFAULT 0,
+                revised_adjusted_area_ha   double precision DEFAULT 0,
+                revised_gross_volume_m3    double precision DEFAULT 0,
+                calculation_version        varchar(20) NOT NULL DEFAULT '3.7.0',
+                calculated_at              timestamptz NOT NULL DEFAULT now(),
+                CONSTRAINT uq_forest_area_result_fmu UNIQUE (province, fmu)
+            )
+            """
+        )
+    )
+    connection.execute(
+        text(
+            """
+            CREATE INDEX IF NOT EXISTS idx_forest_area_result_province
+            ON public.forest_area_result (province)
             """
         )
     )
@@ -242,6 +285,195 @@ def _create_constraint_unions(connection: Any, province: int) -> None:
             """
         )
     )
+
+
+
+MANAGEMENT_SPECS = (
+    ("protected_area", "protected_area"),
+    ("logged_notlanduse_current", "logged_notlanduse"),
+    ("logged_landuse_current", "logged_landuse"),
+    ("landuse_notlogged_current", "landuse_notlogged"),
+)
+
+
+def _create_management_unions(connection: Any, province: int) -> None:
+    connection.execute(
+        text(
+            """
+            CREATE TEMP TABLE _fims_management_union (
+                kind text PRIMARY KEY,
+                geom geometry(MultiPolygon, 20355)
+            ) ON COMMIT DROP
+            """
+        )
+    )
+
+    for table_name, kind in MANAGEMENT_SPECS:
+        connection.execute(
+            text(
+                f"""
+                INSERT INTO _fims_management_union (kind, geom)
+                SELECT
+                    :kind,
+                    ST_Multi(
+                        ST_CollectionExtract(
+                            ST_UnaryUnion(
+                                ST_Collect(ST_MakeValid(geom))
+                            ),
+                            3
+                        )
+                    )::geometry(MultiPolygon, 20355)
+                FROM public.{table_name}
+                WHERE geom IS NOT NULL
+                  AND (
+                        province IS NULL
+                        OR btrim(province::text) = ''
+                        OR NULLIF(
+                            regexp_replace(
+                                province::text,
+                                '[^0-9-]',
+                                '',
+                                'g'
+                            ),
+                            ''
+                        )::integer = :province
+                      )
+                """
+            ),
+            {"kind": kind, "province": province},
+        )
+
+
+MANAGEMENT_UPDATE_SQL = """
+WITH geometries AS (
+    SELECT
+        ST_Union(geom) FILTER (WHERE kind = 'protected_area') AS protected_area,
+        ST_Union(geom) FILTER (WHERE kind = 'logged_notlanduse') AS logged_notlanduse,
+        ST_Union(geom) FILTER (WHERE kind = 'logged_landuse') AS logged_landuse,
+        ST_Union(geom) FILTER (WHERE kind = 'landuse_notlogged') AS landuse_notlogged
+    FROM _fims_management_union
+),
+calculated AS (
+    SELECT
+        f.id,
+        COALESCE(
+            ST_Area(ST_Intersection(ST_MakeValid(f.geom), g.protected_area)) / 10000.0,
+            0
+        ) AS protected_area_ha,
+        COALESCE(
+            ST_Area(ST_Intersection(ST_MakeValid(f.geom), g.logged_notlanduse)) / 10000.0,
+            0
+        ) AS logged_notlanduse_ha,
+        COALESCE(
+            ST_Area(ST_Intersection(ST_MakeValid(f.geom), g.logged_landuse)) / 10000.0,
+            0
+        ) AS logged_landuse_ha,
+        COALESCE(
+            ST_Area(ST_Intersection(ST_MakeValid(f.geom), g.landuse_notlogged)) / 10000.0,
+            0
+        ) AS landuse_notlogged_ha
+    FROM public.fmu f
+    CROSS JOIN geometries g
+    WHERE f.province = :province
+      AND f.geom IS NOT NULL
+),
+derived AS (
+    SELECT
+        f.id,
+        c.protected_area_ha,
+        c.logged_notlanduse_ha,
+        c.logged_landuse_ha,
+        c.landuse_notlogged_ha,
+        c.logged_notlanduse_ha
+          + c.logged_landuse_ha
+          + c.landuse_notlogged_ha AS logged_total_ha,
+        GREATEST(
+            COALESCE(f.area_75, 0)
+              - c.logged_notlanduse_ha
+              - c.logged_landuse_ha
+              - c.landuse_notlogged_ha,
+            0
+        ) AS revised_gross_area_ha
+    FROM public.fmu f
+    JOIN calculated c ON c.id = f.id
+),
+final_values AS (
+    SELECT
+        f.id,
+        d.*,
+        d.revised_gross_area_ha
+          * COALESCE(f.index_, 0) / 10.0
+          * COALESCE(f.percent_, 0) / 100.0
+          AS revised_adjusted_area_ha,
+        d.revised_gross_area_ha
+          * COALESCE(f.index_, 0) / 10.0
+          * COALESCE(f.percent_, 0) / 100.0
+          * COALESCE(f.volume, 0)
+          AS revised_gross_volume_m3
+    FROM public.fmu f
+    JOIN derived d ON d.id = f.id
+)
+UPDATE public.fmu f
+SET
+    protected_area = v.protected_area_ha,
+    to96           = v.logged_notlanduse_ha,
+    to960          = v.logged_landuse_ha,
+    to961          = v.landuse_notlogged_ha,
+    area2          = v.revised_gross_area_ha,
+    area3          = v.revised_adjusted_area_ha,
+    forest_vol     = v.revised_gross_volume_m3,
+    current_       = v.revised_gross_area_ha,
+    current0       = v.revised_adjusted_area_ha,
+    current2       = v.revised_gross_volume_m3
+FROM final_values v
+WHERE f.id = v.id
+RETURNING f.id
+"""
+
+
+MANAGEMENT_SNAPSHOT_SQL = """
+INSERT INTO public.forest_area_result (
+    province,
+    fmu,
+    protected_area_ha,
+    logged_notlanduse_ha,
+    logged_landuse_ha,
+    landuse_notlogged_ha,
+    logged_landuse_total_ha,
+    revised_gross_area_ha,
+    revised_adjusted_area_ha,
+    revised_gross_volume_m3,
+    calculation_version,
+    calculated_at
+)
+SELECT
+    province,
+    fmu,
+    COALESCE(protected_area, 0),
+    COALESCE(to96, 0),
+    COALESCE(to960, 0),
+    COALESCE(to961, 0),
+    COALESCE(to96, 0) + COALESCE(to960, 0) + COALESCE(to961, 0),
+    COALESCE(area2, 0),
+    COALESCE(area3, 0),
+    COALESCE(forest_vol, 0),
+    :calculation_version,
+    now()
+FROM public.fmu
+WHERE province = :province
+ON CONFLICT (province, fmu)
+DO UPDATE SET
+    protected_area_ha        = EXCLUDED.protected_area_ha,
+    logged_notlanduse_ha     = EXCLUDED.logged_notlanduse_ha,
+    logged_landuse_ha        = EXCLUDED.logged_landuse_ha,
+    landuse_notlogged_ha     = EXCLUDED.landuse_notlogged_ha,
+    logged_landuse_total_ha  = EXCLUDED.logged_landuse_total_ha,
+    revised_gross_area_ha    = EXCLUDED.revised_gross_area_ha,
+    revised_adjusted_area_ha = EXCLUDED.revised_adjusted_area_ha,
+    revised_gross_volume_m3  = EXCLUDED.revised_gross_volume_m3,
+    calculation_version      = EXCLUDED.calculation_version,
+    calculated_at            = EXCLUDED.calculated_at
+"""
 
 
 UPDATE_SQL = """
@@ -409,6 +641,14 @@ SELECT
     COALESCE(SUM(inundati0), 0)::double precision AS serious_inundation_ha,
     COALESCE(SUM(area), 0)::double precision AS extreme_total_ha,
     COALESCE(SUM(area0), 0)::double precision AS serious_total_ha,
+    COALESCE(SUM(protected_area), 0)::double precision AS protected_area_ha,
+    COALESCE(SUM(to96), 0)::double precision AS logged_notlanduse_ha,
+    COALESCE(SUM(to960), 0)::double precision AS logged_landuse_ha,
+    COALESCE(SUM(to961), 0)::double precision AS landuse_notlogged_ha,
+    COALESCE(SUM(to96 + to960 + to961), 0)::double precision AS logged_landuse_total_ha,
+    COALESCE(SUM(area2), 0)::double precision AS revised_gross_area_ha,
+    COALESCE(SUM(area3), 0)::double precision AS revised_adjusted_area_ha,
+    COALESCE(SUM(forest_vol), 0)::double precision AS revised_gross_volume_m3,
     CASE
         WHEN COALESCE(SUM(veg_area), 0) > 0
         THEN COALESCE(SUM(area), 0) / SUM(veg_area) * 100.0
@@ -454,6 +694,14 @@ def _aggregate_summaries(
         "serious_inundation_ha",
         "extreme_total_ha",
         "serious_total_ha",
+        "protected_area_ha",
+        "logged_notlanduse_ha",
+        "logged_landuse_ha",
+        "landuse_notlogged_ha",
+        "logged_landuse_total_ha",
+        "revised_gross_area_ha",
+        "revised_adjusted_area_ha",
+        "revised_gross_volume_m3",
     )
 
     result: dict[str, Any] = {
@@ -538,14 +786,27 @@ def _calculate_one_province(
             )
 
         _create_constraint_unions(connection, province)
+        _create_management_unions(connection, province)
 
         updated_ids = connection.execute(
             text(UPDATE_SQL),
             {"province": province},
         ).scalars().all()
+        management_updated_ids = connection.execute(
+            text(MANAGEMENT_UPDATE_SQL),
+            {"province": province},
+        ).scalars().all()
 
         connection.execute(
             text(SNAPSHOT_SQL),
+            {
+                "province": province,
+                "calculation_version": CALCULATION_VERSION,
+            },
+        )
+
+        connection.execute(
+            text(MANAGEMENT_SNAPSHOT_SQL),
             {
                 "province": province,
                 "calculation_version": CALCULATION_VERSION,
@@ -558,6 +819,7 @@ def _calculate_one_province(
         "status": "ok",
         "province": province,
         "updated_fmu_count": len(updated_ids),
+        "management_updated_fmu_count": len(management_updated_ids),
         "calculation_version": CALCULATION_VERSION,
         "summary": summary,
     }
@@ -639,6 +901,16 @@ def calculate_constraints(
                     "area_unit": "ha",
                     "proportion":
                         "union area / vegetation area * 100",
+                    "protected_area":
+                        "FMU intersection with Protected Area",
+                    "land_use_components":
+                        "FMU intersections with three Current land-use layers",
+                    "revised_gross_area":
+                        "Gross Forest Area 75 minus the three land-use components",
+                    "revised_adjusted_area":
+                        "Revised Gross Area × Disturbance Index/10 × Complex Percent/100",
+                    "revised_gross_volume":
+                        "Revised Adjusted Area × Timber Volume",
                 },
                 "next_action":
                     "Refresh the Province Summary and close Large Map.",

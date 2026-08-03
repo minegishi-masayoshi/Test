@@ -40,7 +40,7 @@ const CONFIG = {
     name: "FIMS Cloud",
     fullName: "Forest Information and Mapping System",
     organization: "PNG Forest Authority",
-    version: "Ver.3.6.3",
+    version: "Ver.3.7.0",
     build: "2.0.0",
     environment: "MVP",
     language: "en",
@@ -620,18 +620,46 @@ const CONFIG = {
         "protected"
       ],
 
+      loggedNotLandUse: [
+        "logged_notlanduse",
+        "logged_not_land_use",
+        "to96"
+      ],
+
+      loggedLandUse: [
+        "logged_landuse",
+        "logged_land_use",
+        "to960"
+      ],
+
+      landUseNotLogged: [
+        "landuse_notlogged",
+        "land_use_not_logged",
+        "to961"
+      ],
+
+      revisedGrossForestArea: [
+        "area2",
+        "revised_gross_forest_area",
+        "current_"
+      ],
+
       adjustedForestArea: [
+        "area3",
         "adjusted_forest_area",
         "adjustedforestarea",
         "rev_adj_forest_area",
-        "revadjforestarea"
+        "revadjforestarea",
+        "current0"
       ],
 
       adjustedForestVolume: [
+        "forest_vol",
         "adjusted_forest_volume",
         "adjustedforestvolume",
         "rev_gross_forest_vol",
-        "revgrossforestvol"
+        "revgrossforestvol",
+        "current2"
       ]
     },
 
@@ -1848,7 +1876,7 @@ const CONFIG = {
         "/summary/all"
     },
     timeoutMs: 1800000,
-    calculationVersion: "3.6.3"
+    calculationVersion: "3.7.0"
   },
 
   dataImport: {

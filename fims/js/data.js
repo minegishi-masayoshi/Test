@@ -910,6 +910,43 @@ export function normalizeFmuFeature(
         fields.protectedArea
       )
     ),
+    loggedNotLandUse: toNullableNumber(
+      readMappedValue(
+        properties,
+        fieldMap,
+        "loggedNotLandUse",
+        fields.loggedNotLandUse
+      )
+    ),
+    loggedLandUse: toNullableNumber(
+      readMappedValue(
+        properties,
+        fieldMap,
+        "loggedLandUse",
+        fields.loggedLandUse
+      )
+    ),
+    landUseNotLogged: toNullableNumber(
+      readMappedValue(
+        properties,
+        fieldMap,
+        "landUseNotLogged",
+        fields.landUseNotLogged
+      )
+    ),
+    loggedLUse: [
+      toNullableNumber(readMappedValue(properties, fieldMap, "loggedNotLandUse", fields.loggedNotLandUse)),
+      toNullableNumber(readMappedValue(properties, fieldMap, "loggedLandUse", fields.loggedLandUse)),
+      toNullableNumber(readMappedValue(properties, fieldMap, "landUseNotLogged", fields.landUseNotLogged))
+    ].reduce((sum, value) => sum + (value ?? 0), 0),
+    revisedGrossForestArea: toNullableNumber(
+      readMappedValue(
+        properties,
+        fieldMap,
+        "revisedGrossForestArea",
+        fields.revisedGrossForestArea
+      )
+    ),
     adjustedForestArea: toNullableNumber(
       readMappedValue(
         properties,
