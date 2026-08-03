@@ -60,14 +60,14 @@ import {
 
 import {
   ReportEngine
-} from "./reportEngine.js?v=3.8.4";
+} from "./reportEngine.js?v=3.8.5";
 
 /* ============================================================
  * 1. Application constants
  * ============================================================
  */
 
-export const APP_VERSION = "3.8.4";
+export const APP_VERSION = "3.8.5";
 
 export const APP_STATUS = Object.freeze({
   IDLE: "idle",
@@ -87,9 +87,7 @@ export const APP_VIEW = Object.freeze({
 });
 
 export const REPORT_ACTION = Object.freeze({
-  PREVIEW: "preview",
-  PDF: "pdf",
-  EXPORT: "export"
+  PDF: "pdf"
 });
 
 const DEFAULT_EMPTY_VALUE =
@@ -278,20 +276,12 @@ const SELECTORS = Object.freeze({
     "[data-action='apply-fmu-volume']"
   ],
 
-  previewReportButton: [
-    "#previewReportButton",
-    "[data-action='preview-report']"
-  ],
 
   pdfReportButton: [
     "#pdfReportButton",
     "[data-action='pdf-report']"
   ],
 
-  exportReportButton: [
-    "#exportReportButton",
-    "[data-action='export-report']"
-  ]
 });
 
 /* ============================================================
@@ -4325,17 +4315,6 @@ export class ApplicationController {
       return false;
     }
 
-    if (
-      action === REPORT_ACTION.EXPORT &&
-      report.id ===
-        "province-fmu-summary" &&
-      this.summaryManager
-    ) {
-      this.summaryManager
-        .downloadCsv();
-
-      return true;
-    }
 
     const event =
       new CustomEvent(
@@ -4360,12 +4339,7 @@ export class ApplicationController {
 
     document.dispatchEvent(event);
 
-    const actionLabel =
-      action === REPORT_ACTION.PREVIEW
-        ? "Preview"
-        : action === REPORT_ACTION.PDF
-          ? "Export PDF"
-          : "Export CSV";
+    const actionLabel = "Export PDF";
 
     this.setStatus(
       `${actionLabel}: ` +
@@ -5138,15 +5112,6 @@ export class ApplicationController {
       }
     );
 
-    this.bindEvent(
-      this.dom.previewReportButton,
-      "click",
-      () => {
-        this.runReportAction(
-          REPORT_ACTION.PREVIEW
-        );
-      }
-    );
 
     this.bindEvent(
       this.dom.pdfReportButton,
@@ -5158,15 +5123,6 @@ export class ApplicationController {
       }
     );
 
-    this.bindEvent(
-      this.dom.exportReportButton,
-      "click",
-      () => {
-        this.runReportAction(
-          REPORT_ACTION.EXPORT
-        );
-      }
-    );
 
     /*
      * Compatibility with old tab buttons.

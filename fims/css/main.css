@@ -3273,7 +3273,7 @@ body.large-map-page {
 .fims-report-preview-note { margin: 10px 0 0; font-size: 9px; color:#5b685f; line-height:1.4; }
 
 
-/* FIMS Cloud Ver.3.8.4 - Report availability states */
+/* FIMS Cloud Ver.3.8.5 - Report availability states */
 .report-list-button.report-unavailable,
 .report-list-button:disabled {
   position: relative;

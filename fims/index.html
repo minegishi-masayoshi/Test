@@ -697,64 +697,20 @@
             </div>
 
             <!-- ==========================================
-                 Report toolbar
+                 Report action
                  ========================================== -->
 
-            <div
-              class="report-toolbar"
-            >
-
-              <button
-                id="previewReportButton"
-                type="button"
-                class="primary-button"
-                data-action="preview-report"
-              >
-                Preview
-              </button>
-
+            <div class="report-toolbar report-toolbar-pdf-only">
               <button
                 id="pdfReportButton"
                 type="button"
-                class="secondary-button"
+                class="primary-button"
                 data-action="pdf-report"
                 title="Export the selected report as PDF"
               >
                 Export PDF
               </button>
-
-              <button
-                id="exportReportButton"
-                type="button"
-                class="secondary-button"
-                data-action="export-report"
-              >
-                Export CSV
-              </button>
-
             </div>
-
-            <!-- ==========================================
-                 Report preview
-                 ========================================== -->
-
-            <section
-              id="reportPreview"
-              class="report-preview"
-              aria-label="Report preview"
-            >
-
-              <div
-                id="reportEmptyMessage"
-                class="empty-message"
-              >
-
-                Select a Province
-                and choose a report.
-
-              </div>
-
-            </section>
 
           </div>
 
@@ -1083,14 +1039,14 @@
        CSP-approved pinned unpkg resources
        ======================================================== -->
   <script src="https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-  <script src="https://unpkg.com/jspdf-autotable@3.8.4/dist/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://unpkg.com/jspdf-autotable@3.8.5/dist/jspdf.plugin.autotable.min.js"></script>
 
   <!-- ========================================================
        FIMS Cloud Ver.2 application
        ======================================================== -->
   <script
     type="module"
-    src="./js/app.js?v=3.8.4"
+    src="./js/app.js?v=3.8.5"
   ></script>
 </body>
 </html>

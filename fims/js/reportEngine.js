@@ -1,9 +1,9 @@
 /**
  * FIMS Cloud report engine.
- * Ver.3.8.4: production PDF cleanup and report availability UI.
+ * Ver.3.8.5: integrated visual constraint table and PDF-only report action.
  * Uses the same browser-side jsPDF + jsPDF-AutoTable approach as FIPS.
  */
-export const REPORT_ENGINE_VERSION = "3.8.4";
+export const REPORT_ENGINE_VERSION = "3.8.5";
 
 const SUPPORTED_REPORT_ID = "province-constraint";
 
@@ -21,7 +21,6 @@ export class ReportEngine {
   async handleReportEvent(event) {
     const context = event?.detail || {};
     try {
-      if (context.action === "preview") this.preview(context);
       if (context.action === "pdf") await this.exportPdf(context);
     } catch (error) {
       console.error("[FIMS report]", error);
@@ -32,34 +31,6 @@ export class ReportEngine {
 
   isSupported(context) {
     return context?.report?.id === SUPPORTED_REPORT_ID;
-  }
-
-  preview(context) {
-    if (!this.isSupported(context)) {
-      const host = document.getElementById("reportPreview");
-      if (host) host.innerHTML = '<div class="empty-message">PDF implementation is currently available for <strong>Province Constraint</strong>.</div>';
-      return;
-    }
-
-    const model = this.buildModel(context);
-    const host = document.getElementById("reportPreview");
-    if (!host) return;
-
-    host.innerHTML = `
-      <div class="fims-report-preview-card">
-        <div class="fims-report-preview-title">PNG Forest Authority</div>
-        <div class="fims-report-preview-subtitle">Province Constraint Concession / Unallocated</div>
-        <div class="fims-report-preview-meta">
-          <span><strong>Province:</strong> ${this.escapeHtml(model.provinceName)}</span>
-          <span><strong>FMUs:</strong> ${model.fmuCount.toLocaleString("en-US")}</span>
-        </div>
-        <div class="fims-report-preview-grid">
-          ${model.kpis.map((item) => `<div class="fims-report-preview-kpi"><span>${this.escapeHtml(item.label)}</span><strong>${this.escapeHtml(item.formatted)}</strong></div>`).join("")}
-        </div>
-        <p class="fims-report-preview-note">Compact A4 one-page PDF. Values use the same normalized Summary object displayed on screen.</p>
-      </div>`;
-
-    this.onStatus(`Preview ready: ${model.title} for ${model.provinceName}.`);
   }
 
   async exportPdf(context) {
@@ -193,63 +164,112 @@ export class ReportEngine {
     doc.text(`Generated: ${this.formatDateTime(model.generatedAt)}`, 108, 26);
     doc.text(`Calculated: ${this.compactDate(model.calculationDate)}`, 108, 31);
 
-    // Spatial context and analytical graphic. Executive-summary KPI cards are omitted
-    // because the same figures are shown in the detailed table below.
+    // Spatial context and core forest metrics.
     const panelY = 36;
     const panelH = 65;
     this.sectionTitle(doc, "Province Location in Papua New Guinea", left, panelY, 89);
     this.drawPngLocationMap(doc, model, left, panelY + 5, 89, panelH - 5);
-    this.sectionTitle(doc, "Constraint Area by Type", 104, panelY, 94);
-    this.drawConstraintBars(doc, model, 104, panelY + 5, 94, panelH - 5);
 
-    this.sectionTitle(doc, "Forest Area and Volume", left, 106, contentW);
+    this.sectionTitle(doc, "Forest Area and Volume", 104, panelY, 94);
     doc.autoTable({
-      startY: 111,
-      margin: { left, right: 12 },
+      startY: panelY + 5,
+      margin: { left: 104, right: 12 },
       body: [
-        ["Vegetation / Gross Area", this.area(model.metrics.area), "Protected Area", this.area(model.metrics.protected)],
-        ["Gross Forest Area '75", this.area(model.metrics.grossArea75), "Revised Gross Forest Area", this.area(model.metrics.revisedGrossArea)],
-        ["Adjusted Forest Area '75", this.area(model.metrics.adjustedArea75), "Rev Adjusted Forest Area", this.area(model.metrics.revisedAdjustedArea)],
-        ["Gross Forest Volume '75", this.volume(model.metrics.grossVolume75), "Rev Gross Forest Volume", this.volume(model.metrics.revisedGrossVolume)],
-        ["Logged / Land Use — Current", this.area(model.metrics.loggedLandUse), "FMUs", model.fmuCount.toLocaleString("en-US")]
+        ["Vegetation / Gross Area", this.area(model.metrics.area)],
+        ["Gross Forest Area '75", this.area(model.metrics.grossArea75)],
+        ["Adjusted Forest Area '75", this.area(model.metrics.adjustedArea75)],
+        ["Gross Forest Volume '75", this.volume(model.metrics.grossVolume75)],
+        ["Logged / Land Use — Current", this.area(model.metrics.loggedLandUse)],
+        ["Revised Gross Forest Area", this.area(model.metrics.revisedGrossArea)],
+        ["Rev Adjusted Forest Area", this.area(model.metrics.revisedAdjustedArea)],
+        ["Rev Gross Forest Volume", this.volume(model.metrics.revisedGrossVolume)]
       ],
       theme: "grid",
-      styles: { font: "helvetica", fontSize: 7.4, cellPadding: 1.75, lineColor: [184, 198, 189] },
-      columnStyles: { 0: { cellWidth: 53 }, 1: { cellWidth: 35, halign: "right", fontStyle: "bold" }, 2: { cellWidth: 58 }, 3: { cellWidth: 40, halign: "right", fontStyle: "bold" } }
+      styles: {
+        font: "helvetica",
+        fontSize: 7.1,
+        cellPadding: 1.45,
+        lineColor: [184, 198, 189]
+      },
+      columnStyles: {
+        0: { cellWidth: 60 },
+        1: { cellWidth: 34, halign: "right", fontStyle: "bold" }
+      }
     });
 
-    const constraintY = doc.lastAutoTable.finalY + 5;
+    // One integrated table provides exact values and relative visual comparison.
+    const constraintY = 106;
     this.sectionTitle(doc, "Constraint Summary", left, constraintY, contentW);
+    const constraintRows = this.constraintRows(model);
+    const maxConstraint = Math.max(...constraintRows.map((row) => row.value), 1);
+
     doc.autoTable({
       startY: constraintY + 5,
       margin: { left, right: 12 },
-      head: [["Class", "Component", "Area (ha)", "Class", "Component", "Area (ha)"]],
-      body: [
-        ["Extreme", "Slope", this.numberText(model.metrics.extSlope), "Extreme", "Inundation", this.numberText(model.metrics.extInundation)],
-        ["Extreme", "Altitude", this.numberText(model.metrics.extAltitude), "Extreme", "Mangrove", this.numberText(model.metrics.extMangrove)],
-        ["Extreme", "Karst", this.numberText(model.metrics.extKarst), "Serious", "Slope Relief", this.numberText(model.metrics.serSlope)],
-        ["Protected", "Protected Area", this.numberText(model.metrics.protected), "Serious", "Inundation", this.numberText(model.metrics.serInundation)]
-      ],
+      head: [["Class", "Constraint", "Area (ha)", "Relative area"]],
+      body: constraintRows.map((row) => [
+        row.className,
+        row.label,
+        this.numberText(row.value),
+        ""
+      ]),
       theme: "striped",
-      styles: { font: "helvetica", fontSize: 7.2, cellPadding: 1.6, lineColor: [208, 216, 211] },
-      headStyles: { fillColor: [35, 105, 64], textColor: 255, fontStyle: "bold" },
-      columnStyles: { 2: { halign: "right" }, 5: { halign: "right" } }
+      styles: {
+        font: "helvetica",
+        fontSize: 7.2,
+        cellPadding: 1.75,
+        lineColor: [208, 216, 211],
+        minCellHeight: 7
+      },
+      headStyles: {
+        fillColor: [35, 105, 64],
+        textColor: 255,
+        fontStyle: "bold"
+      },
+      columnStyles: {
+        0: { cellWidth: 25 },
+        1: { cellWidth: 55 },
+        2: { cellWidth: 34, halign: "right" },
+        3: { cellWidth: 72 }
+      },
+      didDrawCell: (data) => {
+        if (data.section !== "body" || data.column.index !== 3) return;
+        const row = constraintRows[data.row.index];
+        if (!row) return;
+
+        const padding = 2;
+        const trackX = data.cell.x + padding;
+        const trackY = data.cell.y + data.cell.height / 2 - 1.4;
+        const trackW = Math.max(data.cell.width - padding * 2, 1);
+        const barW = trackW * this.number(row.value) / maxConstraint;
+
+        doc.setFillColor(225, 233, 227);
+        doc.roundedRect(trackX, trackY, trackW, 2.8, 1, 1, "F");
+        if (barW > 0) {
+          if (row.className === "Serious") {
+            doc.setFillColor(184, 116, 45);
+          } else if (row.className === "Protected") {
+            doc.setFillColor(88, 126, 97);
+          } else {
+            doc.setFillColor(35, 105, 64);
+          }
+          doc.roundedRect(trackX, trackY, Math.max(barW, 0.8), 2.8, 1, 1, "F");
+        }
+      }
     });
 
-  }
 
-  drawKpi(doc, x, y, w, h, item) {
-    doc.setFillColor(244, 248, 245);
-    doc.setDrawColor(174, 197, 181);
-    doc.roundedRect(x, y, w, h, 1.5, 1.5, "FD");
-    doc.setTextColor(48, 70, 56);
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(6.5);
-    const label = doc.splitTextToSize(item.label, w - 5);
-    doc.text(label, x + 2.5, y + 4.5);
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(8.6);
-    doc.text(item.formatted, x + 2.5, y + h - 3.2);
+  constraintRows(model) {
+    return [
+      { className: "Serious", label: "Slope Relief", value: this.number(model.metrics.serSlope) },
+      { className: "Serious", label: "Inundation", value: this.number(model.metrics.serInundation) },
+      { className: "Protected", label: "Protected Area", value: this.number(model.metrics.protected) },
+      { className: "Extreme", label: "Karst", value: this.number(model.metrics.extKarst) },
+      { className: "Extreme", label: "Inundation", value: this.number(model.metrics.extInundation) },
+      { className: "Extreme", label: "Slope", value: this.number(model.metrics.extSlope) },
+      { className: "Extreme", label: "Altitude", value: this.number(model.metrics.extAltitude) },
+      { className: "Extreme", label: "Mangrove", value: this.number(model.metrics.extMangrove) }
+    ].sort((a, b) => b.value - a.value);
   }
 
   sectionTitle(doc, title, x, y, w) {
@@ -260,45 +280,6 @@ export class ReportEngine {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(7.4);
     doc.text(title, x + 2, y + 3.6);
-  }
-
-  drawConstraintBars(doc, model, x, y, w, h) {
-    doc.setFillColor(250, 251, 250);
-    doc.setDrawColor(195, 205, 198);
-    doc.rect(x, y, w, h, "FD");
-
-    const rows = [
-      ["Serious slope relief", model.metrics.serSlope],
-      ["Serious inundation", model.metrics.serInundation],
-      ["Protected area", model.metrics.protected],
-      ["Extreme karst", model.metrics.extKarst],
-      ["Extreme inundation", model.metrics.extInundation],
-      ["Extreme slope", model.metrics.extSlope],
-      ["Extreme altitude", model.metrics.extAltitude],
-      ["Extreme mangrove", model.metrics.extMangrove]
-    ].sort((a, b) => b[1] - a[1]);
-
-    const max = Math.max(...rows.map((row) => row[1]), 1);
-    const labelW = 29;
-    const valueW = 18;
-    const barX = x + labelW + 3;
-    const barW = w - labelW - valueW - 8;
-    const rowH = 6.4;
-    rows.forEach((row, index) => {
-      const yy = y + 5 + index * rowH;
-      const width = barW * this.number(row[1]) / max;
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(5.8);
-      doc.setTextColor(55, 67, 59);
-      doc.text(row[0], x + 2.5, yy + 2.6);
-      doc.setFillColor(227, 235, 229);
-      doc.rect(barX, yy, barW, 3.2, "F");
-      doc.setFillColor(35, 105, 64);
-      if (width > 0) doc.rect(barX, yy, width, 3.2, "F");
-      doc.setFont("helvetica", "bold");
-      doc.text(this.compactNumber(row[1]), x + w - 2.5, yy + 2.6, { align: "right" });
-    });
-
   }
 
   drawPngLocationMap(doc, model, x, y, w, h) {
