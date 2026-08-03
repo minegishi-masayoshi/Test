@@ -67,7 +67,7 @@ import {
  * ============================================================
  */
 
-export const APP_VERSION = "3.6.2";
+export const APP_VERSION = "3.6.3";
 
 export const APP_STATUS = Object.freeze({
   IDLE: "idle",

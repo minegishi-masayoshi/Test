@@ -1,5 +1,5 @@
 """
-FIMS Cloud Ver.3.6.2
+FIMS Cloud Ver.3.6.3
 Legacy-compatible Forest Constraint calculation API.
 
 Endpoints:
@@ -43,7 +43,7 @@ engine: Engine = create_engine(
     pool_pre_ping=True,
 )
 
-CALCULATION_VERSION = "3.6.2"
+CALCULATION_VERSION = "3.6.3"
 
 REQUIRED_TABLES = (
     "fmu",
