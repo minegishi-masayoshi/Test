@@ -60,14 +60,14 @@ import {
 
 import {
   ReportEngine
-} from "./reportEngine.js";
+} from "./reportEngine.js?v=3.8.0";
 
 /* ============================================================
  * 1. Application constants
  * ============================================================
  */
 
-export const APP_VERSION = "3.7.0";
+export const APP_VERSION = "3.8.0";
 
 export const APP_STATUS = Object.freeze({
   IDLE: "idle",

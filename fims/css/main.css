@@ -3259,3 +3259,15 @@ body.large-map-page {
   color: #4d6254;
   font-size: 0.88rem;
 }
+
+
+/* Ver.3.8.0 Province Constraint report preview */
+.fims-report-preview-card { padding: 14px; background: #f8fbf9; border: 1px solid #b8cbbf; min-height: 100%; }
+.fims-report-preview-title { color: #165c36; font-weight: 800; font-size: 14px; }
+.fims-report-preview-subtitle { margin-top: 2px; font-weight: 700; font-size: 12px; }
+.fims-report-preview-meta { display: flex; gap: 16px; margin: 10px 0; font-size: 11px; }
+.fims-report-preview-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 7px; }
+.fims-report-preview-kpi { padding: 8px; border: 1px solid #cbd9d0; background: white; }
+.fims-report-preview-kpi span { display:block; font-size: 9px; color:#52665a; }
+.fims-report-preview-kpi strong { display:block; margin-top:3px; color:#174f31; font-size:11px; }
+.fims-report-preview-note { margin: 10px 0 0; font-size: 9px; color:#5b685f; line-height:1.4; }
