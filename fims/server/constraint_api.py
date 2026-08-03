@@ -1,5 +1,5 @@
 """
-FIMS Cloud Ver.3.6.0
+FIMS Cloud Ver.3.6.2
 Legacy-compatible Forest Constraint calculation API.
 
 Endpoints:
@@ -43,7 +43,7 @@ engine: Engine = create_engine(
     pool_pre_ping=True,
 )
 
-CALCULATION_VERSION = "3.6.0"
+CALCULATION_VERSION = "3.6.2"
 
 REQUIRED_TABLES = (
     "fmu",
@@ -166,21 +166,33 @@ def _create_constraint_unions(connection: Any, province: int) -> None:
     )
 
     for table_name, _fmu_column, kind in CONSTRAINT_SPECS:
-        geometry = connection.execute(
-            text(_union_sql(table_name)),
-            {"province": province},
-        ).scalar_one_or_none()
-
         connection.execute(
             text(
-                """
+                f"""
                 INSERT INTO _fims_constraint_union (kind, geom)
-                VALUES (:kind, ST_GeomFromEWKB(:geom))
+                SELECT
+                    :kind,
+                    ST_Multi(
+                        ST_CollectionExtract(
+                            ST_UnaryUnion(
+                                ST_Collect(
+                                    ST_MakeValid(geom)
+                                )
+                            ),
+                            3
+                        )
+                    )::geometry(MultiPolygon, 20355)
+                FROM public.{table_name}
+                WHERE geom IS NOT NULL
+                  AND (
+                        province IS NULL
+                        OR ROUND(province::numeric)::integer = :province
+                      )
                 """
             ),
             {
                 "kind": kind,
-                "geom": bytes(geometry.data) if geometry is not None else None,
+                "province": province,
             },
         )
 
@@ -235,15 +247,15 @@ def _create_constraint_unions(connection: Any, province: int) -> None:
 UPDATE_SQL = """
 WITH geometries AS (
     SELECT
-        MAX(geom) FILTER (WHERE kind = 'extreme_slope') AS extreme_slope,
-        MAX(geom) FILTER (WHERE kind = 'extreme_altitude') AS extreme_altitude,
-        MAX(geom) FILTER (WHERE kind = 'extreme_karst') AS extreme_karst,
-        MAX(geom) FILTER (WHERE kind = 'extreme_inundation') AS extreme_inundation,
-        MAX(geom) FILTER (WHERE kind = 'extreme_mangrove') AS extreme_mangrove,
-        MAX(geom) FILTER (WHERE kind = 'serious_sloperelief') AS serious_sloperelief,
-        MAX(geom) FILTER (WHERE kind = 'serious_inundation') AS serious_inundation,
-        MAX(geom) FILTER (WHERE kind = 'extreme_all') AS extreme_all,
-        MAX(geom) FILTER (WHERE kind = 'serious_all') AS serious_all
+        ST_Union(geom) FILTER (WHERE kind = 'extreme_slope') AS extreme_slope,
+        ST_Union(geom) FILTER (WHERE kind = 'extreme_altitude') AS extreme_altitude,
+        ST_Union(geom) FILTER (WHERE kind = 'extreme_karst') AS extreme_karst,
+        ST_Union(geom) FILTER (WHERE kind = 'extreme_inundation') AS extreme_inundation,
+        ST_Union(geom) FILTER (WHERE kind = 'extreme_mangrove') AS extreme_mangrove,
+        ST_Union(geom) FILTER (WHERE kind = 'serious_sloperelief') AS serious_sloperelief,
+        ST_Union(geom) FILTER (WHERE kind = 'serious_inundation') AS serious_inundation,
+        ST_Union(geom) FILTER (WHERE kind = 'extreme_all') AS extreme_all,
+        ST_Union(geom) FILTER (WHERE kind = 'serious_all') AS serious_all
     FROM _fims_constraint_union
 ),
 calculated AS (
@@ -385,7 +397,7 @@ DO UPDATE SET
 
 SUMMARY_SQL = """
 SELECT
-    :province::integer AS province,
+    CAST(:province AS integer) AS province,
     COUNT(*)::integer AS fmu_count,
     COALESCE(SUM(veg_area), 0)::double precision AS gross_forest_area_ha,
     COALESCE(SUM(slope), 0)::double precision AS extreme_slope_ha,
@@ -407,7 +419,7 @@ SELECT
         THEN COALESCE(SUM(area0), 0) / SUM(veg_area) * 100.0
         ELSE 0
     END::double precision AS prop_serious,
-    MAX(calculated_at) AS calculated_at
+    MAX(r.calculated_at) AS calculated_at
 FROM public.fmu f
 LEFT JOIN public.constraint_result r
   ON r.province = f.province
@@ -427,6 +439,130 @@ def _summary(connection: Any, province: int) -> dict[str, Any]:
     return result
 
 
+
+def _aggregate_summaries(
+    summaries: list[dict[str, Any]],
+) -> dict[str, Any]:
+    area_fields = (
+        "gross_forest_area_ha",
+        "extreme_slope_ha",
+        "extreme_altitude_ha",
+        "extreme_karst_ha",
+        "extreme_inundation_ha",
+        "extreme_mangrove_ha",
+        "serious_sloperelief_ha",
+        "serious_inundation_ha",
+        "extreme_total_ha",
+        "serious_total_ha",
+    )
+
+    result: dict[str, Any] = {
+        "scope": "all",
+        "province": None,
+        "fmu_count": 0,
+    }
+
+    for field in area_fields:
+        result[field] = 0.0
+
+    calculated_values: list[str] = []
+
+    for summary in summaries:
+        result["fmu_count"] += int(summary.get("fmu_count") or 0)
+
+        for field in area_fields:
+            result[field] += float(summary.get(field) or 0)
+
+        if summary.get("calculated_at"):
+            calculated_values.append(str(summary["calculated_at"]))
+
+    gross_area = float(result["gross_forest_area_ha"] or 0)
+    result["prop_extreme"] = (
+        float(result["extreme_total_ha"]) / gross_area * 100.0
+        if gross_area > 0
+        else 0.0
+    )
+    result["prop_serious"] = (
+        float(result["serious_total_ha"]) / gross_area * 100.0
+        if gross_area > 0
+        else 0.0
+    )
+    result["calculated_at"] = (
+        max(calculated_values)
+        if calculated_values
+        else None
+    )
+
+    return result
+
+
+def _province_codes() -> list[int]:
+    with engine.begin() as connection:
+        _ensure_schema(connection)
+        rows = connection.execute(
+            text(
+                """
+                SELECT DISTINCT province
+                FROM public.fmu
+                WHERE province IS NOT NULL
+                ORDER BY province
+                """
+            )
+        ).scalars().all()
+
+    return [int(value) for value in rows]
+
+
+def _calculate_one_province(
+    province: int,
+) -> dict[str, Any]:
+    with engine.begin() as connection:
+        _ensure_schema(connection)
+        _validate_tables(connection)
+
+        fmu_count = connection.execute(
+            text(
+                """
+                SELECT COUNT(*)
+                FROM public.fmu
+                WHERE province = :province
+                """
+            ),
+            {"province": province},
+        ).scalar_one()
+
+        if fmu_count == 0:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No FMUs were found for Province {province}.",
+            )
+
+        _create_constraint_unions(connection, province)
+
+        updated_ids = connection.execute(
+            text(UPDATE_SQL),
+            {"province": province},
+        ).scalars().all()
+
+        connection.execute(
+            text(SNAPSHOT_SQL),
+            {
+                "province": province,
+                "calculation_version": CALCULATION_VERSION,
+            },
+        )
+
+        summary = _summary(connection, province)
+
+    return {
+        "status": "ok",
+        "province": province,
+        "updated_fmu_count": len(updated_ids),
+        "calculation_version": CALCULATION_VERSION,
+        "summary": summary,
+    }
+
+
 @router.get("/summary/province/{province}")
 def get_constraint_summary(
     province: int = Path(..., ge=1, le=999),
@@ -436,6 +572,7 @@ def get_constraint_summary(
             _ensure_schema(connection)
             return {
                 "status": "ok",
+                "scope": "province",
                 "calculation_version": CALCULATION_VERSION,
                 "summary": _summary(connection, province),
             }
@@ -446,64 +583,68 @@ def get_constraint_summary(
         ) from error
 
 
+@router.get("/summary/all")
+def get_all_constraint_summary() -> dict[str, Any]:
+    try:
+        summaries: list[dict[str, Any]] = []
+
+        with engine.begin() as connection:
+            _ensure_schema(connection)
+            province_rows = connection.execute(
+                text(
+                    """
+                    SELECT DISTINCT province
+                    FROM public.fmu
+                    WHERE province IS NOT NULL
+                    ORDER BY province
+                    """
+                )
+            ).scalars().all()
+
+            for province in province_rows:
+                summaries.append(
+                    _summary(connection, int(province))
+                )
+
+        return {
+            "status": "ok",
+            "scope": "all",
+            "province_count": len(summaries),
+            "calculation_version": CALCULATION_VERSION,
+            "summary": _aggregate_summaries(summaries),
+        }
+    except SQLAlchemyError as error:
+        raise HTTPException(
+            status_code=500,
+            detail=f"National constraint summary failed: {error}",
+        ) from error
+
+
 @router.post("/calculate/province/{province}")
 def calculate_constraints(
     province: int = Path(..., ge=1, le=999),
 ) -> dict[str, Any]:
     try:
-        with engine.begin() as connection:
-            _ensure_schema(connection)
-            _validate_tables(connection)
-
-            fmu_count = connection.execute(
-                text(
-                    """
-                    SELECT COUNT(*)
-                    FROM public.fmu
-                    WHERE province = :province
-                    """
-                ),
-                {"province": province},
-            ).scalar_one()
-
-            if fmu_count == 0:
-                raise HTTPException(
-                    status_code=404,
-                    detail=f"No FMUs were found for Province {province}.",
-                )
-
-            _create_constraint_unions(connection, province)
-
-            updated_ids = connection.execute(
-                text(UPDATE_SQL),
-                {"province": province},
-            ).scalars().all()
-
-            connection.execute(
-                text(SNAPSHOT_SQL),
-                {
-                    "province": province,
-                    "calculation_version": CALCULATION_VERSION,
+        result = _calculate_one_province(province)
+        result.update(
+            {
+                "scope": "province",
+                "method": {
+                    "individual_constraints":
+                        "FMU intersection with dissolved constraint geometry",
+                    "extreme_total":
+                        "Union of five Extreme layers; overlaps counted once",
+                    "serious_total":
+                        "Union of two Serious layers; overlaps counted once",
+                    "area_unit": "ha",
+                    "proportion":
+                        "union area / vegetation area * 100",
                 },
-            )
-
-            summary = _summary(connection, province)
-
-        return {
-            "status": "ok",
-            "province": province,
-            "updated_fmu_count": len(updated_ids),
-            "calculation_version": CALCULATION_VERSION,
-            "method": {
-                "individual_constraints": "FMU intersection with dissolved constraint geometry",
-                "extreme_total": "Union of five Extreme layers; overlaps counted once",
-                "serious_total": "Union of two Serious layers; overlaps counted once",
-                "area_unit": "ha",
-                "proportion": "union area / vegetation area * 100",
-            },
-            "summary": summary,
-            "next_action": "Review Results and refresh the Province Summary.",
-        }
+                "next_action":
+                    "Refresh the Province Summary and close Large Map.",
+            }
+        )
+        return result
     except HTTPException:
         raise
     except SQLAlchemyError as error:
@@ -511,3 +652,75 @@ def calculate_constraints(
             status_code=500,
             detail=f"Constraint calculation failed: {error}",
         ) from error
+
+
+@router.post("/calculate/all")
+def calculate_all_constraints() -> dict[str, Any]:
+    provinces = _province_codes()
+
+    if not provinces:
+        raise HTTPException(
+            status_code=404,
+            detail="No Province codes were found in public.fmu.",
+        )
+
+    succeeded: list[dict[str, Any]] = []
+    failed: list[dict[str, Any]] = []
+
+    for province in provinces:
+        try:
+            succeeded.append(
+                _calculate_one_province(province)
+            )
+        except Exception as error:
+            failed.append(
+                {
+                    "province": province,
+                    "detail": str(
+                        getattr(error, "detail", error)
+                    ),
+                }
+            )
+
+    summaries = [
+        item["summary"]
+        for item in succeeded
+    ]
+    updated_fmu_count = sum(
+        int(item["updated_fmu_count"])
+        for item in succeeded
+    )
+
+    status = (
+        "ok"
+        if not failed
+        else "partial"
+    )
+
+    return {
+        "status": status,
+        "scope": "all",
+        "calculation_version": CALCULATION_VERSION,
+        "processed_province_count": len(provinces),
+        "successful_province_count": len(succeeded),
+        "failed_province_count": len(failed),
+        "updated_fmu_count": updated_fmu_count,
+        "failed_provinces": failed,
+        "province_results": succeeded,
+        "summary": _aggregate_summaries(summaries),
+        "method": {
+            "transaction_scope":
+                "Each Province is committed separately.",
+            "individual_constraints":
+                "FMU intersection with dissolved constraint geometry",
+            "extreme_total":
+                "Union of five Extreme layers; overlaps counted once",
+            "serious_total":
+                "Union of two Serious layers; overlaps counted once",
+            "area_unit": "ha",
+            "proportion":
+                "union area / vegetation area * 100",
+        },
+        "next_action":
+            "Refresh the current Province Summary and close Large Map.",
+    }

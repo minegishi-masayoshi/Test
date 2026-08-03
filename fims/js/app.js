@@ -67,7 +67,7 @@ import {
  * ============================================================
  */
 
-export const APP_VERSION = "3.6.0";
+export const APP_VERSION = "3.6.2";
 
 export const APP_STATUS = Object.freeze({
   IDLE: "idle",
@@ -4835,6 +4835,49 @@ export class ApplicationController {
     );
   }
 
+  /**
+   * Reloads the current Province after a Large Map constraint
+   * calculation and immediately refreshes the Summary.
+   */
+  async refreshAfterConstraintCalculation(detail = {}) {
+    if (!this.selectedProvince) {
+      return false;
+    }
+
+    const selectedCode =
+      String(
+        this.getProvinceCode(
+          this.selectedProvince
+        )
+      );
+
+    const affected =
+      detail.scope === "all" ||
+      detail.province === null ||
+      detail.province === undefined ||
+      String(detail.province) === selectedCode;
+
+    if (!affected) {
+      return false;
+    }
+
+    await this.selectProvince(
+      this.selectedProvince,
+      {
+        source:
+          "constraint-calculation",
+        notify:
+          false
+      }
+    );
+
+    this.setStatus(
+      "Constraint calculation results were applied. FMUs and Summary were refreshed."
+    );
+
+    return true;
+  }
+
   /* ==========================================================
    * 21. Large Map and Exit
    * ==========================================================
@@ -4953,6 +4996,52 @@ export class ApplicationController {
    * Binds application UI events.
    */
   bindUiEvents() {
+    this.bindEvent(
+      window,
+      "message",
+      async (event) => {
+        if (
+          event.origin !== window.location.origin ||
+          event.data?.type !==
+            "fims:constraint-calculation-complete"
+        ) {
+          return;
+        }
+
+        await this.refreshAfterConstraintCalculation(
+          event.data
+        );
+      }
+    );
+
+    this.bindEvent(
+      window,
+      "storage",
+      async (event) => {
+        if (
+          event.key !==
+            "fimsConstraintCalculationUpdated" ||
+          !event.newValue
+        ) {
+          return;
+        }
+
+        try {
+          await this.refreshAfterConstraintCalculation(
+            JSON.parse(event.newValue)
+          );
+        } catch (error) {
+          this.handleError(
+            "Constraint Summary could not be refreshed.",
+            error,
+            {
+              fatal: false
+            }
+          );
+        }
+      }
+    );
+
     this.bindEvent(
       this.dom.provinceSearch,
       "input",

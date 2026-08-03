@@ -8,14 +8,14 @@
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://unpkg.com; style-src 'self' 'unsafe-inline' https://unpkg.com; connect-src 'self' https:; img-src 'self' data: blob: https:; font-src 'self' data:; object-src 'none'; base-uri 'self'; form-action 'self';" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="./css/main.css?v=3.6.0" />
+  <link rel="stylesheet" href="./css/main.css?v=3.6.2" />
 </head>
 <body class="large-map-page">
   <div class="large-map-shell">
     <header class="large-map-header">
       <div class="large-map-title-block">
         <h1>FIMS Cloud - Large Map</h1>
-        <p>GIS Data Update Workflow · Ver.3.6.0</p>
+        <p>GIS Data Update Workflow · Ver.3.6.2</p>
       </div>
 
       <div class="large-map-header-actions" aria-label="Map utilities">
@@ -235,6 +235,22 @@
         <button id="closeCalculationDialogButton" type="button">Close</button>
       </header>
       <div class="review-dialog-body">
+
+        <fieldset class="calculation-scope">
+          <legend>Calculation scope</legend>
+          <label>
+            <input type="radio" name="calculationScope" value="province" checked />
+            Selected Province
+          </label>
+          <label>
+            <input type="radio" name="calculationScope" value="all" />
+            All Provinces
+          </label>
+          <p id="calculationScopeNote">
+            Use All Provinces after importing a nationwide PNG dataset.
+          </p>
+        </fieldset>
+
         <div id="calculationStatusBanner" class="review-status-banner">
           Select a Province before starting calculation.
         </div>
@@ -259,12 +275,13 @@
         <div class="review-actions">
           <button id="executeCalculationButton" class="primary" type="button">Execute Calculate</button>
           <button id="refreshCalculationResultsButton" type="button">Refresh Results</button>
+          <button id="applyCalculationResultsButton" class="primary" type="button" disabled>Refresh Summary &amp; Close</button>
         </div>
       </div>
     </section>
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script type="module" src="./js/largeMap.js?v=3.6.0"></script>
+  <script type="module" src="./js/largeMap.js?v=3.6.2"></script>
 </body>
 </html>

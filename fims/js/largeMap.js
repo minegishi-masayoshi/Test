@@ -1,5 +1,5 @@
 /**
- * FIMS Cloud Ver.3.6 - Constraint Analysis Engine
+ * FIMS Cloud Ver.3.6.2 - Nationwide Constraint Analysis
  */
 
 import { CONFIG } from "./config.js";
@@ -170,12 +170,22 @@ const dom = {
   resultSeriousTotal:
     document.getElementById("resultSeriousTotal"),
   resultCalculatedAt:
-    document.getElementById("resultCalculatedAt")
+    document.getElementById("resultCalculatedAt"),
+  calculationScopeInputs:
+    Array.from(document.querySelectorAll(
+      'input[name="calculationScope"]'
+    )),
+  calculationScopeNote:
+    document.getElementById("calculationScopeNote"),
+  applyCalculationResults:
+    document.getElementById("applyCalculationResultsButton")
 };
 
 const state = {
   lastImportedLayerKey: null,
   lastImportResult: null,
+  calculationScope: "province",
+  lastCalculationResult: null,
   lastImportTarget: null,
   selectedProvince: null,
   layerInputs: new Map()
@@ -533,13 +543,17 @@ function getSelectedProvinceCode() {
 }
 
 function constraintUrl(endpointTemplate) {
+  const base =
+    CONFIG.constraintAnalysis.apiBaseUrl.replace(/\/$/, "");
+
+  if (!endpointTemplate.includes("{province}")) {
+    return base + endpointTemplate;
+  }
+
   const province = getSelectedProvinceCode();
   if (!province) {
     throw new Error("Select a Province before calculation.");
   }
-
-  const base =
-    CONFIG.constraintAnalysis.apiBaseUrl.replace(/\/$/, "");
 
   return (
     base +
@@ -561,7 +575,27 @@ function formatArea(value) {
 
 function renderCalculationResult(payload) {
   const summary = payload?.summary ?? payload ?? {};
-  setText(dom.calculationFmuCount, summary.fmu_count ?? payload?.updated_fmu_count ?? "—");
+  const allScope =
+    payload?.scope === "all" ||
+    summary?.scope === "all";
+
+  setText(
+    dom.calculationProvince,
+    allScope
+      ? "All Provinces"
+      : (
+          state.selectedProvince
+            ? `${getSelectedProvinceCode()} ${getProvinceName(state.selectedProvince)}`
+            : String(getSelectedProvinceCode() ?? "—")
+        )
+  );
+
+  setText(
+    dom.calculationFmuCount,
+    summary.fmu_count ??
+    payload?.updated_fmu_count ??
+    "—"
+  );
   setText(dom.resultExtremeSlope, formatArea(summary.extreme_slope_ha));
   setText(dom.resultExtremeAltitude, formatArea(summary.extreme_altitude_ha));
   setText(dom.resultExtremeKarst, formatArea(summary.extreme_karst_ha));
@@ -577,6 +611,10 @@ function renderCalculationResult(payload) {
       ? new Date(summary.calculated_at).toLocaleString()
       : "—"
   );
+
+  state.lastCalculationResult = payload;
+  dom.applyCalculationResults.disabled =
+    !summary.calculated_at;
 }
 
 async function requestConstraint(endpointTemplate, method = "GET") {
@@ -606,33 +644,97 @@ async function requestConstraint(endpointTemplate, method = "GET") {
 }
 
 async function refreshConstraintResults() {
-  const payload = await requestConstraint(
-    CONFIG.constraintAnalysis.endpoints.provinceSummary
-  );
+  const endpoint =
+    state.calculationScope === "all"
+      ? CONFIG.constraintAnalysis.endpoints.allSummary
+      : CONFIG.constraintAnalysis.endpoints.provinceSummary;
+
+  const payload = await requestConstraint(endpoint);
   renderCalculationResult(payload);
   return payload;
 }
 
+function updateCalculationScopeUi() {
+  const allScope =
+    state.calculationScope === "all";
+
+  setText(
+    dom.calculationProvince,
+    allScope
+      ? "All Provinces"
+      : (
+          state.selectedProvince
+            ? `${getSelectedProvinceCode()} ${getProvinceName(state.selectedProvince)}`
+            : "—"
+        )
+  );
+
+  dom.calculationScopeNote.textContent =
+    allScope
+      ? "All Province codes in the FMU table will be calculated sequentially. Each Province is committed separately."
+      : "Only the currently selected Province will be recalculated.";
+}
+
 function openCalculationDialog() {
-  const province = getSelectedProvinceCode();
-  if (!province) {
+  if (
+    state.calculationScope === "province" &&
+    !getSelectedProvinceCode()
+  ) {
     setStatus("Select a Province before Calculate.");
     return;
   }
 
-  setText(
-    dom.calculationProvince,
-    state.selectedProvince
-      ? `${province} ${getProvinceName(state.selectedProvince)}`
-      : String(province)
-  );
+  updateCalculationScopeUi();
   dom.calculationStatusBanner.textContent =
-    "Ready to calculate the selected Province.";
+    state.calculationScope === "all"
+      ? "Ready to calculate all Provinces."
+      : "Ready to calculate the selected Province.";
   dom.calculationModal.hidden = false;
 }
 
 function closeCalculationDialog() {
   dom.calculationModal.hidden = true;
+}
+
+
+function notifySummaryRefreshAndClose() {
+  const payload = state.lastCalculationResult;
+  const detail = {
+    type: "fims:constraint-calculation-complete",
+    scope: state.calculationScope,
+    province: getSelectedProvinceCode(),
+    calculationVersion:
+      payload?.calculation_version ??
+      CONFIG.constraintAnalysis.calculationVersion,
+    calculatedAt:
+      payload?.summary?.calculated_at ??
+      new Date().toISOString()
+  };
+
+  try {
+    localStorage.setItem(
+      "fimsConstraintCalculationUpdated",
+      JSON.stringify(detail)
+    );
+  } catch (error) {
+    console.warn(
+      "Constraint refresh notification could not be stored.",
+      error
+    );
+  }
+
+  if (
+    window.opener &&
+    !window.opener.closed
+  ) {
+    window.opener.postMessage(
+      detail,
+      window.location.origin
+    );
+  }
+
+  closeCalculationDialog();
+  window.close();
 }
 
 async function initialize() {
@@ -758,38 +860,89 @@ async function initialize() {
       );
     });
 
+  dom.calculationScopeInputs
+    .forEach((input) => {
+      input.addEventListener(
+        "change",
+        () => {
+          state.calculationScope =
+            input.checked
+              ? input.value
+              : state.calculationScope;
+          state.lastCalculationResult = null;
+          dom.applyCalculationResults.disabled = true;
+          updateCalculationScopeUi();
+        }
+      );
+    });
+
   dom.executeCalculation
     .addEventListener(
       "click",
       async () => {
-        if (!window.confirm(
-          "Calculate Forest Constraints for the selected Province? Existing FMU calculation values will be updated."
-        )) {
+        const allScope =
+          state.calculationScope === "all";
+
+        const confirmation =
+          allScope
+            ? "Calculate Forest Constraints for all Provinces? Existing FMU calculation values for the whole country will be updated."
+            : "Calculate Forest Constraints for the selected Province? Existing FMU calculation values will be updated.";
+
+        if (!window.confirm(confirmation)) {
           return;
         }
 
         dom.executeCalculation.disabled = true;
+        dom.refreshCalculationResults.disabled = true;
+        dom.applyCalculationResults.disabled = true;
         dom.calculationProgress.hidden = false;
         dom.calculationStatusBanner.textContent =
-          "Calculation is running. Do not close this window.";
+          allScope
+            ? "Nationwide calculation is running. This may take several minutes. Do not close this window."
+            : "Calculation is running. Do not close this window.";
 
         try {
+          const endpoint =
+            allScope
+              ? CONFIG.constraintAnalysis.endpoints.calculateAll
+              : CONFIG.constraintAnalysis.endpoints.calculateProvince;
+
           const payload = await requestConstraint(
-            CONFIG.constraintAnalysis.endpoints.calculateProvince,
+            endpoint,
             "POST"
           );
+
           renderCalculationResult(payload);
-          dom.calculationStatusBanner.textContent =
-            `Calculation completed: ${payload.updated_fmu_count} FMUs updated.`;
+
+          if (allScope) {
+            dom.calculationStatusBanner.textContent =
+              `Nationwide calculation completed: ` +
+              `${payload.successful_province_count}/${payload.processed_province_count} Provinces succeeded; ` +
+              `${payload.updated_fmu_count} FMUs updated` +
+              (
+                payload.failed_province_count
+                  ? `; ${payload.failed_province_count} Province(s) failed.`
+                  : "."
+              );
+          } else {
+            dom.calculationStatusBanner.textContent =
+              `Calculation completed: ${payload.updated_fmu_count} FMUs updated.`;
+          }
+
           dom.reviewResults.disabled = false;
           setWorkflowStep(4);
-          setStatus("Forest Constraint calculation completed.");
+          setStatus(
+            allScope
+              ? "Nationwide Forest Constraint calculation completed."
+              : "Forest Constraint calculation completed."
+          );
         } catch (error) {
           dom.calculationStatusBanner.textContent =
             `Calculation failed: ${error.message}`;
           setStatus(`Calculation failed: ${error.message}`);
         } finally {
           dom.executeCalculation.disabled = false;
+          dom.refreshCalculationResults.disabled = false;
           dom.calculationProgress.hidden = true;
         }
       }
@@ -808,6 +961,12 @@ async function initialize() {
             `Results could not be loaded: ${error.message}`;
         }
       }
+    );
+
+  dom.applyCalculationResults
+    .addEventListener(
+      "click",
+      notifySummaryRefreshAndClose
     );
 
   dom.reviewResults
